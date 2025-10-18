@@ -34,7 +34,7 @@ The entire process is designed to be as simple as possible.
 1.  **Download the Project:** Download `UmeAiRT-Install-ComfyUI.bat` from GitHub and put it to a folder of your choice (e.g., `C:\UmeAiRT-Installer`).
 
 2.  **Run the Installer:**
-    - Rrun the file `UmeAiRT-Install-ComfyUI.bat`.
+    - Run the file `UmeAiRT-Install-ComfyUI.bat`.
     - It will ask for administrator privileges. Please accept.
     - The script will first download the latest versions of all installation scripts from the repository to ensure you are using the most recent version.
 
