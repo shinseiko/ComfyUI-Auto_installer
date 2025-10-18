@@ -31,10 +31,10 @@ This project provides a suite of PowerShell scripts to fully automate the instal
 
 The entire process is designed to be as simple as possible.
 
-1.  **Download the Project:** Download this repository as a ZIP file from GitHub and extract it to a folder of your choice (e.g., `C:\UmeAiRT-Installer`).
+1.  **Download the Project:** Download `UmeAiRT-Install-ComfyUI.bat` from GitHub and put it to a folder of your choice (e.g., `C:\UmeAiRT-Installer`).
 
 2.  **Run the Installer:**
-    - In the folder, find and run the file `UmeAiRT-Install-ComfyUI.bat`.
+    - Rrun the file `UmeAiRT-Install-ComfyUI.bat`.
     - It will ask for administrator privileges. Please accept.
     - The script will first download the latest versions of all installation scripts from the repository to ensure you are using the most recent version.
 
