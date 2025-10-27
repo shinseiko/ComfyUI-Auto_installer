@@ -1,0 +1,302 @@
+#Requires -RunAsAdministrator
+
+<#
+.SYNOPSIS
+    An automated installer for ComfyUI and its dependencies.
+.DESCRIPTION
+    This script streamlines the setup of ComfyUI, including Python, Git,
+    all required Python packages, custom nodes, and optional models.
+#>
+
+#===========================================================================
+# SECTION 1: SCRIPT CONFIGURATION & HELPER FUNCTIONS
+#===========================================================================
+
+param(
+    [string]$InstallPath = (Split-Path -Path $PSScriptRoot -Parent)
+)
+$comfyPath = Join-Path $InstallPath "ComfyUI"
+$scriptPath = Join-Path $InstallPath "scripts"
+$condaPath = Join-Path $env:LOCALAPPDATA "Miniconda3"
+$condaExe = Join-Path $condaPath "Scripts\conda.exe"
+$logPath = Join-Path $InstallPath "logs"
+$logFile = Join-Path $logPath "install_log.txt"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+$dependenciesFile = Join-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) "dependencies.json"
+if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found..." -ForegroundColor Red; Read-Host; exit 1 }
+$dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
+if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Force -Path $logPath | Out-Null }
+
+function Write-Log {
+    param([string]$Message, [int]$Level = 1, [string]$Color = "Default")
+    $prefix = ""
+    $defaultColor = "White"
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    switch ($Level) {
+        -2 { $prefix = "" }
+        0 {
+            $global:currentStep++
+            $wrappedMessage = "| [Step $($global:currentStep)/$($global:totalSteps)] $Message |"
+            $separator = "=" * ($wrappedMessage.Length)
+            $consoleMessage = "`n$separator`n$wrappedMessage`n$separator"
+            $logMessage = "[$timestamp] [Step $($global:currentStep)/$($global:totalSteps)] $Message"
+            $defaultColor = "Yellow"
+        }
+        1 { $prefix = "  - " }
+        2 { $prefix = "    -> " }
+        3 { $prefix = "      [INFO] " }
+    }
+    if ($Color -eq "Default") { $Color = $defaultColor }
+    if ($Level -ne 0) {
+        $logMessage = "[$timestamp] $($prefix.Trim()) $Message"
+        $consoleMessage = "$prefix$Message"
+    }
+    Write-Host $consoleMessage -ForegroundColor $Color
+    Add-Content -Path $logFile -Value $logMessage
+}
+
+function Invoke-AndLog {
+    param(
+        [string]$File,
+        [string]$Arguments,
+        [switch]$IgnoreErrors
+    )
+    
+    # Chemin vers un fichier log temporaire unique.
+    $tempLogFile = Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString() + ".tmp")
+
+    try {
+        Write-Log "Executing: $File $Arguments" -Level 3 -Color DarkGray
+
+        # CONSTRUIT la chaîne de commande complète pour Invoke-Expression.
+        # Nous mettons $File entre guillemets (au cas où il contiendrait des espaces)
+        # et nous laissons $Arguments tel quel pour que PowerShell puisse l'analyser.
+        # Tous les flux (*>&1) sont redirigés vers le fichier temporaire.
+        $CommandToRun = "& `"$File`" $Arguments *>&1 | Out-File -FilePath `"$tempLogFile`" -Encoding utf8"
+        
+        # EXÉCUTE la chaîne de commande
+        Invoke-Expression $CommandToRun
+        
+        # Lit le fichier temporaire.
+        $output = if (Test-Path $tempLogFile) { Get-Content $tempLogFile } else { @() }
+        
+        # Vérifie le code de sortie du processus natif
+        if ($LASTEXITCODE -ne 0 -and -not $IgnoreErrors) {
+            Write-Log "ERREUR: La commande a échoué avec le code $LASTEXITCODE." -Color Red
+            Write-Log "Commande: $File $Arguments" -Color Red
+            Write-Log "Sortie de l'erreur:" -Color Red
+            
+            # Affiche l'erreur dans la console ET dans le log
+            $output | ForEach-Object {
+                Write-Host $_ -ForegroundColor Red
+                Add-Content -Path $logFile -Value $_
+            }
+            
+            # Arrête le script
+            throw "L'exécution de la commande a échoué. Vérifiez les logs."
+        } else {
+            # Si tout va bien, ajoute la sortie au log principal
+            Add-Content -Path $logFile -Value $output
+        }
+
+    } catch {
+        # Cela attrape le 'throw' ci-dessus ou une erreur PowerShell
+        Write-Log "ERREUR FATALE lors de la tentative d'exécution: $File $Arguments" -Color Red
+        $errorMsg = $_ | Out-String
+        Write-Log $errorMsg -Color Red
+        Add-Content -Path $logFile -Value $errorMsg
+        
+        # Stoppe le script et attend que l'utilisateur lise l'erreur
+        Read-Host "Une erreur fatale est survenue. Appuyez sur Entrée pour quitter."
+        exit 1
+    } finally {
+        # S'assure que le fichier temporaire est toujours supprimé.
+        if (Test-Path $tempLogFile) {
+            Remove-Item $tempLogFile -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Download-File {
+    param([string]$Uri, [string]$OutFile)
+    Write-Log "Downloading `"$($Uri.Split('/')[-1])`"" -Level 2 -Color DarkGray
+    Invoke-AndLog "powershell.exe" "-NoProfile -Command `"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '$Uri' -OutFile '$OutFile'`""
+}
+
+function Invoke-Conda-Build-Command {
+    param(
+        [string]$Command,
+        [string]$Arguments
+    )
+    # Cette version OMET --no-activate pour forcer l'exécution
+    # des scripts d'activation du compilateur (et accepte le "cls").
+    Invoke-AndLog $condaExe "run --no-capture-output -n UmeAiRT $Command $Arguments"
+}
+#===========================================================================
+# SECTION 2: MAIN SCRIPT EXECUTION
+#===========================================================================
+$global:totalSteps = 11
+$global:currentStep = 2
+$totalCores = [int]$env:NUMBER_OF_PROCESSORS
+$optimalParallelJobs = [int][Math]::Floor(($totalCores * 3) / 4)
+if ($optimalParallelJobs -lt 1) { $optimalParallelJobs = 1 }
+
+# --- Step 2: Clone ComfyUI ---
+Write-Log "Cloning ComfyUI" -Level 0
+if (-not (Test-Path $comfyPath)) {
+    Write-Log "Cloning ComfyUI repository from $($dependencies.repositories.comfyui.url)..." -Level 1
+    $cloneArgs = "clone $($dependencies.repositories.comfyui.url) `"$comfyPath`""
+    Invoke-AndLog "git" $cloneArgs
+
+    if (-not (Test-Path $comfyPath)) {
+        Write-Log "FATAL: ComfyUI cloning failed. Please check the logs." -Level 0 -Color Red
+        Read-Host "Press Enter to exit."
+        exit 1
+    }
+} else {
+    Write-Log "ComfyUI directory already exists" -Level 1 -Color Green
+}
+
+# --- Step 3: Install Core Dependencies ---
+Write-Log "Installing Core Dependencies" -Level 0
+Write-Log "Upgrading pip and wheel" -Level 1
+Invoke-AndLog "python" "-m pip install --upgrade $($dependencies.pip_packages.upgrade -join ' ')"
+Write-Log "Installing torch packages" -Level 1
+Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.torch.packages) --index-url $($dependencies.pip_packages.torch.index_url)"
+Write-Log "Installing ComfyUI requirements" -Level 1
+Invoke-AndLog "python" "-m pip install -r `"$comfyPath\$($dependencies.pip_packages.comfyui_requirements)`""
+
+# --- Step 4: Install Custom Nodes ---
+Write-Log "Installing Custom Nodes" -Level 0
+$csvUrl = $dependencies.files.custom_nodes_csv.url
+$csvPath = Join-Path $InstallPath $dependencies.files.custom_nodes_csv.destination
+Download-File -Uri $csvUrl -OutFile $csvPath
+$customNodes = Import-Csv -Path $csvPath
+$customNodesPath = Join-Path $InstallPath "custom_nodes"
+foreach ($node in $customNodes) {
+    $nodeName = $node.Name
+    $repoUrl = $node.RepoUrl
+    $nodePath = if ($node.Subfolder) { Join-Path $customNodesPath $node.Subfolder } else { Join-Path $customNodesPath $nodeName }
+    if (-not (Test-Path $nodePath)) {
+        Write-Log "Installing $nodeName" -Level 1
+        Invoke-AndLog "git" "clone $repoUrl `"$nodePath`""
+        if ($node.RequirementsFile) {
+            $reqPath = Join-Path $nodePath $node.RequirementsFile
+            if (Test-Path $reqPath) {
+                Write-Log "Installing requirements for $nodeName" -Level 2
+                Invoke-AndLog "python" "-m pip install -r `"$reqPath`""
+            }
+        }
+    }
+    else {
+        Write-Log "$nodeName (already exists, skipping)" -Level 1 -Color Green
+    }
+}
+
+# --- Step 5: Install Final Python Dependencies ---
+Write-Log "Installing Final Python Dependencies" -Level 0
+Write-Log "Installing standard packages..." -Level 1
+Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.standard -join ' ')"
+
+Write-Log "Installing packages from .whl files..." -Level 1
+foreach ($wheel in $dependencies.pip_packages.wheels) {
+    Write-Log "Installing $($wheel.name)" -Level 2
+    $wheelPath = Join-Path $InstallPath "$($wheel.name).whl"
+    Download-File -Uri $wheel.url -OutFile $wheelPath
+    Invoke-AndLog "python" "-m pip install `"$wheelPath`""
+    Remove-Item $wheelPath -ErrorAction SilentlyContinue
+}
+
+Write-Log "Installing pinned version packages..." -Level 1
+Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.pinned -join ' ')"
+
+Write-Log "Installing packages from git repositories..." -Level 1
+foreach ($repo in $dependencies.pip_packages.git_repos) {
+    Write-Log "Installing $($repo.name)..." -Level 2
+    $installUrl = "git+$($repo.url)@$($repo.commit)"
+    if ($repo.name -eq "xformers") {
+        $pipArgs = "-m pip install --no-build-isolation --verbose `"$installUrl`""
+        Write-Log "Using Build-Command for xformers (l'écran peut s'effacer)..." -Level 3
+        Invoke-Conda-Build-Command "python" $pipArgs
+
+    } elseif ($repo.name -eq "apex") {
+        $pipArgs = "-m pip install $($repo.install_options) `"$installUrl`""
+        Write-Log "Using Build-Command for apex (l'écran peut s'effacer)..." -Level 3
+        Invoke-Conda-Build-Command "python" $pipArgs
+
+    } else {
+        # Utilise la commande standard (sans 'cls') pour les autres repos
+        $pipArgs = "-m pip install `"$installUrl`""
+        Invoke-AndLog "python" $pipArgs
+    }
+}
+
+# --- Step 6: Download Workflows & Settings ---
+Write-Log "Downloading Workflows & Settings..." -Level 0
+$settingsFile = $dependencies.files.comfy_settings
+$settingsDest = Join-Path $InstallPath $settingsFile.destination
+$settingsDir = Split-Path $settingsDest -Parent
+if (-not (Test-Path $settingsDir)) { New-Item -Path $settingsDir -ItemType Directory -Force | Out-Null }
+Download-File -Uri $settingsFile.url -OutFile $settingsDest
+
+$workflowRepo = $dependencies.repositories.workflows
+$workflowCloneDest = Join-Path $InstallPath "user\default\workflows\UmeAiRT-Workflow"
+if (-not (Test-Path $workflowCloneDest)) { 
+    Invoke-AndLog "git" "clone $($workflowRepo.url) `"$workflowCloneDest`""
+}
+
+# --- Step 7: Optional Model Pack Downloads ---
+Write-Log "Optional Model Pack Downloads" -Level 0
+
+# Copy the base models directory if it exists
+$ModelsSource = Join-Path $comfyPath "models"
+if (Test-Path $ModelsSource) {
+    Write-Log "Copying base models directory..." -Level 1
+    Copy-Item -Path $ModelsSource -Destination $InstallPath -Recurse -Force
+}
+
+$modelPacks = @(
+    @{Name="FLUX"; ScriptName="Download-FLUX-Models.ps1"},
+    @{Name="WAN2.1"; ScriptName="Download-WAN2.1-Models.ps1"},
+    @{Name="WAN2.2"; ScriptName="Download-WAN2.2-Models.ps1"},
+    @{Name="HIDREAM"; ScriptName="Download-HIDREAM-Models.ps1"},
+    @{Name="LTXV"; ScriptName="Download-LTXV-Models.ps1"}
+    @{Name="QWEN"; ScriptName="Download-QWEN-Models.ps1"}
+)
+$scriptsSubFolder = Join-Path $InstallPath "scripts"
+
+foreach ($pack in $modelPacks) {
+    $scriptPath = Join-Path $scriptsSubFolder $pack.ScriptName
+    if (-not (Test-Path $scriptPath)) {
+        Write-Log "Model downloader script not found: '$($pack.ScriptName)'. Skipping." -Level 1 -Color Red
+        continue 
+    }
+
+    $validInput = $false
+    while (-not $validInput) {
+        # Use Write-Log for the prompt to keep the color formatting.
+        Write-Log "Would you like to download $($pack.Name) models? (Y/N)" -Level 1 -Color Yellow
+        $choice = Read-Host
+
+        if ($choice -eq 'Y' -or $choice -eq 'y') {
+            Write-Log "Launching downloader for $($pack.Name) models..." -Level 2 -Color Green
+            # The external script will handle its own logging.
+            & $scriptPath -InstallPath $InstallPath
+            $validInput = $true
+        } elseif ($choice -eq 'N' -or $choice -eq 'n') {
+            Write-Log "Skipping download for $($pack.Name) models." -Level 2
+            $validInput = $true
+        } else {
+            # Use Write-Log for the error message.
+            Write-Log "Invalid choice. Please enter Y or N." -Level 2 -Color Red
+        }
+    }
+}
+
+#===========================================================================
+# FINALIZATION
+#===========================================================================
+Write-Log "-------------------------------------------------------------------------------" -Color Green
+Write-Log "Installation of ComfyUI and all nodes is complete!" -Color Green
+Read-Host "Press Enter to close this window."

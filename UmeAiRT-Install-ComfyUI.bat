@@ -50,7 +50,7 @@ echo.
 echo [INFO] Launching the main installation script...
 echo.
 :: Pass the clean install path to the PowerShell script.
-powershell.exe -ExecutionPolicy Bypass -File "%ScriptsFolder%\Install-ComfyUI.ps1" -InstallPath "%InstallPath%"
+powershell.exe -ExecutionPolicy Bypass -File "%ScriptsFolder%\Install-ComfyUI-Phase1.ps1" -InstallPath "%InstallPath%"
 
 echo.
 echo [INFO] The script execution is complete.
