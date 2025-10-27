@@ -213,7 +213,7 @@ Write-Log "Lancement de la Phase 2 de l'installation..." -Level 0
 
 # Crée un fichier .bat pour lancer la phase 2 DANS l'environnement Conda
 $phase2LauncherPath = Join-Path $scriptPath "Launch-Phase2.bat"
-$phase2ScriptPath = Join-Path $scriptPath "Phase2-Install.ps1"
+$phase2ScriptPath = Join-Path $scriptPath "Install-ComfyUI-Phase2.ps1"
 
 $launcherContent = @"
 @echo off
