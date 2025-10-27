@@ -130,7 +130,7 @@ function Invoke-Conda-Command {
         [string]$Arguments
     )
     # Plus besoin de $condaRun, on utilise $condaExe qui est défini globalement
-    Invoke-AndLog $condaExe "run --no-capture-output --ignore-activate-scripts -n UmeAiRT $Command $Arguments"
+    Invoke-AndLog $condaExe "run --no-capture-output -n UmeAiRT $Command $Arguments"
 }
 
 #===========================================================================
