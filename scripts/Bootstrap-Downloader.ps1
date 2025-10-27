@@ -8,24 +8,26 @@ $baseUrl = "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/feature-conda-
 # Define the list of files to download
 $filesToDownload = @(
     # PowerShell Scripts
-    @{ RepoPath = "scripts/Install-ComfyUI.ps1";       LocalPath = "scripts/Install-ComfyUI.ps1" },
-    @{ RepoPath = "scripts/Update-ComfyUI.ps1";        LocalPath = "scripts/Update-ComfyUI.ps1" },
-    @{ RepoPath = "scripts/Download-FLUX-Models.ps1";  LocalPath = "scripts/Download-FLUX-Models.ps1" },
-    @{ RepoPath = "scripts/Download-WAN2.1-Models.ps1";   LocalPath = "scripts/Download-WAN2.1-Models.ps1" },
-    @{ RepoPath = "scripts/Download-WAN2.2-Models.ps1";   LocalPath = "scripts/Download-WAN2.2-Models.ps1" },
+    @{ RepoPath = "scripts/Install-ComfyUI.ps1";         LocalPath = "scripts/Install-ComfyUI.ps1" },
+    @{ RepoPath = "scripts/Install-ComfyUI-Phase1.ps1";  LocalPath = "scripts/Install-ComfyUI-Phase1.ps1" },
+    @{ RepoPath = "scripts/Install-ComfyUI-Phase2.ps1";  LocalPath = "scripts/Install-ComfyUI-Phase2.ps1" },
+    @{ RepoPath = "scripts/Update-ComfyUI.ps1";          LocalPath = "scripts/Update-ComfyUI.ps1" },
+    @{ RepoPath = "scripts/Download-FLUX-Models.ps1";    LocalPath = "scripts/Download-FLUX-Models.ps1" },
+    @{ RepoPath = "scripts/Download-WAN2.1-Models.ps1";  LocalPath = "scripts/Download-WAN2.1-Models.ps1" },
+    @{ RepoPath = "scripts/Download-WAN2.2-Models.ps1";  LocalPath = "scripts/Download-WAN2.2-Models.ps1" },
     @{ RepoPath = "scripts/Download-HIDREAM-Models.ps1"; LocalPath = "scripts/Download-HIDREAM-Models.ps1" },
-    @{ RepoPath = "scripts/Download-LTXV-Models.ps1";  LocalPath = "scripts/Download-LTXV-Models.ps1" },
-    @{ RepoPath = "scripts/Download-QWEN-Models.ps1";  LocalPath = "scripts/Download-QWEN-Models.ps1" },
+    @{ RepoPath = "scripts/Download-LTXV-Models.ps1";    LocalPath = "scripts/Download-LTXV-Models.ps1" },
+    @{ RepoPath = "scripts/Download-QWEN-Models.ps1";    LocalPath = "scripts/Download-QWEN-Models.ps1" },
 
     # Configuration Files
     @{ RepoPath = "scripts/environment.yml";             LocalPath = "scripts/environment.yml" },
-    @{ RepoPath = "scripts/dependencies.json";              LocalPath = "scripts/dependencies.json" },
-    @{ RepoPath = "scripts/custom_nodes.csv";              LocalPath = "scripts/custom_nodes.csv" },
+    @{ RepoPath = "scripts/dependencies.json";           LocalPath = "scripts/dependencies.json" },
+    @{ RepoPath = "scripts/custom_nodes.csv";            LocalPath = "scripts/custom_nodes.csv" },
 
     # Batch Launchers
-    @{ RepoPath = "UmeAiRT-Start-ComfyUI.bat";         LocalPath = "UmeAiRT-Start-ComfyUI.bat" },
-    @{ RepoPath = "UmeAiRT-Download_models.bat";       LocalPath = "UmeAiRT-Download_models.bat" },
-    @{ RepoPath = "UmeAiRT-Update-ComfyUI.bat";        LocalPath = "UmeAiRT-Update-ComfyUI.bat" }
+    @{ RepoPath = "UmeAiRT-Start-ComfyUI.bat";           LocalPath = "UmeAiRT-Start-ComfyUI.bat" },
+    @{ RepoPath = "UmeAiRT-Download_models.bat";         LocalPath = "UmeAiRT-Download_models.bat" },
+    @{ RepoPath = "UmeAiRT-Update-ComfyUI.bat";          LocalPath = "UmeAiRT-Update-ComfyUI.bat" }
 )
 
 Write-Host "[INFO] Downloading the latest versions of the installation scripts..."
