@@ -120,8 +120,29 @@ function Invoke-AndLog {
 
 function Download-File {
     param([string]$Uri, [string]$OutFile)
+    
     Write-Log "Downloading `"$($Uri.Split('/')[-1])`"" -Level 2 -Color DarkGray
-    Invoke-AndLog "powershell.exe" "-NoProfile -Command `"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '$Uri' -OutFile '$OutFile'`""
+    
+    # Vérifie si aria2c est disponible (il devrait être dans le PATH de Conda)
+    $aria2 = Get-Command aria2c -ErrorAction SilentlyContinue
+    
+    if ($null -ne $aria2) {
+        # --- Solution Rapide : Utiliser Aria2 ---
+        Write-Log "Using aria2c for accelerated download..." -Level 3
+        $OutDir = Split-Path -Path $OutFile -Parent
+        $OutName = Split-Path -Path $OutFile -Leaf
+        
+        # Arguments Aria2 optimisés pour le silence et la vitesse
+        $aria2Args = "--console-log-level=warn --quiet=true -x 16 -s 16 -k 1M --dir=`"$OutDir`" --out=`"$OutName`" `"$Uri`""
+        
+        # Appelle aria2c directement (il est dans le PATH)
+        Invoke-AndLog "aria2c" $aria2Args
+    }
+    else {
+        # --- Solution Lente (Fallback) : Utiliser PowerShell ---
+        Write-Log "aria2c not found, using slower Invoke-WebRequest..." -Level 3
+        Invoke-AndLog "powershell.exe" "-NoProfile -Command `"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '$Uri' -OutFile '$OutFile'`""
+    }
 }
 
 
