@@ -197,24 +197,6 @@ if (-not $envExists) {
 } else {
     Write-Log "Conda environment 'UmeAiRT' already exists" -Level 1 -Color Green
 }
-Write-Log "Patching activation scripts ..." -Level 1
-$activateDir = Join-Path $condaPath "envs\UmeAiRT\etc\conda\activate.d"
-if (Test-Path $activateDir) {
-    # Cible tous les fichiers .bat dans ce dossier
-    Get-ChildItem -Path $activateDir -Filter "*.bat" | ForEach-Object {
-        Write-Log "Patching $($_.Name)..." -Level 2
-        try {
-            $content = Get-Content -Path $_.FullName
-            # Remplace @cls, cls, @CLS, etc., s'ils sont en début de ligne
-            $newContent = $content -replace '^(?i)\s*@?cls\s*$', ''
-            Set-Content -Path $_.FullName -Value $newContent
-        } catch {
-            Write-Log "Failed to patch $($_.Name): $_" -Level 2 -Color Red
-        }
-    }
-} else {
-    Write-Log "Activation script directory not found, skipping patch." -Level 2 -Color Yellow
-}
 # --- Step 2: Clone ComfyUI ---
 Write-Log "Cloning ComfyUI" -Level 0
 if (-not (Test-Path $comfyPath)) {
