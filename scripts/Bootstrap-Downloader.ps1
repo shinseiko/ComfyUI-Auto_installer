@@ -3,7 +3,7 @@ param(
 )
 
 # Set the base URL for the GitHub repository's raw content
-$baseUrl = "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/"
+$baseUrl = "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/feature-conda-integration/"
 
 # Define the list of files to download
 $filesToDownload = @(
