@@ -19,7 +19,7 @@ $InstallPath = (Split-Path -Path $PSScriptRoot -Parent)
 $comfyPath = Join-Path $InstallPath "ComfyUI"
 $customNodesPath = Join-Path $InstallPath "custom_nodes"
 $workflowPath = Join-Path $InstallPath "user\default\workflows\UmeAiRT-Workflow"
-$venvPython = Join-Path $comfyPath "venv\Scripts\python.exe"
+$condaPath = Join-Path $InstallPath "Miniconda3"
 $logPath = Join-Path $InstallPath "logs"
 $logFile = Join-Path $logPath "update_log.txt"
 
@@ -66,11 +66,20 @@ function Invoke-AndLog {
     }
 }
 
+function Invoke-Conda-Command {
+    param(
+        [string]$Command,
+        [string]$Arguments
+    )
+    $condaRun = Join-Path $condaPath "Scripts\conda-run.exe"
+    Invoke-AndLog $condaRun "-n UmeAiRT $Command $Arguments"
+}
+
 function Invoke-Git-Pull {
     param([string]$DirectoryPath)
     if (Test-Path (Join-Path $DirectoryPath ".git")) {
         Write-Log "    - Updating $($DirectoryPath)..."
-        Invoke-AndLog "git" "-C `"$DirectoryPath`" pull"
+        Invoke-Conda-Command "git" "-C `"$DirectoryPath`" pull"
     } else {
         Write-Log "    - Skipping: Not a git repository." -Color Gray
     }
@@ -80,7 +89,7 @@ function Invoke-Pip-Install {
     param([string]$RequirementsPath)
     if (Test-Path $RequirementsPath) {
         Write-Log "  - Found requirements: $RequirementsPath. Updating..." -Color Cyan
-        Invoke-AndLog "$venvPython" "-m pip install -r `"$RequirementsPath`""
+        Invoke-Conda-Command "python" "-m pip install -r `"$RequirementsPath`""
     }
 }
 function Download-File {
@@ -157,7 +166,7 @@ Get-ChildItem -Path $customNodesPath -Directory -Recurse | ForEach-Object {
 Write-Log "  - Ensuring pinned packages are at the correct version..."
 $pinnedPackages = $dependencies.pip_packages.pinned -join " "
 if ($pinnedPackages) {
-    Invoke-AndLog "$venvPython" "-m pip install --force-reinstall $pinnedPackages"
+    Invoke-Conda-Command "python" "-m pip install --force-reinstall $pinnedPackages"
 }
 
 # Reinstall wheel packages to ensure correct versions from JSON
@@ -175,7 +184,7 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
 
         # Force reinstall the downloaded wheel
         if (Test-Path $localWheelPath) {
-            Invoke-AndLog "$venvPython" "-m pip install `"$localWheelPath`""
+            Invoke-Conda-Command "python" "-m pip install `"$localWheelPath`""
         } else {
             Write-Log "      - ERROR: Failed to download $wheelName" -Color Red
         }

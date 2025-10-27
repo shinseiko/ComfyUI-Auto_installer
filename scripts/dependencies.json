@@ -1,45 +1,4 @@
 {
-  "tools": {
-    "python": {
-      "version": "3.12.10",
-      "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe",
-      "arguments": "/quiet InstallAllUsers=1 PrependPath=1"
-    },
-    "git": {
-      "version": "2.51.0.2",
-      "url": "https://github.com/git-for-windows/git/releases/download/v2.51.0.windows.2/Git-2.51.0.2-64-bit.exe",
-      "arguments": "/VERYSILENT"
-    },
-    "seven_zip": {
-      "name": "7-Zip",
-      "version": "25.01",
-      "url": "https://www.7-zip.org/a/7z2501-x64.exe",
-      "install_path": "C:\\Program Files\\7-Zip"
-    },
-    "aria2": {
-      "name": "aria2",
-      "version": "1.36.0",
-      "url": "https://github.com/aria2/aria2/releases/download/release-1.36.0/aria2-1.36.0-win-64bit-build1.zip",
-      "install_path": "C:\\ProgramData\\aria2"
-    },
-    "ninja": {
-      "name": "ninja",
-      "version": "1.13.1",
-      "url": "https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-win.zip",
-      "install_path": "C:\\ProgramData\\ninja"
-    },
-    "vs_build_tools": {
-      "url": "https://aka.ms/vs/17/release/vs_BuildTools.exe",
-      "arguments": "--quiet --wait --norestart --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.VC.CMake.Project --add Microsoft.VisualStudio.Component.Windows11SDK.26100",
-      "install_path": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools"
-    },
-    "ccache": {
-      "name": "ccache",
-      "version": "4.11.3",
-      "url": "https://github.com/ccache/ccache/releases/download/v4.11.3/ccache-4.11.3-windows-x86_64.zip",
-      "install_path": "C:\\ProgramData\\ccache"
-    }
-  },
   "repositories": {
     "comfyui": {
         "url": "https://github.com/comfyanonymous/ComfyUI.git"
