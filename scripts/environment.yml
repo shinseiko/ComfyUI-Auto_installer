@@ -5,11 +5,10 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.12
+  - python=3.12.12
   - git
   - nvidia::cuda-toolkit=12.9.1
   - pip
-  - conda-forge::aria2
   - ninja
   - ccache
   - c-compiler
