@@ -142,6 +142,9 @@ if (-not (Test-Path $condaPath)) {
 }
 Write-Log "Accepting Anaconda Terms of Service..." -Level 1
 Invoke-AndLog "$condaExe" "config --set anaconda_tos_accepted yes -y"
+Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main -y"
+Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r -y"
+Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2 -y"
 
 $envExists = Invoke-AndLog "$condaExe" "env list" | Select-String -Pattern "UmeAiRT"
 if (-not $envExists) {
