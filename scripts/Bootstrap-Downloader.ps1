@@ -18,7 +18,7 @@ $filesToDownload = @(
     @{ RepoPath = "scripts/Download-QWEN-Models.ps1";  LocalPath = "scripts/Download-QWEN-Models.ps1" },
 
     # Configuration Files
-    @{ RepoPath = "scripts/dependencies.json";             LocalPath = "scripts/dependencies.json" },
+    @{ RepoPath = "scripts/environment.yml";             LocalPath = "scripts/environment.yml" },
     @{ RepoPath = "scripts/custom_nodes.csv";              LocalPath = "scripts/custom_nodes.csv" },
 
     # Batch Launchers
