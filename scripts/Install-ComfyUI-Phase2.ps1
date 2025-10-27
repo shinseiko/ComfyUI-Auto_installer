@@ -177,6 +177,11 @@ foreach ($node in $customNodes) {
             $reqPath = Join-Path $nodePath $node.RequirementsFile
             if (Test-Path $reqPath) {
                 Write-Log "Installing requirements for $nodeName" -Level 2
+				if ($nodeName -eq "ComfyUI-Frame-Interpolation") {
+					Write-Log "Pre-installing CuPy for CUDA 12.x to prevent detection failure..." -Level 3
+					# Force l'installation de cupy pour CUDA 12.x
+					Invoke-AndLog "python" "-m pip install cupy-cuda12x"
+				}
                 Invoke-AndLog "python" "-m pip install -r `"$reqPath`""
             }
         }
