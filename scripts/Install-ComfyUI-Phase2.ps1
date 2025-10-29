@@ -239,6 +239,8 @@ foreach ($repo in $dependencies.pip_packages.git_repos) {
     $pipArgs = ""
     if ($repo.name -eq "xformers") {
         $pipArgs = "-m pip install --no-build-isolation --verbose `"$installUrl`""
+    } elseif ($repo.name -eq "SageAttention") {
+        $pipArgs = "-m pip install --no-build-isolation `"$installUrl`""        
     } elseif ($repo.name -eq "apex") {
         $pipArgs = "-m pip install $($repo.install_options) `"$installUrl`""
     } else {
