@@ -222,27 +222,31 @@ if ($RunAdminTasks) {
     } else {
          Write-Log "aria2c.exe already found at '$aria2InstallPath'." -Level 1 -Color Green
     }
-    # Check if the environment exists
-    $envExistsResult = Invoke-AndLog "$condaExe" "env list" -IgnoreErrors
-    $envExists = $envExistsResult -match '\bUmeAiRT\b' # More precise search
-
-    if ($envExists) {
-        Write-Log "Conda environment 'UmeAiRT' already exists. Removing for a clean install..." -Level 1 -Color Yellow
-        # Add -y to auto-confirm the removal
-        Invoke-AndLog "$condaExe" "env remove -n UmeAiRT -y"
-    } 
+    # 1. Tente de supprimer l'ancien environnement 'UmeAiRT' (ignore l'erreur s'il n'existe pas)
+    Write-Log "Attempting to remove old 'UmeAiRT' environment for a clean install..." -Level 1
+    # Use -IgnoreErrors so the script doesn't stop if the env doesn't exist
+    Invoke-AndLog "$condaExe" "env remove -n UmeAiRT -y" -IgnoreErrors
     
-    # Always create the environment after the check/removal
-    Write-Log "Creating Conda environment 'UmeAiRT' from '$scriptPath\environment.yml'..." -Level 1
+    # 2. Crée le nouvel environnement
+    Write-Log "Creating new Conda environment 'UmeAiRT' from '$scriptPath\environment.yml'..." -Level 1
+    # This will fail properly if the .yml is broken
     Invoke-AndLog "$condaExe" "env create -f `"$scriptPath\environment.yml`""
 
-    # Verify that the environment was created successfully
-    $envExistsResultAfter = Invoke-AndLog "$condaExe" "env list" -IgnoreErrors
-    if (-not ($envExistsResultAfter -match '\bUmeAiRT\b')) {
-        Write-Log "FATAL ERROR: Conda environment creation failed. Check logs." -Color Red
+    # 3. Vérifie manuellement que la création a fonctionné
+    Write-Log "Verifying environment creation..." -Level 2
+    # We run the check *outside* of Invoke-AndLog to capture its output for logic
+    $envListOutput = & "$condaExe" "env list" 2>&1
+    
+    # Check if the command failed OR if UmeAiRT is not in the output list
+    if ($LASTEXITCODE -ne 0 -or -not ($envListOutput -match '\bUmeAiRT\b')) {
+        Write-Log "FATAL ERROR: Conda environment 'UmeAiRT' was NOT created successfully. Check logs." -Color Red
+        # Add the verification output to the log file manually
+        Add-Content -Path $logFile -Value $envListOutput -ErrorAction SilentlyContinue
         Read-Host "Press Enter to exit."
         exit 1
     }
+    
+    Write-Log "Environment 'UmeAiRT' created successfully." -Level 2 -Color Green
 
     # --- Lancement Phase 2 ---
     Write-Log "Conda environment ready." -Level 1 -Color Green

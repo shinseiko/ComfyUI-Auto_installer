@@ -52,33 +52,21 @@ function Invoke-AndLog {
         Write-Log "Executing: $File $Arguments" -Level 3 -Color DarkGray
         $CommandToRun = "& `"$File`" $Arguments *>&1 | Out-File -FilePath `"$tempLogFile`" -Encoding utf8"
         Invoke-Expression $CommandToRun
-        
         $output = if (Test-Path $tempLogFile) { Get-Content $tempLogFile } else { @() }
-        
         if ($LASTEXITCODE -ne 0 -and -not $IgnoreErrors) {
             Write-Log "ERREUR: La commande a échoué avec le code $LASTEXITCODE." -Color Red
             Write-Log "Commande: $File $Arguments" -Color Red
             Write-Log "Sortie de l'erreur:" -Color Red
             $output | ForEach-Object { Write-Host $_ -ForegroundColor Red; Add-Content -Path $global:logFile -Value $_ -ErrorAction SilentlyContinue }
             throw "L'exécution de la commande a échoué. Vérifiez les logs."
-        } else { 
-            Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue 
-        }
-
-        # --- C'EST LA CORRECTION ---
-        # Renvoie la sortie au script qui a appelé la fonction
-        return $output 
-        # --- FIN DE LA CORRECTION ---
-
+        } else { Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue }
     } catch {
         $errMsg = "ERREUR FATALE lors de la tentative d'exécution: $File $Arguments. Erreur: $($_.Exception.Message)"
         Write-Log $errMsg -Color Red
         Add-Content -Path $global:logFile -Value $errMsg -ErrorAction SilentlyContinue
         Read-Host "Une erreur fatale est survenue. Appuyez sur Entrée pour quitter."
         exit 1
-    } finally { 
-        if (Test-Path $tempLogFile) { Remove-Item $tempLogFile -ErrorAction SilentlyContinue } 
-    }
+    } finally { if (Test-Path $tempLogFile) { Remove-Item $tempLogFile -ErrorAction SilentlyContinue } }
 }
 
 function Download-File {
