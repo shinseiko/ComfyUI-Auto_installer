@@ -1,14 +1,3 @@
-# NE PAS METTRE #Requires -RunAsAdministrator ici
-
-<#
-.SYNOPSIS
-    Phase 1 : Gère les tâches admin (si nécessaire) puis installe Conda et lance Phase 2.
-.DESCRIPTION
-    1. Vérifie si les tâches admin (chemins longs, VS Tools, Git system) sont requises.
-    2. Si oui et pas déjà admin, se relance avec élévation pour UNIQUEMENT ces tâches et attend.
-    3. L'instance élevée effectue les tâches admin puis quitte.
-    4. L'instance utilisateur (originale) installe Miniconda, crée l'env, lance Phase 2.
-#>
 
 #===========================================================================
 # SECTION 1: SCRIPT CONFIGURATION & HELPER FUNCTIONS
@@ -36,7 +25,7 @@ function Test-IsAdmin {
     try {
         $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
         return $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    } catch { return $false } # En cas d'erreur, suppose qu'on n'est pas admin
+    } catch { return $false }
 }
 
 Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
@@ -51,20 +40,20 @@ $global:currentStep = 0
 if ($RunAdminTasks) {
     # --- Mode Admin : Exécute UNIQUEMENT les tâches admin ---
     # Utilise Write-Host car Write-Log pourrait ne pas être totalement initialisé ou avoir des pbs de droits
-    Write-Host "`n=== Exécution des tâches Administrateur ===`n" -ForegroundColor Cyan
+    Write-Host "`n=== Performing Administrator Tasks ===`n" -ForegroundColor Cyan
 
     # Tâche 1 : Chemins Longs
-    Write-Host "[Admin Task 1/3] Activation du support des chemins longs (Registre)..." -ForegroundColor Yellow
+    Write-Host "[Admin Task 1/3] Enabling support for long paths (Registry)..." -ForegroundColor Yellow
     $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
     try {
         if ((Get-ItemPropertyValue -Path $regPath -Name $regKey -ErrorAction SilentlyContinue) -ne 1) {
             Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop
-            Write-Host "- Support des chemins longs activé." -ForegroundColor Green
-        } else { Write-Host "- Support des chemins longs déjà activé." -ForegroundColor Green }
-    } catch { Write-Host "- ERREUR: Impossible d'activer les chemins longs. $_" -ForegroundColor Red }
+            Write-Host "- Long path support enabled." -ForegroundColor Green
+        } else { Write-Host "- Long path support already enabled." -ForegroundColor Green }
+    } catch { Write-Host "- ERROR: Unable to enable long paths. $_" -ForegroundColor Red }
 
     # Tâche 2 : VS Build Tools
-    Write-Host "[Admin Task 2/3] Vérification/Installation des VS Build Tools..." -ForegroundColor Yellow
+    Write-Host "[Admin Task 2/3] Checking/Installing VS Build Tools..." -ForegroundColor Yellow
     $depFileAdmin = Join-Path $scriptPath "dependencies.json" # Re-détermine le chemin
     $vsToolAdmin = $null
     if (Test-Path $depFileAdmin) {
@@ -76,30 +65,30 @@ if ($RunAdminTasks) {
     if ($vsToolAdmin -ne $null -and $vsToolAdmin.install_path) {
         $vsInstallCheckPathAdmin = $ExecutionContext.InvokeCommand.ExpandString($vsToolAdmin.install_path)
         if (-not (Test-Path $vsInstallCheckPathAdmin)) {
-            Write-Host "- Installation des VS Build Tools..." -ForegroundColor Yellow
+            Write-Host "- Installing VS Build Tools..." -ForegroundColor Yellow
             $vsInstallerAdmin = Join-Path $env:TEMP "vs_buildtools_admin.exe"
             try {
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
                 Invoke-WebRequest -Uri $vsToolAdmin.url -OutFile $vsInstallerAdmin -UseBasicParsing -ErrorAction Stop
-                Write-Host "- Lancement de l'installeur VS Build Tools (peut prendre du temps)..."
+                Write-Host "- Launching the VS Build Tools installer (may take some time)..."
                 Start-Process -FilePath $vsInstallerAdmin -ArgumentList $vsToolAdmin.arguments -Wait -ErrorAction Stop
                 Remove-Item $vsInstallerAdmin -ErrorAction SilentlyContinue
-                Write-Host "- VS Build Tools installés." -ForegroundColor Green
-            } catch { Write-Host "- ERREUR: Échec du téléchargement/installation des VS Build Tools. $_" -ForegroundColor Red }
-        } else { Write-Host "- VS Build Tools déjà installés." -ForegroundColor Green }
-    } else { Write-Host "- ERREUR: Impossible de trouver les informations VS Build Tools dans '$depFileAdmin'." -ForegroundColor Red }
+                Write-Host "- VS Build Tools installed." -ForegroundColor Green
+            } catch { Write-Host "- ERROR: Failed to download/install VS Build Tools. $_" -ForegroundColor Red }
+        } else { Write-Host "- VS Build Tools already installed." -ForegroundColor Green }
+    } else { Write-Host "- ERROR: Unable to find VS Build Tools information in '$depFileAdmin'." -ForegroundColor Red }
 
     # Tâche 3 : Git Config System
-    Write-Host "[Admin Task 3/3] Configuration de Git (système) pour les chemins longs..." -ForegroundColor Yellow
+    Write-Host "[Admin Task 3/3] Configuring Git (system) for long paths..." -ForegroundColor Yellow
     $gitExeAdmin = Get-Command git -ErrorAction SilentlyContinue
     if ($gitExeAdmin) {
         try {
             Start-Process $gitExeAdmin.Source -ArgumentList "config --system core.longpaths true" -Wait -NoNewWindow -ErrorAction Stop
-            Write-Host "- Configuration Git --system terminée." -ForegroundColor Green
-        } catch { Write-Host "- ERREUR lors de la configuration Git --system: $($_.Exception.Message)" -ForegroundColor Red }
-    } else { Write-Host "- AVERTISSEMENT: 'git' introuvable dans le PATH. Impossible de configurer --system core.longpaths." -ForegroundColor Yellow }
+            Write-Host "- Git --system configuration complete." -ForegroundColor Green
+        } catch { Write-Host "- ERROR during Git configuration --system: $($_.Exception.Message)" -ForegroundColor Red }
+    } else { Write-Host "- WARNING: 'git' not found in the PATH. Unable to configure --system core.longpaths." -ForegroundColor Yellow }
 
-    Write-Host "`n=== Tâches admin terminées. Fermeture de cette fenêtre. ===" -ForegroundColor Green
+    Write-Host "`n=== Administrative tasks completed. Closing this window. ===" -ForegroundColor Green
     Start-Sleep -Seconds 3 # Laisse le temps de lire
     exit 0 # <<<=== QUITTER LE SCRIPT ADMIN ICI
 
@@ -108,18 +97,18 @@ if ($RunAdminTasks) {
 
     # Vérifie si l'élévation est nécessaire
     $needsElevation = $false
-    Write-Log "Vérification des prérequis nécessitant potentiellement les droits admin..." -Level 1
+    Write-Log "Checking for prerequisites that may require admin rights..." -Level 1
     # Chemins longs
     if ((Get-ItemPropertyValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -ErrorAction SilentlyContinue) -ne 1) {
-        Write-Log "Le support des chemins longs doit être activé (Admin requis)." -Level 2 -Color Yellow; $needsElevation = $true
-    } else { Write-Log "Support chemins longs OK." -Level 2 -Color Green }
+        Write-Log "Long path support must be enabled (Admin required)." -Level 2 -Color Yellow; $needsElevation = $true
+    } else { Write-Log "Long path support OK." -Level 2 -Color Green }
     # VS Build Tools
     if ($dependencies -ne $null -and $dependencies.tools -ne $null -and $dependencies.tools.vs_build_tools -ne $null -and $dependencies.tools.vs_build_tools.install_path) {
         $vsInstallCheckPath = $ExecutionContext.InvokeCommand.ExpandString($dependencies.tools.vs_build_tools.install_path)
         if (-not (Test-Path $vsInstallCheckPath)) {
-            Write-Log "Les VS Build Tools doivent être installés (Admin requis)." -Level 2 -Color Yellow; $needsElevation = $true
+            Write-Log "VS Build Tools must be installed (Admin required)." -Level 2 -Color Yellow; $needsElevation = $true
         } else { Write-Log "VS Build Tools OK." -Level 2 -Color Green }
-    } else { Write-Log "AVERTISSEMENT: Impossible de vérifier VS Build Tools (dependencies.json?). L'élévation pourrait être nécessaire." -Level 2 -Color Yellow; $needsElevation = $true }
+    } else { Write-Log "WARNING: Unable to verify VS Build Tools. Elevation may be required." -Level 2 -Color Yellow; $needsElevation = $true }
     # Git Config System
     $gitExeUser = Get-Command git -ErrorAction SilentlyContinue
     $gitLongPathsSystemEnabled = $false
@@ -128,31 +117,31 @@ if ($RunAdminTasks) {
         if ($LASTEXITCODE -eq 0 -and $gitConfigOutput -match 'true') { $gitLongPathsSystemEnabled = $true }
     }
     if (-not $gitLongPathsSystemEnabled) {
-         Write-Log "La configuration Git (--system core.longpaths) doit être activée (Admin requis)." -Level 2 -Color Yellow; $needsElevation = $true
+         Write-Log "The Git configuration (--system core.longpaths) must be enabled (Admin required)." -Level 2 -Color Yellow; $needsElevation = $true
     } else { Write-Log "Config Git system OK." -Level 2 -Color Green }
 
     # Si l'élévation est nécessaire ET qu'on n'est pas déjà admin
     if ($needsElevation -and -not (Test-IsAdmin)) {
-        Write-Host "`nDes privilèges administrateur sont requis pour la configuration initiale." -ForegroundColor Yellow
-        Write-Host "Relancement d'une partie du script avec élévation..." -ForegroundColor Yellow
-        Write-Host "Veuillez accepter l'invite UAC." -ForegroundColor Yellow
+        Write-Host "`nAdministrator privileges are required for initial setup." -ForegroundColor Yellow
+        Write-Host "Re-running part of the script with elevation..." -ForegroundColor Yellow
+        Write-Host "Please accept the UAC prompt." -ForegroundColor Yellow
         $psArgs = "-ExecutionPolicy Bypass -NoProfile -File `"$($MyInvocation.MyCommand.Definition)`" -RunAdminTasks -InstallPath `"$InstallPath`""
         try {
             $adminProcess = Start-Process powershell.exe -Verb RunAs -ArgumentList $psArgs -Wait -PassThru -ErrorAction Stop
-            if ($adminProcess.ExitCode -ne 0) { throw "Le processus administrateur a échoué (code $($adminProcess.ExitCode))." }
-            Write-Host "`nConfiguration admin terminée avec succès. Reprise de l'installation..." -ForegroundColor Green; Start-Sleep 2
+            if ($adminProcess.ExitCode -ne 0) { throw "The administrator process failed (code $($adminProcess.ExitCode))." }
+            Write-Host "`nAdmin configuration completed successfully. Resuming installation..." -ForegroundColor Green; Start-Sleep 2
         } catch {
-            Write-Host "ERREUR: Échec de l'élévation ou script admin échoué: $($_.Exception.Message)" -ForegroundColor Red
-            Read-Host "Appuyez sur Entrée pour quitter."; exit 1
+            Write-Host "ERROR: Elevation failed or admin script failed: $($_.Exception.Message)" -ForegroundColor Red
+            Read-Host "Press Enter to exit."; exit 1
         }
     } elseif ($needsElevation -and (Test-IsAdmin)) {
-         Write-Host "`nAVERTISSEMENT: Le script a été lancé en Admin, mais l'élévation était nécessaire." -ForegroundColor Yellow
-         Write-Host "Les tâches admin seront effectuées, mais le reste s'exécutera aussi en Admin." -ForegroundColor Yellow
+         Write-Host "`nWARNING: The script was run as Admin, but elevation was required." -ForegroundColor Yellow
+         Write-Host "Admin tasks will be performed, but the rest will also run as Admin." -ForegroundColor Yellow
          # Exécute les tâches admin directement dans ce processus
          # (Copier/coller simplifié du bloc $RunAdminTasks, mais avec Write-Log)
-         Write-Log "[Admin Tasks within User Script] Exécution des tâches Admin..." -Level 1
+         Write-Log "[Admin Tasks within User Script] Performing Admin tasks..." -Level 1
          $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
-         try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Chemins longs OK." -Level 2 } catch { Write-Log "[Admin] ERREUR Chemins longs" -Level 2 -Color Red}
+         try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERREUR Long paths" -Level 2 -Color Red}
          # ... (Ajouter VS Tools et Git config ici si besoin de les exécuter même si lancé en admin) ...
          # NOTE: C'est un cas limite, idéalement l'utilisateur ne lance pas en admin.
     }
@@ -181,7 +170,7 @@ if ($RunAdminTasks) {
     if (-not (Test-Path $condaPath)) {
         Write-Log "Miniconda not found. Installing..." -Level 1 -Color Yellow
         $minicondaInstaller = Join-Path $env:TEMP "Miniconda3-latest-Windows-x86_64.exe"
-        $minicondaUrl = $dependencies.tools.miniconda.url # Assurez-vous d'avoir ceci dans dependencies.json
+        $minicondaUrl = $dependencies.tools.miniconda.url 
         if (-not $minicondaUrl) { $minicondaUrl = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe" } # Fallback
         Download-File -Uri $minicondaUrl -OutFile $minicondaInstaller 
         Invoke-AndLog $minicondaInstaller "/InstallationType=JustMe /RegisterPython=0 /S /D=`"$condaPath`""
