@@ -194,14 +194,44 @@ if ($RunAdminTasks) {
     Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
 	Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
 	Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2"
-	Write-Log "Installing aria2 via winget (system-wide)..." -Level 1
-    # Vérifie si winget existe
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        # Installe aria2. L'option -e signifie "exact match"
-        Invoke-AndLog "winget" "install -e --id Aria2.Aria2 --accept-source-agreements --accept-package-agreements"
+	Write-Log "Installing aria2 via direct download..." -Level 1
+    $aria2Url = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip"
+    $aria2ZipPath = Join-Path $env:TEMP "aria2.zip"
+    # Crée un dossier dédié pour aria2 à côté de Miniconda
+    $aria2InstallPath = Join-Path $env:LOCALAPPDATA "aria2" 
+    $aria2ExePath = Join-Path $aria2InstallPath "aria2c.exe"
+
+    if (-not (Test-Path $aria2ExePath)) {
+        Write-Log "Downloading aria2..." -Level 2
+        try {
+            Download-File -Uri $aria2Url -OutFile $aria2ZipPath 
+            Write-Log "Extracting aria2..." -Level 2
+            # Crée le dossier d'installation s'il n'existe pas
+            if (-not (Test-Path $aria2InstallPath)) { New-Item -ItemType Directory -Path $aria2InstallPath -Force | Out-Null }
+            # Extrait SEULEMENT aria2c.exe du zip (nécessite PowerShell 5+)
+            Expand-Archive -Path $aria2ZipPath -DestinationPath $aria2InstallPath -Force
+            # Recherche le .exe dans le dossier extrait (le nom peut varier légèrement selon la version du zip)
+            $extractedExe = Get-ChildItem -Path $aria2InstallPath -Filter "aria2c.exe" -Recurse | Select-Object -First 1
+            if ($extractedExe) {
+                 # Déplace l'exe à la racine du dossier aria2 s'il est dans un sous-dossier
+                 if ($extractedExe.DirectoryName -ne $aria2InstallPath) {
+                     Move-Item -Path $extractedExe.FullName -Destination $aria2InstallPath -Force
+                     # Optionnel : Supprimer le reste du dossier extrait s'il existe
+                     Remove-Item -Path $extractedExe.DirectoryName -Recurse -Force -ErrorAction SilentlyContinue
+                 }
+                 Write-Log "aria2c.exe installed successfully to '$aria2InstallPath'." -Level 2 -Color Green
+            } else {
+                 throw "aria2c.exe not found within the extracted archive."
+            }
+        } catch {
+            Write-Log "ERREUR: Failed to download or extract aria2. Error: $($_.Exception.Message)" -Level 1 -Color Red
+            Write-Log "Downloads will be slower (Invoke-WebRequest)." -Level 2
+        } finally {
+             # Nettoie le zip
+             if (Test-Path $aria2ZipPath) { Remove-Item $aria2ZipPath -ErrorAction SilentlyContinue }
+        }
     } else {
-        Write-Log "AVERTISSEMENT: 'winget' n'est pas trouvé. Impossible d'installer aria2 automatiquement." -Level 1 -Color Yellow
-        Write-Log "Les téléchargements seront plus lents (Invoke-WebRequest)." -Level 2
+         Write-Log "aria2c.exe already found at '$aria2InstallPath'." -Level 1 -Color Green
     }
     $envExistsResult = Invoke-AndLog "$condaExe" "env list" -IgnoreErrors
     $envExists = $envExistsResult -match '\bUmeAiRT\b' # Recherche plus précise

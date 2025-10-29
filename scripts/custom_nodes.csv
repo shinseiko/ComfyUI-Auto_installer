@@ -11,7 +11,6 @@ ComfyUI-VideoHelperSuite,https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite
 ComfyUI-Frame-Interpolation,https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git,,requirements-no-cupy.txt
 rgthree-comfy,https://github.com/rgthree/rgthree-comfy.git,,requirements.txt
 ComfyUI-Easy-Use,https://github.com/yolain/ComfyUI-Easy-Use.git,,requirements.txt
-ComfyUI_PuLID_Flux_ll,https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git,,requirements.txt
 ComfyUI-HunyuanVideoMultiLora,https://github.com/facok/ComfyUI-HunyuanVideoMultiLora.git,,
 was-node-suite-comfyui,https://github.com/WASasquatch/was-node-suite-comfyui.git,,requirements.txt
 ComfyUI-Florence2,https://github.com/kijai/ComfyUI-Florence2.git,,requirements.txt
