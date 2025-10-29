@@ -5,7 +5,6 @@ setlocal
 :: Section 2: Bootstrap downloader for all scripts
 :: ============================================================================
 title UmeAiRT ComfyUI Installer
-echo [OK] Administrator privileges confirmed.
 echo.
 
 :: Set a "clean" install path variable by removing any trailing backslash.
