@@ -224,24 +224,28 @@ if ($RunAdminTasks) {
     }
     # 1. Tente de supprimer l'ancien environnement 'UmeAiRT' (ignore l'erreur s'il n'existe pas)
     Write-Log "Attempting to remove old 'UmeAiRT' environment for a clean install..." -Level 1
-    # Use -IgnoreErrors so the script doesn't stop if the env doesn't exist
     Invoke-AndLog "$condaExe" "env remove -n UmeAiRT -y" -IgnoreErrors
     
     # 2. Crée le nouvel environnement
     Write-Log "Creating new Conda environment 'UmeAiRT' from '$scriptPath\environment.yml'..." -Level 1
-    # This will fail properly if the .yml is broken
     Invoke-AndLog "$condaExe" "env create -f `"$scriptPath\environment.yml`""
 
     # 3. Vérifie manuellement que la création a fonctionné
     Write-Log "Verifying environment creation..." -Level 2
-    # We run the check *outside* of Invoke-AndLog to capture its output for logic
-    $envListOutput = & "$condaExe" "env list" 2>&1
     
-    # Check if the command failed OR if UmeAiRT is not in the output list
+    # Exécute la vérification et pipe la sortie (stdout ET stderr) vers Out-String
+    # $envListOutput est maintenant UNE SEULE chaîne de texte
+    $envListOutput = & "$condaExe" "env list" 2>&1 | Out-String
+    
+    # Vérifie si la commande a échoué OU si 'UmeAiRT' n'est pas dans la chaîne de texte
     if ($LASTEXITCODE -ne 0 -or -not ($envListOutput -match '\bUmeAiRT\b')) {
         Write-Log "FATAL ERROR: Conda environment 'UmeAiRT' was NOT created successfully. Check logs." -Color Red
-        # Add the verification output to the log file manually
+        
+        # Ajoute la sortie de la vérification au log pour le débogage
+        Write-Log "--- conda env list output (for debugging) ---" -Level 3
         Add-Content -Path $logFile -Value $envListOutput -ErrorAction SilentlyContinue
+        Write-Log "---------------------------------------------" -Level 3
+
         Read-Host "Press Enter to exit."
         exit 1
     }
