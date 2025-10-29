@@ -2,16 +2,6 @@
 setlocal
 
 :: ============================================================================
-:: Section 1: Checking and requesting administrator privileges
-:: ============================================================================
-net session >nul 2>&1
-if %errorlevel% NEQ 0 (
-    echo [INFO] Requesting administrator privileges...
-    powershell.exe -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
-    exit /b
-)
-
-:: ============================================================================
 :: Section 2: Bootstrap downloader for all scripts
 :: ============================================================================
 title UmeAiRT ComfyUI Installer
