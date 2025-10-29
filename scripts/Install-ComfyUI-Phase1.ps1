@@ -262,7 +262,9 @@ if ($RunAdminTasks) {
     if (-not (Test-Path $condaExe)) { Write-Log "ERREUR FATALE: conda.exe introuvable après installation/vérification." -Color Red; Read-Host "Appuyez sur Entrée."; exit 1 }
 
     Write-Log "Accepting Anaconda Terms of Service..." -Level 1
-    Invoke-AndLog "$condaExe" "config --set anaconda_tos_accepted yes --force"
+    Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
+	Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
+	Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2"
 
     $envExistsResult = Invoke-AndLog "$condaExe" "env list" -IgnoreErrors
     $envExists = $envExistsResult -match '\bUmeAiRT\b' # Recherche plus précise
