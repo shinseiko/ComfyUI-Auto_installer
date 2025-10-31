@@ -33,7 +33,7 @@ Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
 #===========================================================================
 # SECTION 2: MAIN SCRIPT EXECUTION
 #===========================================================================
-$global:totalSteps = 11 # Phase 1 = Setup Admin (si besoin) + Setup Conda Env + Lancement Phase 2
+$global:totalSteps = 8 # Phase 1 = Setup Admin (si besoin) + Setup Conda Env + Lancement Phase 2
 $global:currentStep = 0
 
 if ($RunAdminTasks) {

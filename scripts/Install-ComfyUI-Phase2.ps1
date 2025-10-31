@@ -34,7 +34,7 @@ Write-Log "DEBUG: Loaded tools config: $($dependencies.tools | ConvertTo-Json -D
 #===========================================================================
 # SECTION 2: MAIN SCRIPT EXECUTION
 #===========================================================================
-$global:totalSteps = 11
+$global:totalSteps = 8
 $global:currentStep = 2
 $totalCores = [int]$env:NUMBER_OF_PROCESSORS
 $optimalParallelJobs = [int][Math]::Floor(($totalCores * 3) / 4)
