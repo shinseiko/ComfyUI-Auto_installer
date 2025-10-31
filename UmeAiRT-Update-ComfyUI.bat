@@ -53,9 +53,7 @@ echo [INFO] Lancement du script de mise à jour PowerShell...
 powershell.exe -ExecutionPolicy Bypass -File "%ScriptsFolder%\Update-ComfyUI.ps1" -InstallPath "%InstallPath%"
 :: --- FIN DE LA CORRECTION ---
 
-echo.
-echo [INFO] The update script is complete.
-pause
+
 
 :: ============================================================================
 :: Section 3: Self-Update
@@ -66,4 +64,7 @@ if exist "%InstallPath%\UmeAiRT-Update-ComfyUI.bat.new" (
     (ping 127.0.0.1 -n 2 > nul) && move /Y "%InstallPath%\UmeAiRT-Update-ComfyUI.bat.new" "%InstallPath%\UmeAiRT-Update-ComfyUI.bat"
 )
 
+echo.
+echo [INFO] The update script is complete.
+pause
 endlocal

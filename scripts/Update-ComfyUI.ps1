@@ -93,7 +93,7 @@ $mainReqs = Join-Path $comfyPath "requirements.txt"
 Invoke-AndLog "python" "-m pip install -r `"$mainReqs`""
 
 # Reinstall wheel packages to ensure correct versions from JSON
-Write-Log "Ensuring wheel packages are at the correct version..." -Level 1
+Write-Log "Update wheel packages..." -Level 1
 foreach ($wheel in $dependencies.pip_packages.wheels) {
     $wheelName = $wheel.name
     $wheelUrl = $wheel.url
@@ -105,9 +105,8 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
         # Download the wheel file (utilise la fonction de UmeAiRTUtils.psm1)
         Download-File -Uri $wheelUrl -OutFile $localWheelPath
 
-        # Force reinstall the downloaded wheel
         if (Test-Path $localWheelPath) {
-            Invoke-AndLog "python" "-m pip install --upgrade --force-reinstall `"$localWheelPath`""
+            Invoke-AndLog "python" "-m pip install `"$localWheelPath`""
         } else {
             Write-Log "ERROR: Failed to download $wheelName" -Level 2 -Color Red
         }
