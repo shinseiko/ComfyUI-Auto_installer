@@ -75,9 +75,6 @@ Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.standard -jo
 
 # --- Step 5: Install Custom Nodes ---
 Write-Log "Installing Custom Nodes" -Level 0
-$csvUrl = $dependencies.files.custom_nodes_csv.url
-$csvPath = Join-Path $InstallPath $dependencies.files.custom_nodes_csv.destination
-Download-File -Uri $csvUrl -OutFile $csvPath
 $customNodes = Import-Csv -Path $csvPath
 $customNodesPath = Join-Path $InstallPath "custom_nodes"
 foreach ($node in $customNodes) {
