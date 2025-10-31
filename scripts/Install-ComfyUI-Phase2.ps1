@@ -28,7 +28,7 @@ $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
 if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Force -Path $logPath | Out-Null }
 
 Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
-$global:logFile = Join-Path $InstallPath "logs" "install_log_phase2.txt"
+$global:logFile = Join-Path $logPath "install_log.txt"
 $global:hasGpu = Test-NvidiaGpu
 Write-Log "DEBUG: Loaded tools config: $($dependencies.tools | ConvertTo-Json -Depth 3)" -Level 3
 #===========================================================================
