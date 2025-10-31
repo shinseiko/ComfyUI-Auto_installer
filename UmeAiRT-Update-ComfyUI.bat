@@ -16,8 +16,8 @@ set "BootstrapUrl=https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/scr
 :: (Le reste de la Section 1 reste identique...)
 :: ...
 echo [INFO] Running the bootstrap script to update all required files...
-:: On ajoute -SkipSelf pour dire au script de ne PAS télécharger ce .bat
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -SkipSelf
+:: [CORRECTIF] On envoie -Mode "Update" pour que le bootstrap ne s'écrase pas
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -Mode "Update"
 echo [OK] All scripts are now up-to-date.
 echo.
 
@@ -46,6 +46,14 @@ echo.
 echo [INFO] The update script is complete.
 pause
 
-:: La Section 3 d'auto-mise à jour est supprimée
+:: ============================================================================
+:: Section 3: Self-Update (pour gérer le .bat.new)
+:: ============================================================================
+echo [INFO] Checking for updater self-update...
+if exist "%InstallPath%\UmeAiRT-Update-ComfyUI.bat.new" (
+    echo [INFO] Applying updater self-update...
+    :: 'ping' est une astuce pour attendre 1 sec
+    (ping 127.0.0.1 -n 2 > nul) && move /Y "%InstallPath%\UmeAiRT-Update-ComfyUI.bat.new" "%InstallPath%\UmeAiRT-Update-ComfyUI.bat"
+)
 
 endlocal
