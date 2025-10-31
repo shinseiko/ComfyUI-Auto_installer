@@ -40,9 +40,7 @@ Write-Log "             Starting UmeAiRT ComfyUI Update Process" -Level -2 -Colo
 Write-Log "===============================================================================" -Level -2
 
 # --- 1. Update Git Repositories ---
-# [CORRECTIF] Utilisation de Level 0 pour les étapes
 Write-Log "Updating all Git repositories..." -Level 0 -Color Green
-# [CORRECTIF] Utilisation de Level 1 pour les sous-tâches
 Write-Log "Updating ComfyUI Core..." -Level 1
 Invoke-AndLog "git" "-C `"$comfyPath`" pull"
 Write-Log "Updating UmeAiRT Workflows..." -Level 1
@@ -124,4 +122,3 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
 Write-Log "===============================================================================" -Level -2
 Write-Log "Update process complete!" -Level -2 -Color Yellow
 Write-Log "===============================================================================" -Level -2
-Read-Host "Press Enter to exit."

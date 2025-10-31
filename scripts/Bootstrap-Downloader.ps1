@@ -32,34 +32,46 @@ $filesToDownload = @(
 )
 
 Write-Host "[INFO] Downloading the latest versions of the installation scripts..."
-
-# Set TLS protocol for compatibility
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 foreach ($file in $filesToDownload) {
     $uri = $baseUrl + $file.RepoPath
     $outFile = Join-Path $InstallPath $file.LocalPath
 
-    # Ensure the destination directory exists before downloading
     $outDir = Split-Path -Path $outFile -Parent
     if (-not (Test-Path $outDir)) {
         New-Item -ItemType Directory -Path $outDir -Force | Out-Null
     }
 
-    # ==================== DÉBUT DE LA MODIFICATION ====================
-    # Si on est en mode "Update" ET qu'on s'apprête à écraser le script qui nous a lancé...
+    # Gère le conflit d'auto-écrasement pour le script d'update
     if ($file.LocalPath -eq "UmeAiRT-Update-ComfyUI.bat" -and $Mode -eq "Update") {
-        # ...on télécharge sous un nom temporaire pour éviter le conflit.
         $outFile = Join-Path $InstallPath "UmeAiRT-Update-ComfyUI.bat.new"
-        Write-Host "  - Downloading $($file.RepoPath) (as .new to prevent conflict)..."
-    } else {
-        # ...sinon (mode Install ou autre fichier), on télécharge normalement.
-        Write-Host "  - Downloading $($file.RepoPath)..."
     }
-    # ==================== FIN DE LA MODIFICATION ====================
+
+    # ==================== DÉBUT DE LA CORRECTION ====================
+    
+    # Paramètres pour Invoke-WebRequest
+    $invokeArgs = @{
+        Uri = $uri
+        OutFile = $outFile
+        ErrorAction = 'Stop'
+    }
+
+    # Les fichiers .bat DOIVENT être en ANSI (Default) pour cmd.exe
+    if ($outFile -like "*.bat" -or $outFile -like "*.bat.new") {
+        Write-Host "  - Downloading $($file.RepoPath) (as .bat -> ANSI)..."
+        $invokeArgs.Encoding = 'Default' 
+    } else {
+    # Les autres fichiers (.ps1, .json, .yml) sont OK en UTF-8
+        Write-Host "  - Downloading $($file.RepoPath) (as $($outFile.Split('.')[-1]) -> UTF8)..."
+        $invokeArgs.Encoding = 'utf8' # Force UTF-8 (sans BOM)
+    }
     
     try {
-        Invoke-WebRequest -Uri $uri -OutFile $outFile -ErrorAction Stop
+        # Exécute le téléchargement avec les bons paramètres d'encodage
+        Invoke-WebRequest @invokeArgs
+    
+    # ==================== FIN DE LA CORRECTION ====================
     } catch {
         Write-Host "[ERROR] Failed to download '$($file.RepoPath)'. Please check your internet connection and the repository URL." -ForegroundColor Red
         Read-Host "Press Enter to exit."
