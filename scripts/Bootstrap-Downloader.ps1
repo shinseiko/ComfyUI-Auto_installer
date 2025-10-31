@@ -1,5 +1,6 @@
 param(
-    [string]$InstallPath
+    [string]$InstallPath,
+    [string]$Mode = "Install" # Mode par défaut si non spécifié (pour l'installeur)
 )
 
 # Set the base URL for the GitHub repository's raw content
@@ -45,12 +46,22 @@ foreach ($file in $filesToDownload) {
         New-Item -ItemType Directory -Path $outDir -Force | Out-Null
     }
 
-    Write-Host "  - Downloading $($file.RepoPath)..."
+    # ==================== DÉBUT DE LA MODIFICATION ====================
+    # Si on est en mode "Update" ET qu'on s'apprête à écraser le script qui nous a lancé...
+    if ($file.LocalPath -eq "UmeAiRT-Update-ComfyUI.bat" -and $Mode -eq "Update") {
+        # ...on télécharge sous un nom temporaire pour éviter le conflit.
+        $outFile = Join-Path $InstallPath "UmeAiRT-Update-ComfyUI.bat.new"
+        Write-Host "  - Downloading $($file.RepoPath) (as .new to prevent conflict)..."
+    } else {
+        # ...sinon (mode Install ou autre fichier), on télécharge normalement.
+        Write-Host "  - Downloading $($file.RepoPath)..."
+    }
+    # ==================== FIN DE LA MODIFICATION ====================
+    
     try {
         Invoke-WebRequest -Uri $uri -OutFile $outFile -ErrorAction Stop
     } catch {
         Write-Host "[ERROR] Failed to download '$($file.RepoPath)'. Please check your internet connection and the repository URL." -ForegroundColor Red
-        # Pause to allow user to see the error, then exit.
         Read-Host "Press Enter to exit."
         exit 1
     }

@@ -27,7 +27,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointMan
 
 :: Run the bootstrap script to download all other files
 echo [INFO] Running the bootstrap script to update all required files...
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -Mode "Update"
 echo [OK] All scripts are now up-to-date.
 echo.
 
