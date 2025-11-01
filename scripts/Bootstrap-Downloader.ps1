@@ -19,7 +19,7 @@ $filesToDownload = @(
     @{ RepoPath = "scripts/Download-HIDREAM-Models.ps1"; LocalPath = "scripts/Download-HIDREAM-Models.ps1" },
     @{ RepoPath = "scripts/Download-LTXV-Models.ps1";    LocalPath = "scripts/Download-LTXV-Models.ps1" },
     @{ RepoPath = "scripts/Download-QWEN-Models.ps1";    LocalPath = "scripts/Download-QWEN-Models.ps1" },
-    @{ RepoPath = "scripts/UmeAiRTUtils.psm1";           LocalPath = "scripts/UmeAiRTUtils.ps1" },
+    @{ RepoPath = "scripts/UmeAiRTUtils.psm1";           LocalPath = "scripts/UmeAiRTUtils.ps1m" },
     # Configuration Files
     @{ RepoPath = "scripts/environment.yml";             LocalPath = "scripts/environment.yml" },
     @{ RepoPath = "scripts/dependencies.json";           LocalPath = "scripts/dependencies.json" },
