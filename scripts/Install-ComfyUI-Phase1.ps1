@@ -115,7 +115,7 @@ if ($RunAdminTasks) {
          try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERREUR Long paths" -Level 2 -Color Red}
     }
 	
-    Clear-Host
+#    Clear-Host
     Write-Host "-------------------------------------------------------------------------------"
     $asciiBanner = @'
                           __  __               ___    _ ____  ______
