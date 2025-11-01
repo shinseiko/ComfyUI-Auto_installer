@@ -71,6 +71,7 @@ Write-Log "---------------------------------------------------------------------
 # --- Ask all questions first ---
 $fluxChoice = Ask-Question -Prompt "Do you want to download FLUX base models?" -Choices @("A) fp16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
 $ggufChoice = Ask-Question -Prompt "Do you want to download FLUX GGUF models?" -Choices @("A) Q8 (18GB VRAM)","B) Q6 (14GB VRAM)", "C) Q5 (12GB VRAM)", "D) Q4 (10GB VRAM)", "E) Q3 (8GB VRAM)", "F) Q2 (6GB VRAM)", "G) All", "H) No") -ValidAnswers @("A", "B", "C", "D", "E", "F", "G", "H")
+$nunchakuChoice = Ask-Question -Prompt "Do you want to download FLUX NUNCHAKU models?" -Choices @("A) Base", "B) Fill", "C) KONTEXT", "D) Krea", "E) All", "F) No") -ValidAnswers @("A", "B", "C", "D", "E", "F")
 $schnellChoice = Ask-Question -Prompt "Do you want to download the FLUX SCHNELL model?" -Choices @("A) Yes", "B) No") -ValidAnswers @("A", "B")
 $controlnetChoice = Ask-Question -Prompt "Do you want to download FLUX ControlNet models?" -Choices @("A) fp16", "B) fp8", "C) Q8", "D) Q5", "E) Q4", "F) All", "G) No") -ValidAnswers @("A", "B", "C", "D", "E", "F", "G")
 $fillChoice = Ask-Question -Prompt "Do you want to download FLUX Fill models?" -Choices @("A) fp16", "B) fp8", "C) Q8", "D) Q6", "E) Q5", "F) Q4", "G) Q3", "H) All", "I) No") -ValidAnswers @("A", "B", "C", "D", "E", "F", "G", "H", "I")
@@ -102,7 +103,7 @@ foreach ($dir in $requiredDirs) {
 }
 
 # Check if any downloads are needed before downloading common files.
-$doDownload = ($fluxChoice -ne 'D' -or $ggufChoice -ne 'H' -or $schnellChoice -eq 'A' -or $controlnetChoice -ne 'G' -or $pulidChoice -eq 'A' -or $loraChoice -eq 'A')
+$doDownload = ($fluxChoice -ne 'D' -or $ggufChoice -ne 'H' -or $ggufChoice -ne 'F' -or $schnellChoice -eq 'A' -or $controlnetChoice -ne 'G' -or $pulidChoice -eq 'A' -or $loraChoice -eq 'A')
 
 if ($doDownload) {
     Write-Log "Downloading common support models (VAE, CLIP)..."
@@ -144,6 +145,14 @@ if ($ggufChoice -in 'E', 'G') {
 if ($ggufChoice -in 'F', 'G') {
     Download-File -Uri "$baseUrl/unet/FLUX/flux1-dev-Q2_K.gguf" -OutFile (Join-Path $unetFluxDir "flux1-dev-Q2_K.gguf")
 }
+
+# NUNCHAKU Model
+if ($nunchakuChoice -in 'A','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-dev.safetensors") }
+if ($nunchakuChoice -in 'B','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-fill-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-fill-dev.safetensors") }
+if ($nunchakuChoice -in 'B','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-kontext-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-kontext-dev.safetensors") }
+if ($nunchakuChoice -in 'B','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-krea-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-krea-dev.safetensors") }
+
+if ($nunchakuChoice -ne 'F') { Download-File -Uri "$baseUrl/clip/umt5_xxl_fp8_e4m3fn_scaled.safetensors" -OutFile (Join-Path $clipDir "umt5_xxl_fp8_e4m3fn_scaled.safetensors") }
 
 # Schnell Model
 if ($schnellChoice -eq 'A') {
