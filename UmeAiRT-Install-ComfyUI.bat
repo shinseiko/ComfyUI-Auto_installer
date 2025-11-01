@@ -2,15 +2,47 @@
 setlocal
 
 :: ============================================================================
-:: Section 2: Bootstrap downloader for all scripts
+:: Section 1: Set Installation Path (Modified)
 :: ============================================================================
 title UmeAiRT ComfyUI Installer
 echo.
+cls
+echo ============================================================================
+echo           Welcome to the UmeAiRT ComfyUI Installer
+echo ============================================================================
+echo.
 
-:: Set a "clean" install path variable by removing any trailing backslash.
-:: This prevents potential issues with path concatenation later in the script.
-set "InstallPath=%~dp0"
+:: 1. Define the default path (the current directory)
+set "DefaultPath=%~dp0"
+if "%DefaultPath:~-1%"=="\" set "DefaultPath=%DefaultPath:~0,-1%"
+
+echo Where would you like to install ComfyUI?
+echo.
+echo **Default path:** %DefaultPath%
+echo.
+echo -> Press ENTER to use the default path.
+echo -> Or, enter a full path (e.g., D:\ComfyUI) and press ENTER.
+echo.
+
+:: 2. Prompt the user
+set /p "InstallPath=Enter installation path: "
+
+:: 3. If user entered nothing, use the default
+if "%InstallPath%"=="" (
+    set "InstallPath=%DefaultPath%"
+)
+
+:: 4. Clean up the final path (in case the user added a trailing \)
 if "%InstallPath:~-1%"=="\" set "InstallPath=%InstallPath:~0,-1%"
+
+echo.
+echo [INFO] Installing to: %InstallPath%
+echo Press any key to begin...
+pause > nul
+
+:: ============================================================================
+:: Section 2: Bootstrap downloader for all scripts (Original logic)
+:: ============================================================================
 
 set "ScriptsFolder=%InstallPath%\scripts"
 set "BootstrapScript=%ScriptsFolder%\Bootstrap-Downloader.ps1"
@@ -34,7 +66,7 @@ echo [OK] Bootstrap download complete.
 echo.
 
 :: ============================================================================
-:: Section 3: Running the main installation script
+:: Section 3: Running the main installation script (Original logic)
 :: ============================================================================
 echo [INFO] Launching the main installation script...
 echo.
