@@ -27,7 +27,7 @@ if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json n
 $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
 if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Force -Path $logPath | Out-Null }
 
-Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
+Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
 $global:logFile = Join-Path $logPath "install_log.txt"
 $global:hasGpu = Test-NvidiaGpu
 Write-Log "DEBUG: Loaded tools config: $($dependencies.tools | ConvertTo-Json -Depth 3)" -Level 3

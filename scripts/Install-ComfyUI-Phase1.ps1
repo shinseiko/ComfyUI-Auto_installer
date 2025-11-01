@@ -28,7 +28,7 @@ function Test-IsAdmin {
     } catch { return $false }
 }
 
-Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
+Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
 
 #===========================================================================
 # SECTION 2: MAIN SCRIPT EXECUTION
