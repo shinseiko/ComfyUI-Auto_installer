@@ -4,7 +4,7 @@
 #===========================================================================
 
 param(
-    [string]$InstallPath = (Split-Path -Path $PSScriptRoot -Parent),
+    [string]$InstallPath,
     [switch]$RunAdminTasks # Flag pour le mode élevé
 )
 $comfyPath = Join-Path $InstallPath "ComfyUI"
