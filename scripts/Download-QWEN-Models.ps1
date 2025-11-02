@@ -49,6 +49,8 @@ Write-Log "---------------------------------------------------------------------
 # --- Ask all questions ---
 $baseChoice = Ask-Question "Do you want to download QWEN base models? " @("A) bf16", "B) fp8", "C) All", "D) No") @("A", "B", "C", "D")
 $ggufChoice = Ask-Question "Do you want to download QWEN GGUF models?" @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
+$editChoice = Ask-Question "Do you want to download QWEN EDIT models? " @("A) bf16", "B) fp8", "C) All", "D) No") @("A", "B", "C", "D")
+$editggufChoice = Ask-Question "Do you want to download QWEN EDIT GGUF models?" @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
 $lightChoice = Ask-Question "Do you want to download QWEN Lightning LoRA? " @("A) 8 Steps", "B) 4 Steps", "C) All", "D) No") @("A", "B", "C", "D")
 
 # --- Download files based on answers ---
@@ -96,13 +98,43 @@ if ($ggufChoice -ne 'E') {
     }
 }
 
+if ($editChoice -ne 'D') {
+    Write-Log "Downloading QWEN base model..."
+    if ($editChoice -in 'A', 'C') {
+        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_bf16.safetensors")
+        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
+    }
+    if ($editChoice -in 'B', 'C') {
+        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_fp8_e4m3fn.safetensors")
+        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
+    }
+}
+
+if ($editggufChoice -ne 'E') {
+    Write-Log "Downloading QWEN GGUF models..."
+    if ($editggufChoice -in 'A', 'D') {
+        Download-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q8_0.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q8_0.gguf")
+        Download-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+    }
+    if ($editggufChoice -in 'B', 'D') {
+        Download-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q5_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q5_K_S.gguf")
+        Download-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+    }
+    if ($editggufChoice -in 'C', 'D') {
+        Download-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q4_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q4_K_S.gguf")
+        Download-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+    }
+}
+
 if ($lightChoice -ne 'D') {
     Write-Log "Downloading QWEN Lightning LoRA..."
     if ($lightChoice -in 'A', 'C') {
         Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Lightning-8steps-V2.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Lightning-8steps-V2.0.safetensors")
+        Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors")
     }
     if ($lightChoice -in 'B', 'C') {
         Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Lightning-4steps-V2.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Lightning-4steps-V2.0.safetensors")
+        Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors")
     }
 }
 
