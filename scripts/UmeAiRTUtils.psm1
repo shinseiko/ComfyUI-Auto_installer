@@ -72,6 +72,11 @@ function Invoke-AndLog {
 function Download-File {
     param([string]$Uri, [string]$OutFile)
     
+	if (Test-Path $OutFile) {
+        $FileName = Split-Path -Path $OutFile -Leaf
+        Write-Log "File '$FileName' already exists. Skipping download." -Level 2 -Color Green
+        return
+    }
     Write-Log "Downloading `"$($Uri.Split('/')[-1])`"" -Level 2 -Color DarkGray
     
     # Chemin attendu pour aria2c.exe (installé par Phase 1)
