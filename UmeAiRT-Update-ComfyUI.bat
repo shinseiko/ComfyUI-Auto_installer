@@ -9,23 +9,30 @@ echo.
 set "InstallPath=%~dp0"
 if "%InstallPath:~-1%"=="\" set "InstallPath=%InstallPath:~0,-1%"
 
-set "ScriptsFolder=%InstallPath%\scripts"
-set "BootstrapScript=%ScriptsFolder%\Bootstrap-Downloader.ps1"
+set "ScriptsFolder=%InstallPath%\scripts" 
+set "BootstrapScript=%ScriptsFolder%\Bootstrap-Downloader.ps1" 
 :: Use your main branch URL
-set "BootstrapUrl=https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/scripts/Bootstrap-Downloader.ps1"
+set "BootstrapUrl=https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/scripts/Bootstrap-Downloader.ps1" 
 
-:: (The rest of Section 1 remains identical...)
-:: ...
-echo [INFO] Running the bootstrap script to update all required files...
+echo [INFO] Forcing update of the bootstrap script itself...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%BootstrapUrl%' -OutFile '%BootstrapScript%' -UseBasicParsing"
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to download the bootstrap script. Check connection/URL.
+    pause
+    goto :eof
+)
+echo [OK] Bootstrap script is now up-to-date.
+
+echo [INFO] Running the bootstrap script to update all other files... 
 :: [FIX] We send -SkipSelf so the (now updated) bootstrap doesn't download this .bat file
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -SkipSelf
-echo [OK] All scripts are now up-to-date.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -SkipSelf 
+echo [OK] All scripts are now up-to-date. 
 echo.
 
 :: ============================================================================
 :: Section 2: Running the main update script (Conda Activation)
 :: ============================================================================
-echo [INFO] Launching the main update script...
+echo [INFO] Launching the main update script... 
 echo.
 set "CondaPath=%LOCALAPPDATA%\Miniconda3"
 set "CondaActivate=%CondaPath%\Scripts\activate.bat"
