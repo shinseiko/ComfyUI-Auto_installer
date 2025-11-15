@@ -74,7 +74,6 @@ Write-Log "Installing Python Dependencies" -Level 0
 Write-Log "Installing standard packages..." -Level 1
 Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.standard -join ' ')"
 
-# --- Step 5: Install Custom Nodes & Wheels ---
 # --- Step 5: Install Custom Nodes ---
 Write-Log "Installing Custom Nodes" -Level 0
 $csvPath = Join-Path $InstallPath $dependencies.files.custom_nodes_csv.destination
@@ -151,9 +150,9 @@ if ($global:hasGpu) {
     if ($cudaHome) {
         $env:CUDA_HOME = $cudaHome
         $env:PATH = "$(Join-Path $cudaHome 'bin');$env:PATH"
-        Write-Log "CUDA configuré pour compilation: $cudaHome" -Level 2 -Color Green
+        Write-Log "CUDA configured for compilation: $cudaHome" -Level 2 -Color Green
     } else {
-        Write-Log "CUDA Toolkit non trouvé - packages optionnels ignorés" -Level 2 -Color Yellow
+        Write-Log "CUDA Toolkit not found - optional packages ignored" -Level 2 -Color Yellow
     }
 
     foreach ($repo in $dependencies.pip_packages.git_repos) {
@@ -206,6 +205,8 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
         Write-Log "Failed to download/install $($wheel.name) (continuing...)" -Level 3 -Color Yellow
     }
 }
+Write-Log "CRITICAL: Forcing re-installation of PyTorch CUDA version" -Level 0 -Color Cyan
+Invoke-AndLog "python" "-m pip install --force-reinstall $($dependencies.pip_packages.torch.packages) --index-url $($dependencies.pip_packages.torch.index_url)"
 # --- Step 6: Download Workflows & Settings ---
 Write-Log "Downloading Workflows & Settings..." -Level 0
 $settingsFile = $dependencies.files.comfy_settings

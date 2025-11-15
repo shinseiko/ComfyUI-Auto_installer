@@ -39,6 +39,7 @@
       }
     ],
     "standard": [
+      "facexlib",
       "cython",
       "onnxruntime",
       "onnxruntime-gpu",
