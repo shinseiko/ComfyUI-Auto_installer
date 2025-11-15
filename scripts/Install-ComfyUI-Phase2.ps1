@@ -32,7 +32,73 @@ Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
 $global:logFile = Join-Path $logPath "install_log.txt"
 $global:hasGpu = Test-NvidiaGpu
 Write-Log "DEBUG: Loaded tools config: $($dependencies.tools | ConvertTo-Json -Depth 3)" -Level 3
+function Find-CudaHome {
+    # 1. Verifier CUDA_HOME existant
+    if ($env:CUDA_HOME -and (Test-Path (Join-Path $env:CUDA_HOME "bin\nvcc.exe"))) {
+        return $env:CUDA_HOME
+    }
+    
+    # 2. Chercher dans Program Files
+    $cudaPaths = @(
+        "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*",
+        "C:\Program Files (x86)\NVIDIA GPU Computing Toolkit\CUDA\v*"
+    )
+    
+    foreach ($pattern in $cudaPaths) {
+        $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
+                 Sort-Object Name -Descending | Select-Object -First 1
+        
+        if ($found -and (Test-Path (Join-Path $found.FullName "bin\nvcc.exe"))) {
+            return $found.FullName
+        }
+    }
+    
+    # 3. Conda env (cuda-toolkit installe par conda)
+    if ($env:CONDA_PREFIX) {
+        $condaCuda = Join-Path $env:CONDA_PREFIX "Library"
+        if (Test-Path (Join-Path $condaCuda "bin\nvcc.exe")) {
+            return $condaCuda
+        }
+    }
+    
+    return $null
+}
 
+$detectedCudaHome = Find-CudaHome
+if (-not $detectedCudaHome) {
+    Write-Log "CUDA non trouve. Installation de cuda-toolkit via conda..." -Level 1 -Color Yellow
+    Invoke-AndLog "$condaExe" "install -n UmeAiRT -c conda-forge cuda-toolkit -y"
+    
+    # Reessayer la detection
+    $detectedCudaHome = Find-CudaHome
+}
+
+if ($detectedCudaHome) {
+    $env:CUDA_HOME = $detectedCudaHome
+    Write-Log "CUDA_HOME defini a: $env:CUDA_HOME" -Level 1 -Color Green
+    
+    # CRITIQUE: Ajouter CUDA au PATH pour que pip/python le trouve
+    $cudaBinPath = Join-Path $env:CUDA_HOME "bin"
+    $cudaLibPath = Join-Path $env:CUDA_HOME "lib\x64"
+    
+    # Verifier si deja dans le PATH
+    if ($env:PATH -notlike "*$cudaBinPath*") {
+        $env:PATH = "$cudaBinPath;$cudaLibPath;$env:PATH"
+        Write-Log "CUDA ajoute au PATH de la session" -Level 2 -Color Green
+    }
+    
+    # Verifier que nvcc est accessible
+    try {
+        $nvccVersion = & nvcc --version 2>&1 | Select-String "release" | Select-Object -First 1
+        Write-Log "nvcc accessible: $nvccVersion" -Level 2 -Color Green
+    } catch {
+        Write-Log "AVERTISSEMENT: nvcc non accessible malgre CUDA_HOME defini" -Level 2 -Color Yellow
+    }
+} else {
+    Write-Log "ERREUR: Impossible de configurer CUDA." -Level 1 -Color Red
+    Write-Log "Les packages necessitant CUDA (SageAttention, apex) seront ignores." -Level 2 -Color Yellow
+    $global:skipCudaPackages = $true
+}
 #===========================================================================
 # SECTION 2: MAIN SCRIPT EXECUTION
 #===========================================================================
