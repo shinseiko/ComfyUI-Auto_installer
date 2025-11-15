@@ -74,21 +74,49 @@ Write-Log "Installing standard packages..." -Level 1
 Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.standard -join ' ')"
 
 # --- Step 5: Install Custom Nodes ---
-Write-Log "Installing Custom Nodes" -Level 0
+# --- Step 5: Install Custom Nodes & Wheels [ORDRE CORRIGÉ] ---
+Write-Log "Installing Custom Nodes & Wheels" -Level 0
+
+# [CORRIGÉ] Étape 5.1 : Installer les Wheels en premier
+Write-Log "Installing packages from .whl files..." -Level 1
+foreach ($wheel in $dependencies.pip_packages.wheels) {
+    Write-Log "Installing $($wheel.name)" -Level 2
+    
+    # [CORRIGÉ] Télécharger dans le dossier des scripts pour plus de propreté
+    $wheelPath = Join-Path $scriptPath "$($wheel.name).whl" 
+    
+    Download-File -Uri $wheel.url -OutFile $wheelPath
+    
+    if (Test-Path $wheelPath) {
+        # Force-reinstall pour s'assurer que notre version écrase tout
+        Invoke-AndLog "python" "-m pip install --force-reinstall `"$wheelPath`""
+        Remove-Item $wheelPath -ErrorAction SilentlyContinue
+    } else {
+        Write-Log "ERROR: Failed to download wheel $($wheel.name)" -Level 2 -Color Red
+    }
+}
+
+# [CORRIGÉ] Étape 5.2 : Installer les Custom Nodes
+Write-Log "Installing Custom Nodes from CSV..." -Level 0
 $csvPath = Join-Path $InstallPath $dependencies.files.custom_nodes_csv.destination
 $customNodes = Import-Csv -Path $csvPath
 $customNodesPath = Join-Path $InstallPath "custom_nodes"
+
 foreach ($node in $customNodes) {
     $nodeName = $node.Name
     $repoUrl = $node.RepoUrl
     $nodePath = if ($node.Subfolder) { Join-Path $customNodesPath $node.Subfolder } else { Join-Path $customNodesPath $nodeName }
+    
     if (-not (Test-Path $nodePath)) {
         Write-Log "Installing $nodeName" -Level 1
         Invoke-AndLog "git" "clone $repoUrl `"$nodePath`""
+        
         if ($node.RequirementsFile) {
             $reqPath = Join-Path $nodePath $node.RequirementsFile
             if (Test-Path $reqPath) {
                 Write-Log "Installing requirements for $nodeName" -Level 2
+                # À ce stade, insightface est DÉJÀ installé depuis le wheel.
+                # pip le verra et n'essaiera pas de le compiler.
                 Invoke-AndLog "python" "-m pip install -r `"$reqPath`""
             }
         }
@@ -98,21 +126,18 @@ foreach ($node in $customNodes) {
     }
 }
 
-Write-Log "Installing packages from .whl files..." -Level 1
-foreach ($wheel in $dependencies.pip_packages.wheels) {
-    Write-Log "Installing $($wheel.name)" -Level 2
-    $wheelPath = Join-Path $InstallPath "$($wheel.name).whl"
-    Download-File -Uri $wheel.url -OutFile $wheelPath
-    Invoke-AndLog "python" "-m pip install `"$wheelPath`""
-    Remove-Item $wheelPath -ErrorAction SilentlyContinue
-}
-
+# [CORRIGÉ] Étape 5.3 : Installer les repos Git (xformers, apex)
+# (Cette partie était déjà après les custom nodes, mais elle est maintenant 
+# logiquement la dernière partie de l'étape 5)
 Write-Log "Installing packages from git repositories..." -Level 1
 if ($global:hasGpu) {
     Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
 
     foreach ($repo in $dependencies.pip_packages.git_repos) {
         Write-Log "Installing $($repo.name)..." -Level 2
+        
+        # --- DÉBUT DE LA LOGIQUE POUR CUDA_MINOR_VERSION_MISMATCH_OK ---
+        # (C'est la correction que nous avons discutée pour apex)
         $installUrl = "git+$($repo.url)@$($repo.commit)"
         $pipArgs = "-m pip install"
         if ($repo.install_options) {
@@ -120,7 +145,26 @@ if ($global:hasGpu) {
         }
         $pipArgs += " `"$installUrl`""
 
-        Invoke-AndLog "python" $pipArgs
+        $tempEnvVars = @{}
+        if ($repo.PSObject.Properties.Name -contains 'env_vars') {
+            foreach ($key in $repo.env_vars.PSObject.Properties.Keys) {
+                $value = $repo.env_vars.$key
+                Write-Log "Setting temporary env var for $($repo.name): $key=$value" -Level 3 -Color Cyan
+                $env:$key = $value
+                $tempEnvVars[$key] = $null
+            }
+        }
+        
+        try {
+            Invoke-AndLog "python" $pipArgs
+        }
+        finally {
+            foreach ($key in $tempEnvVars.Keys) {
+                Write-Log "Cleaning up env var: $key" -Level 3
+                Remove-Item "Env:\$key" -ErrorAction SilentlyContinue
+            }
+        }
+        # --- FIN DE LA LOGIQUE POUR CUDA_MINOR_VERSION_MISMATCH_OK ---
     }
 
 } else {
