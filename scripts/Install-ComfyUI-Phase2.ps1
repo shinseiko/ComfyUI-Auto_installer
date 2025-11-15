@@ -73,7 +73,7 @@ Write-Log "Installing Final Python Dependencies" -Level 0
 Write-Log "Installing standard packages..." -Level 1
 Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.standard -join ' ')"
 
-# --- Step 5: Install Custom Nodes & Wheels [FIXED ORDER] ---
+# --- Step 5: Install Custom Nodes & Wheels ---
 Write-Log "Installing Custom Nodes & Wheels" -Level 0
 
 # [FIXED] Step 5.1: Install Wheels first
