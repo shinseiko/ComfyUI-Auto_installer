@@ -95,7 +95,7 @@ $loraDir = Join-Path $modelsPath "loras\FLUX"
 $upscaleDir = Join-Path $modelsPath "upscale_models"
 
 # Create all necessary directories at once.
-$requiredDirs = @($fluxDir, $clipDir, $vaeDir, $unetFluxDir, $controlnetDir, $pulidDir, $styleDir, $loraDir)
+$requiredDirs = @($fluxDir, $clipDir, $vaeDir, $unetFluxDir, $controlnetDir, $pulidDir, $styleDir, $loraDir, $upscaleDir)
 foreach ($dir in $requiredDirs) {
     if (-not (Test-Path $dir)) {
         New-Item -Path $dir -ItemType Directory -Force | Out-Null
@@ -103,7 +103,7 @@ foreach ($dir in $requiredDirs) {
 }
 
 # Check if any downloads are needed before downloading common files.
-$doDownload = ($fluxChoice -ne 'D' -or $ggufChoice -ne 'H' -or $ggufChoice -ne 'F' -or $schnellChoice -eq 'A' -or $controlnetChoice -ne 'G' -or $pulidChoice -eq 'A' -or $loraChoice -eq 'A')
+$doDownload = ($fluxChoice -ne 'D' -or $ggufChoice -ne 'H' -or $nunchakuChoice -ne 'F' -or $schnellChoice -eq 'A' -or $controlnetChoice -ne 'G' -or $fillChoice -ne 'I')
 
 if ($doDownload) {
     Write-Log "Downloading common support models (VAE, CLIP)..."
@@ -149,8 +149,8 @@ if ($ggufChoice -in 'F', 'G') {
 # NUNCHAKU Model
 if ($nunchakuChoice -in 'A','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-dev.safetensors") }
 if ($nunchakuChoice -in 'B','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-fill-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-fill-dev.safetensors") }
-if ($nunchakuChoice -in 'B','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-kontext-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-kontext-dev.safetensors") }
-if ($nunchakuChoice -in 'B','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-krea-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-krea-dev.safetensors") }
+if ($nunchakuChoice -in 'C','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-kontext-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-kontext-dev.safetensors") }
+if ($nunchakuChoice -in 'D','E') { Download-File -Uri "$baseUrl/diffusion_models/FLUX/svdq-int4_r32-flux.1-krea-dev.safetensors" -OutFile (Join-Path $fluxDir "svdq-int4_r32-flux.1-krea-dev.safetensors") }
 
 if ($nunchakuChoice -ne 'F') { Download-File -Uri "$baseUrl/clip/umt5_xxl_fp8_e4m3fn_scaled.safetensors" -OutFile (Join-Path $clipDir "umt5_xxl_fp8_e4m3fn_scaled.safetensors") }
 
@@ -189,8 +189,12 @@ if ($pulidChoice -eq 'A') {
 
 # Upscaler Models
 if ($upscaleChoice -eq 'A') {
-    Download-File -Uri "$baseUrl/upscale_models/RealESRGAN_x4plus.pth" -OutFile (Join-Path $pulidDir "RealESRGAN_x4plus.pth")
-    Download-File -Uri "$baseUrl/upscale_models/RealESRGAN_x4plus_anime_6B.pth" -OutFile (Join-Path $styleDir "RealESRGAN_x4plus_anime_6B.pth")
+    Download-File -Uri "$baseUrl/upscale_models/RealESRGAN_x4plus.pth" -OutFile (Join-Path $upscaleDir "RealESRGAN_x4plus.pth")
+    Download-File -Uri "$baseUrl/upscale_models/RealESRGAN_x4plus_anime_6B.pth" -OutFile (Join-Path $upscaleDir "RealESRGAN_x4plus_anime_6B.pth")
+    Download-File -Uri "$baseUrl/upscale_models/4x-AnimeSharp.pth" -OutFile (Join-Path $upscaleDir "4x-AnimeSharp.pth")
+    Download-File -Uri "$baseUrl/upscale_models/4x-UltraSharp.pth" -OutFile (Join-Path $upscaleDir "4x-UltraSharp.pth")
+    Download-File -Uri "$baseUrl/upscale_models/4x_NMKD-Siax_200k.pth" -OutFile (Join-Path $upscaleDir "4x_NMKD-Siax_200k.pth")
+    Download-File -Uri "$baseUrl/upscale_models/RealESRGAN_x4.pth" -OutFile (Join-Path $upscaleDir "RealESRGAN_x4.pth")
 }
 
 # LoRA Models

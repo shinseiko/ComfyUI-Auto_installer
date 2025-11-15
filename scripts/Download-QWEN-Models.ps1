@@ -63,22 +63,22 @@ $clipDir = Join-Path $modelsPath "clip"
 $vaeDir = Join-Path $modelsPath "vae"
 New-Item -Path $QWENDiffDir, $QWENUnetDir, $QWENLoRADir, $clipDir, $vaeDir -ItemType Directory -Force | Out-Null
 
-$doDownload = ($fp8Choice -eq 'A' -or $ggufChoice -ne 'E')
+$doDownload = ($baseChoice -ne 'D' -or $ggufChoice -ne 'E' -or $editChoice -ne 'D' -or $editggufChoice -ne 'E')
 
 if ($doDownload) {
     Write-Log "Downloading QWEN common support files (VAE, CLIPs)..."
-    Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors" -OutFile (Join-Path $vaeDir "qwen_image_vae.safetensors")
+    Download-File -Uri "$baseUrl/vae/qwen_image_vae.safetensors" -OutFile (Join-Path $vaeDir "qwen_image_vae.safetensors")
 }
 
 if ($baseChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($baseChoice -in 'A', 'C') {
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_bf16.safetensors")
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
+        Download-File -Uri "$baseUrl/diffusion_models/qwen_image_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_bf16.safetensors")
+        Download-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
     }
     if ($baseChoice -in 'B', 'C') {
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_fp8_e4m3fn.safetensors")
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
+        Download-File -Uri "$baseUrl/diffusion_models/qwen_image_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_fp8_e4m3fn.safetensors")
+        Download-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
     }
 }
 
@@ -101,12 +101,12 @@ if ($ggufChoice -ne 'E') {
 if ($editChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($editChoice -in 'A', 'C') {
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_bf16.safetensors")
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
+        Download-File -Uri "$baseUrl/diffusion_models/qwen_image_edit_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_bf16.safetensors")
+        Download-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
     }
     if ($editChoice -in 'B', 'C') {
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_fp8_e4m3fn.safetensors")
-        Download-File -Uri "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
+        Download-File -Uri "$baseUrl/diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_fp8_e4m3fn.safetensors")
+        Download-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
     }
 }
 
@@ -129,12 +129,12 @@ if ($editggufChoice -ne 'E') {
 if ($lightChoice -ne 'D') {
     Write-Log "Downloading QWEN Lightning LoRA..."
     if ($lightChoice -in 'A', 'C') {
-        Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Lightning-8steps-V2.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Lightning-8steps-V2.0.safetensors")
-        Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors")
+        Download-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Lightning-8steps-V2.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Lightning-8steps-V2.0.safetensors")
+        Download-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors")
     }
     if ($lightChoice -in 'B', 'C') {
-        Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Lightning-4steps-V2.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Lightning-4steps-V2.0.safetensors")
-        Download-File -Uri "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models/loras/QWEN/Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors")
+        Download-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Lightning-4steps-V2.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Lightning-4steps-V2.0.safetensors")
+        Download-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors" -OutFile (Join-Path $QWENLoRADir "Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors")
     }
 }
 

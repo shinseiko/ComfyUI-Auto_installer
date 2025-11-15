@@ -56,7 +56,7 @@ $doDownload = ($fp8Choice -eq 'A' -or $ggufChoice -ne 'E')
 
 if ($doDownload) {
     Write-Log "Downloading HiDream common support files (VAE, CLIPs)..."
-    Download-File -Uri "$baseUrl/vae/ae.safetensors?download=true" -OutFile (Join-Path $vaeDir "ae.safetensors")
+    Download-File -Uri "$baseUrl/vae/ae.safetensors" -OutFile (Join-Path $vaeDir "ae.safetensors")
     Download-File -Uri "$baseUrl/clip/clip_g_hidream.safetensors" -OutFile (Join-Path $clipDir "clip_g_hidream.safetensors")
     Download-File -Uri "$baseUrl/clip/clip_l_hidream.safetensors" -OutFile (Join-Path $clipDir "clip_l_hidream.safetensors")
     Download-File -Uri "$baseUrl/clip/t5xxl_fp8_e4m3fn_scaled.safetensors" -OutFile (Join-Path $clipDir "t5xxl_fp8_e4m3fn_scaled.safetensors")

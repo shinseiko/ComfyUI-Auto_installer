@@ -135,7 +135,7 @@ if ($controlChoice -ne 'D') {
         Download-File -Uri "$baseUrl/diffusion_models/WAN/wan2.1-fun-14B-control.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-fun-14B-control.safetensors")
     }
     if ($controlChoice -in 'B', 'C') {
-        Download-File -Uri "https://huggingface.co/TFMC/Wan2.1-Fun-V1.1-14B-InP-FP8/resolve/main/Wan2.1-Fun-V1_1-InP-14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "Wan2.1-Fun-V1_1-InP-14B_fp8_e4m3fn.safetensors")
+        Download-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-Fun-V1_1-InP-14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "Wan2.1-Fun-V1_1-InP-14B_fp8_e4m3fn.safetensors")
     }
 }
 # ControlNet GGUF
@@ -161,7 +161,7 @@ if ($vaceChoice -ne 'D') {
         Download-File -Uri "$baseUrl/diffusion_models/WAN/wan2.1_vace_14B_fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_vace_14B_fp16.safetensors")
     }
     if ($vaceChoice -in 'B', 'C') {
-        Download-File -Uri "https://huggingface.co/Kamikaze-88/Wan2.1-VACE-14B-fp8/resolve/main/wan2.1_vace_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_vace_14B_fp8_e4m3fn.safetensors")
+        Download-File -Uri "$baseUrl/diffusion_models/WAN/wan2.1_vace_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_vace_14B_fp8_e4m3fn.safetensors")
     }
 }
 # VACE GGUF

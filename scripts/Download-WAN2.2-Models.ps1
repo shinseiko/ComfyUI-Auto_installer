@@ -51,7 +51,7 @@ Write-Log "Starting WAN model downloads..." -Color Cyan
 $baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
 $wanDiffDir = Join-Path $modelsPath "diffusion_models\WAN2.2"; $wanUnetDir = Join-Path $modelsPath "unet\WAN2.2"; $clipDir = Join-Path $modelsPath "clip"; $vaeDir  = Join-Path $modelsPath "vae" ; $visionDir  = Join-Path $modelsPath "clip_vision" ; $loraDir  = Join-Path $modelsPath "loras"
 New-Item -Path $wanDiffDir, $wanUnetDir, $clipDir, $vaeDir -ItemType Directory -Force | Out-Null
-$doDownload = ($T2VChoice -ne 'G' -or $I2VChoice -ne 'G')
+$doDownload = ($T2VChoice -ne 'G' -or $I2VChoice -ne 'G' -or $funcontrolChoice -ne 'G' -or $funinpaintChoice -ne 'G' -or $funcameraChoice -ne 'G')
 
 if($doDownload) {
     Download-File -Uri "$baseUrl/vae/wan_2.1_vae.safetensors" -OutFile (Join-Path $vaeDir "wan_2.1_vae.safetensors")
@@ -84,25 +84,25 @@ if ($T2VChoice -ne 'G') {
 }
 
 # image-to-video Models
-if ($T2VChoice -ne 'G') {
+if ($I2VChoice -ne 'G') {
     Write-Log "Downloading image-to-video Models..."
-    if ($T2VChoice -in 'A', 'F') {
+    if ($I2VChoice -in 'A', 'F') {
         Download-File -Uri "$baseUrl/diffusion_models/WAN/wan2.2_i2v_high_noise_14B_fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_i2v_high_noise_14B_fp16.safetensors")
         Download-File -Uri "$baseUrl/diffusion_models/WAN/wan2.2_i2v_low_noise_14B_fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_i2v_low_noise_14B_fp16.safetensors")
     }
-    if ($T2VChoice -in 'B', 'F') {
+    if ($I2VChoice -in 'B', 'F') {
         Download-File -Uri "$baseUrl/diffusion_models/WAN/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors")
         Download-File -Uri "$baseUrl/diffusion_models/WAN/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors")
     }
-    if ($T2VChoice -in 'C', 'F') {
+    if ($I2VChoice -in 'C', 'F') {
         Download-File -Uri "$baseUrl/unet/WAN/wan2.2_i2v_high_noise_14B_Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-i2V-A14B-HighNoise-Q8_0.gguf")
         Download-File -Uri "$baseUrl/unet/WAN/wan2.2_i2v_low_noise_14B_Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-i2V-A14B-LowNoise-Q8_0.gguf")
     }
-    if ($T2VChoice -in 'D', 'F') {
+    if ($I2VChoice -in 'D', 'F') {
         Download-File -Uri "$baseUrl/unet/WAN/wan2.2_i2v_high_noise_14B_Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-i2V-A14B-HighNoise-Q5_K_S.gguf")
         Download-File -Uri "$baseUrl/unet/WAN/wan2.2_i2v_low_noise_14B_Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-i2V-A14B-LowNoise-Q5_K_S.gguf")
     }
-    if ($T2VChoice -in 'E', 'F') {
+    if ($I2VChoice -in 'E', 'F') {
         Download-File -Uri "$baseUrl/unet/WAN/wan2.2_i2v_high_noise_14B_Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-i2V-A14B-HighNoise-Q3_K_S.gguf")
         Download-File -Uri "$baseUrl/unet/WAN/wan2.2_i2v_low_noise_14B_Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-i2V-A14B-LowNoise-Q3_K_S.gguf")
     }
@@ -127,7 +127,7 @@ if ($funcontrolChoice -ne 'G') {
     }
     if ($funcontrolChoice -in 'C', 'F') {
         Download-File -Uri "$baseUrl/unet/WAN/Wan2.2-Fun-A14B-Control_LowNoise-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-Fun-A14B-Control_LowNoise-Q8_0.gguf")
-        Download-File -Uri "$baseUrl/unet/WAN/Wan2.2-Fun-A14B-Control_LowNoise-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-Fun-A14B-Control_LowNoise-Q8_0.gguf")
+        Download-File -Uri "$baseUrl/unet/WAN/Wan2.2-Fun-A14B-Control_HighNoise-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-Fun-A14B-Control_HighNoise-Q8_0.gguf")
     }
     if ($funcontrolChoice -in 'D', 'F') {
         Download-File -Uri "$baseUrl/unet/WAN/Wan2.2-Fun-A14B-Control_LowNoise-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-Fun-A14B-Control_LowNoise-Q5_K_S.gguf")

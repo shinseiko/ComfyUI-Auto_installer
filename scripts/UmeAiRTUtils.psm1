@@ -72,7 +72,7 @@ function Invoke-AndLog {
 function Download-File {
     param([string]$Uri, [string]$OutFile)
     
-	if (Test-Path $OutFile) {
+    if (Test-Path $OutFile) {
         $FileName = Split-Path -Path $OutFile -Leaf
         Write-Log "File '$FileName' already exists. Skipping download." -Level 2 -Color Green
         return
@@ -82,25 +82,34 @@ function Download-File {
     # Chemin attendu pour aria2c.exe (installé par Phase 1)
     $aria2ExePath = Join-Path $env:LOCALAPPDATA "aria2\aria2c.exe"
     
-    # Vérifie si le fichier existe à cet endroit précis
-    if (Test-Path $aria2ExePath) {
-        # --- Solution Rapide : Utiliser Aria2 ---
+    try {
+        # --- Solution Rapide (Aria2) ---
+        if (-not (Test-Path $aria2ExePath)) {
+            # Force une erreur pour sauter au bloc 'catch' (le fallback)
+            throw "aria2c.exe not found at '$aria2ExePath'."
+        }
+        
         Write-Log "Using aria2c from '$aria2ExePath'..." -Level 3
         $OutDir = Split-Path -Path $OutFile -Parent
         $OutName = Split-Path -Path $OutFile -Leaf
         $aria2Args = "--console-log-level=warn --quiet=true -x 16 -s 16 -k 1M --dir=`"$OutDir`" --out=`"$OutName`" `"$Uri`""
         
-        # Appelle aria2c en utilisant le chemin complet
+        # Appelle aria2c. Si cela échoue, Invoke-AndLog lèvera une exception
+        # qui sera attrapée par le 'catch' ci-dessous.
         Invoke-AndLog $aria2ExePath $aria2Args 
-    }
-    else {
+        
+        Write-Log "Download successful (aria2c)." -Level 3
+
+    } catch {
         # --- Solution Lente (Fallback) : Utiliser PowerShell ---
-        Write-Log "aria2c.exe not found at '$aria2ExePath', using slower Invoke-WebRequest..." -Level 3
-        # ... (code Invoke-WebRequest inchangé) ...
+        # S'exécute si aria2c n'est pas trouvé OU si aria2c a échoué
+        Write-Log "aria2c failed or not found ('$($_.Exception.Message)'), using slower Invoke-WebRequest..." -Level 3
+        
         try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            # Le correctif Tls12 est déjà ici, c'est parfait.
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Tls13
             Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing -ErrorAction Stop
-            Write-Log "Download successful." -Level 3
+            Write-Log "Download successful (PowerShell)." -Level 3
         } catch {
             Write-Log "ERREUR: Download failed for '$Uri'. Error: $($_.Exception.Message)" -Color Red
             throw "Download failed."

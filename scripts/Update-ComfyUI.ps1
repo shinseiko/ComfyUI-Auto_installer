@@ -43,7 +43,17 @@ Write-Log "=====================================================================
 Write-Log "Updating all Git repositories..." -Level 0 -Color Green
 Write-Log "Updating ComfyUI Core..." -Level 1
 Invoke-AndLog "git" "-C `"$comfyPath`" pull"
-Write-Log "Updating UmeAiRT Workflows..." -Level 1
+
+Write-Log "Updating UmeAiRT Workflows (Forcing)..." -Level 1
+Write-Log "  ATTENTION: Réinitialisation forcée. Les modifications locales des workflows seront écrasées." -Level 2 -Color Red
+
+Write-Log "  Étape 1/3: Annulation des modifications locales (reset)..." -Level 2
+Invoke-AndLog "git" "-C `"$workflowPath`" reset --hard HEAD"
+
+Write-Log "  Étape 2/3: Suppression des fichiers locaux non suivis (clean)..." -Level 2
+Invoke-AndLog "git" "-C `"$workflowPath`" clean -fd"
+
+Write-Log "  Étape 3/3: Récupération des mises à jour (pull)..." -Level 2
 Invoke-AndLog "git" "-C `"$workflowPath`" pull"
 
 # --- 2. Update and Install Custom Nodes & Dependencies ---
