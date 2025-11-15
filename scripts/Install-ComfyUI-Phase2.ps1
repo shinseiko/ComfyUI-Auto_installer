@@ -21,7 +21,7 @@ $condaExe = Join-Path $condaPath "Scripts\conda.exe"
 $logPath = Join-Path $InstallPath "logs"
 $logFile = Join-Path $logPath "install_log.txt"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$env:CUDA_HOME = $env:CONDA_PREFIX
+$env:CUDA_HOME = (Join-Path $condaPath "envs\UmeAiRT")
 $dependenciesFile = Join-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) "dependencies.json"
 if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found..." -ForegroundColor Red; Read-Host; exit 1 }
 $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
