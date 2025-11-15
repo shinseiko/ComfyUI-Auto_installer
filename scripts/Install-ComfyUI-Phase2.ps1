@@ -22,6 +22,49 @@ $logPath = Join-Path $InstallPath "logs"
 $logFile = Join-Path $logPath "install_log.txt"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $env:CUDA_HOME = (Join-Path $condaPath "envs\UmeAiRT")
+
+# NOUVEAU - CORRECT :
+# Fonction pour trouver CUDA
+function Find-CudaHome {
+    # 1. Vérifier CUDA_HOME existant
+    if ($env:CUDA_HOME -and (Test-Path (Join-Path $env:CUDA_HOME "bin\nvcc.exe"))) {
+        return $env:CUDA_HOME
+    }
+    
+    # 2. Chercher dans Program Files
+    $cudaPaths = @(
+        "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*",
+        "C:\Program Files (x86)\NVIDIA GPU Computing Toolkit\CUDA\v*"
+    )
+    
+    foreach ($pattern in $cudaPaths) {
+        $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
+                 Sort-Object Name -Descending | Select-Object -First 1
+        
+        if ($found -and (Test-Path (Join-Path $found.FullName "bin\nvcc.exe"))) {
+            return $found.FullName
+        }
+    }
+    
+    # 3. Conda env (cuda-toolkit installé par conda)
+    if ($env:CONDA_PREFIX) {
+        $condaCuda = Join-Path $env:CONDA_PREFIX "Library"
+        if (Test-Path (Join-Path $condaCuda "bin\nvcc.exe")) {
+            return $condaCuda
+        }
+    }
+    
+    return $null
+}
+
+$detectedCudaHome = Find-CudaHome
+if ($detectedCudaHome) {
+    $env:CUDA_HOME = $detectedCudaHome
+    Write-Log "CUDA_HOME défini à: $env:CUDA_HOME" -Level 1 -Color Green
+} else {
+    Write-Log "ATTENTION: CUDA_HOME non trouvé. Les packages nécessitant CUDA pourraient échouer." -Level 1 -Color Yellow
+    Write-Log "Installez CUDA Toolkit depuis: https://developer.nvidia.com/cuda-downloads" -Level 2 -Color Yellow
+}
 $dependenciesFile = Join-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) "dependencies.json"
 if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found..." -ForegroundColor Red; Read-Host; exit 1 }
 $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
