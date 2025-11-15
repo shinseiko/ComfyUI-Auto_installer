@@ -202,7 +202,6 @@ if ($RunAdminTasks) {
 
     $launcherContent = @"
 @echo off
-echo Activando entorno UmeAiRT...
 call "$($condaExe -replace 'conda.exe', 'activate.bat')" UmeAiRT
 if %errorlevel% neq 0 (
     echo FAILED to activate the Conda 'UmeAirT' environment.
