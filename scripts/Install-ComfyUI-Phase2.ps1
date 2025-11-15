@@ -21,7 +21,6 @@ $condaExe = Join-Path $condaPath "Scripts\conda.exe"
 $logPath = Join-Path $InstallPath "logs"
 $logFile = Join-Path $logPath "install_log.txt"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$env:CUDA_HOME = (Join-Path $condaPath "envs\UmeAiRT")
 
 $dependenciesFile = Join-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) "dependencies.json"
 if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found..." -ForegroundColor Red; Read-Host; exit 1 }
@@ -32,73 +31,7 @@ Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
 $global:logFile = Join-Path $logPath "install_log.txt"
 $global:hasGpu = Test-NvidiaGpu
 Write-Log "DEBUG: Loaded tools config: $($dependencies.tools | ConvertTo-Json -Depth 3)" -Level 3
-function Find-CudaHome {
-    # 1. Verifier CUDA_HOME existant
-    if ($env:CUDA_HOME -and (Test-Path (Join-Path $env:CUDA_HOME "bin\nvcc.exe"))) {
-        return $env:CUDA_HOME
-    }
-    
-    # 2. Chercher dans Program Files
-    $cudaPaths = @(
-        "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*",
-        "C:\Program Files (x86)\NVIDIA GPU Computing Toolkit\CUDA\v*"
-    )
-    
-    foreach ($pattern in $cudaPaths) {
-        $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
-                 Sort-Object Name -Descending | Select-Object -First 1
-        
-        if ($found -and (Test-Path (Join-Path $found.FullName "bin\nvcc.exe"))) {
-            return $found.FullName
-        }
-    }
-    
-    # 3. Conda env (cuda-toolkit installe par conda)
-    if ($env:CONDA_PREFIX) {
-        $condaCuda = Join-Path $env:CONDA_PREFIX "Library"
-        if (Test-Path (Join-Path $condaCuda "bin\nvcc.exe")) {
-            return $condaCuda
-        }
-    }
-    
-    return $null
-}
 
-$detectedCudaHome = Find-CudaHome
-if (-not $detectedCudaHome) {
-    Write-Log "CUDA non trouve. Installation de cuda-toolkit via conda..." -Level 1 -Color Yellow
-    Invoke-AndLog "$condaExe" "install -n UmeAiRT -c conda-forge cuda-toolkit -y"
-    
-    # Reessayer la detection
-    $detectedCudaHome = Find-CudaHome
-}
-
-if ($detectedCudaHome) {
-    $env:CUDA_HOME = $detectedCudaHome
-    Write-Log "CUDA_HOME defini a: $env:CUDA_HOME" -Level 1 -Color Green
-    
-    # CRITIQUE: Ajouter CUDA au PATH pour que pip/python le trouve
-    $cudaBinPath = Join-Path $env:CUDA_HOME "bin"
-    $cudaLibPath = Join-Path $env:CUDA_HOME "lib\x64"
-    
-    # Verifier si deja dans le PATH
-    if ($env:PATH -notlike "*$cudaBinPath*") {
-        $env:PATH = "$cudaBinPath;$cudaLibPath;$env:PATH"
-        Write-Log "CUDA ajoute au PATH de la session" -Level 2 -Color Green
-    }
-    
-    # Verifier que nvcc est accessible
-    try {
-        $nvccVersion = & nvcc --version 2>&1 | Select-String "release" | Select-Object -First 1
-        Write-Log "nvcc accessible: $nvccVersion" -Level 2 -Color Green
-    } catch {
-        Write-Log "AVERTISSEMENT: nvcc non accessible malgre CUDA_HOME defini" -Level 2 -Color Yellow
-    }
-} else {
-    Write-Log "ERREUR: Impossible de configurer CUDA." -Level 1 -Color Red
-    Write-Log "Les packages necessitant CUDA (SageAttention, apex) seront ignores." -Level 2 -Color Yellow
-    $global:skipCudaPackages = $true
-}
 #===========================================================================
 # SECTION 2: MAIN SCRIPT EXECUTION
 #===========================================================================
@@ -203,18 +136,35 @@ Write-Log "Custom nodes installation summary: $successCount succeeded, $failCoun
 Write-Log "Installing packages from git repositories..." -Level 1
 if ($global:hasGpu) {
     Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
+    
+    # Détecter CUDA SEULEMENT pour les compilations
+    $cudaHome = $null
+    $cudaPaths = @(
+        "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"
+    )
+    foreach ($pattern in $cudaPaths) {
+        $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
+                 Sort-Object Name -Descending | Select-Object -First 1
+        if ($found) { $cudaHome = $found.FullName; break }
+    }
+    
+    if ($cudaHome) {
+        $env:CUDA_HOME = $cudaHome
+        $env:PATH = "$(Join-Path $cudaHome 'bin');$env:PATH"
+        Write-Log "CUDA configuré pour compilation: $cudaHome" -Level 2 -Color Green
+    } else {
+        Write-Log "CUDA Toolkit non trouvé - packages optionnels ignorés" -Level 2 -Color Yellow
+    }
 
     foreach ($repo in $dependencies.pip_packages.git_repos) {
-        # Ignorer si CUDA non configuré
-        if ($global:skipCudaPackages -and ($repo.name -match "SageAttention|apex")) {
-            Write-Log "Skipping $($repo.name) (CUDA not properly configured)" -Level 2 -Color Yellow
+        if (-not $cudaHome -and ($repo.name -match "SageAttention|apex")) {
+            Write-Log "Skipping $($repo.name) (CUDA Toolkit requis)" -Level 2 -Color Yellow
             continue
         }
         
         Write-Log "Attempting to install $($repo.name)..." -Level 2
         $installUrl = "git+$($repo.url)@$($repo.commit)"
         $pipArgs = @("-m", "pip", "install")
-        
         if ($repo.install_options) {
             $pipArgs += $repo.install_options.Split(' ')
         }
@@ -225,13 +175,12 @@ if ($global:hasGpu) {
             if ($LASTEXITCODE -eq 0) {
                 Write-Log "$($repo.name) installed successfully" -Level 2 -Color Green
             } else {
-                Write-Log "$($repo.name) installation failed (optional, continuing...)" -Level 2 -Color Yellow
+                Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
             }
         } catch {
-            Write-Log "$($repo.name) installation failed (optional, continuing...)" -Level 2 -Color Yellow
+            Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
         }
     }
-
 } else {
     Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
 }
