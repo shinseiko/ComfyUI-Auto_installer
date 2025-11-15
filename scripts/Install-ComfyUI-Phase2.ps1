@@ -153,27 +153,7 @@ $customNodesPath = Join-Path $InstallPath "custom_nodes"
 
 $successCount = 0
 $failCount = 0
-Write-Log "Installing packages from .whl files..." -Level 1
-foreach ($wheel in $dependencies.pip_packages.wheels) {
-    Write-Log "Installing $($wheel.name)" -Level 2
-    $wheelPath = Join-Path $scriptPath "$($wheel.name).whl"
-    
-    try {
-        Download-File -Uri $wheel.url -OutFile $wheelPath
-        
-        if (Test-Path $wheelPath) {
-            $output = & python -m pip install --force-reinstall "`"$wheelPath`"" 2>&1
-            if ($LASTEXITCODE -eq 0) {
-                Write-Log "$($wheel.name) installed successfully" -Level 3 -Color Green
-            } else {
-                Write-Log "$($wheel.name) installation failed (continuing...)" -Level 3 -Color Yellow
-            }
-            Remove-Item $wheelPath -ErrorAction SilentlyContinue
-        }
-    } catch {
-        Write-Log "Failed to download/install $($wheel.name) (continuing...)" -Level 3 -Color Yellow
-    }
-}
+
 foreach ($node in $customNodes) {
     $nodeName = $node.Name
     $repoUrl = $node.RepoUrl
@@ -258,7 +238,27 @@ if ($global:hasGpu) {
 } else {
     Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
 }
-
+Write-Log "Installing packages from .whl files..." -Level 1
+foreach ($wheel in $dependencies.pip_packages.wheels) {
+    Write-Log "Installing $($wheel.name)" -Level 2
+    $wheelPath = Join-Path $scriptPath "$($wheel.name).whl"
+    
+    try {
+        Download-File -Uri $wheel.url -OutFile $wheelPath
+        
+        if (Test-Path $wheelPath) {
+            $output = & python -m pip install --force-reinstall "`"$wheelPath`"" 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "$($wheel.name) installed successfully" -Level 3 -Color Green
+            } else {
+                Write-Log "$($wheel.name) installation failed (continuing...)" -Level 3 -Color Yellow
+            }
+            Remove-Item $wheelPath -ErrorAction SilentlyContinue
+        }
+    } catch {
+        Write-Log "Failed to download/install $($wheel.name) (continuing...)" -Level 3 -Color Yellow
+    }
+}
 # --- Step 6: Download Workflows & Settings ---
 Write-Log "Downloading Workflows & Settings..." -Level 0
 $settingsFile = $dependencies.files.comfy_settings
