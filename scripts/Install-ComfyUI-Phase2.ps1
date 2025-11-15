@@ -73,7 +73,102 @@ Write-Log "Installing Final Python Dependencies" -Level 0
 Write-Log "Installing standard packages..." -Level 1
 Invoke-AndLog "python" "-m pip install $($dependencies.pip_packages.standard -join ' ')"
 
+# --- Step 5: Install Custom Nodes & Wheels ---
+Write-Log "Installing Custom Nodes & Wheels" -Level 0
 
+# [FIXED] Step 5.1: Install Wheels first
+Write-Log "Installing packages from .whl files..." -Level 1
+foreach ($wheel in $dependencies.pip_packages.wheels) {
+    Write-Log "Installing $($wheel.name)" -Level 2
+    
+    # [FIXED] Download to scripts folder for cleanliness
+    $wheelPath = Join-Path $scriptPath "$($wheel.name).whl" 
+    
+    Download-File -Uri $wheel.url -OutFile $wheelPath
+    
+    if (Test-Path $wheelPath) {
+        # Force-reinstall to ensure our version overwrites any
+        Invoke-AndLog "python" "-m pip install --force-reinstall `"$wheelPath`""
+        Remove-Item $wheelPath -ErrorAction SilentlyContinue
+    } else {
+        Write-Log "ERROR: Failed to download wheel $($wheel.name)" -Level 2 -Color Red
+    }
+}
+
+# [FIXED] Step 5.2: Install Custom Nodes
+Write-Log "Installing Custom Nodes from CSV..." -Level 0
+$csvPath = Join-Path $InstallPath $dependencies.files.custom_nodes_csv.destination
+$customNodes = Import-Csv -Path $csvPath
+$customNodesPath = Join-Path $InstallPath "custom_nodes"
+
+foreach ($node in $customNodes) {
+    $nodeName = $node.Name
+    $repoUrl = $node.RepoUrl
+    $nodePath = if ($node.Subfolder) { Join-Path $customNodesPath $node.Subfolder } else { Join-Path $customNodesPath $nodeName }
+    
+    if (-not (Test-Path $nodePath)) {
+        Write-Log "Installing $nodeName" -Level 1
+        Invoke-AndLog "git" "clone $repoUrl `"$nodePath`""
+        
+        if ($node.RequirementsFile) {
+            $reqPath = Join-Path $nodePath $node.RequirementsFile
+            if (Test-Path $reqPath) {
+                Write-Log "Installing requirements for $nodeName" -Level 2
+                # At this point, insightface is ALREADY installed from the wheel.
+                # pip will see it and will not try to compile it.
+                Invoke-AndLog "python" "-m pip install -r `"$reqPath`""
+            }
+        }
+    }
+    else {
+        Write-Log "$nodeName (already exists, skipping)" -Level 1 -Color Green
+    }
+}
+
+# [FIXED] Step 5.3: Install Git repos (xformers, apex)
+# (This part was already after custom nodes, but is now
+# logically the last part of step 5)
+Write-Log "Installing packages from git repositories..." -Level 1
+if ($global:hasGpu) {
+    Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
+
+    foreach ($repo in $dependencies.pip_packages.git_repos) {
+        Write-Log "Installing $($repo.name)..." -Level 2
+        
+        # --- START OF LOGIC FOR CUDA_MINOR_VERSION_MISMATCH_OK ---
+        # (This is the fix we discussed for apex)
+        $installUrl = "git+$($repo.url)@$($repo.commit)"
+        $pipArgs = "-m pip install"
+        if ($repo.install_options) {
+            $pipArgs += " $($repo.install_options)"
+        }
+        $pipArgs += " `"$installUrl`""
+
+        $tempEnvVars = @{}
+        if ($repo.PSObject.Properties.Name -contains 'env_vars') {
+            foreach ($key in $repo.env_vars.PSObject.Properties.Keys) {
+                $value = $repo.env_vars.$key
+                Write-Log "Setting temporary env var for $($repo.name): $key=$value" -Level 3 -Color Cyan
+                $env:$key = $value
+                $tempEnvVars[$key] = $null
+            }
+        }
+        
+        try {
+            Invoke-AndLog "python" $pipArgs
+        }
+        finally {
+            foreach ($key in $tempEnvVars.Keys) {
+                Write-Log "Cleaning up env var: $key" -Level 3
+                Remove-Item "Env:\$key" -ErrorAction SilentlyContinue
+            }
+        }
+        # --- END OF LOGIC FOR CUDA_MINOR_VERSION_MISMATCH_OK ---
+    }
+
+} else {
+    Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
+}
 
 # --- Step 6: Download Workflows & Settings ---
 Write-Log "Downloading Workflows & Settings..." -Level 0
