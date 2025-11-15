@@ -217,7 +217,11 @@ pause
     # UTF-8 sans BOM pour compatibilité maximale (GitHub, cross-platform)
     $utf8NoBom = New-Object System.Text.UTF8Encoding $false
     [System.IO.File]::WriteAllLines($phase2LauncherPath, $launcherContent, $utf8NoBom)
-}
+} catch { 
+        Write-Log "ERROR: Unable to create '$phase2LauncherPath'. $($_.Exception.Message)" -Color Red
+        Read-Host "Press Enter."
+        exit 1 
+    }
 
     Write-Log "A new window will open for Phase 2..." -Level 2
     try { Start-Process -FilePath $phase2LauncherPath -Wait -ErrorAction Stop } catch { Write-Log "ERROR: Unable to launch Phase 2 ($($_.Exception.Message))." -Color Red; Read-Host "Press Enter."; exit 1 }
