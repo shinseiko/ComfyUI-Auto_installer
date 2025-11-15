@@ -135,8 +135,6 @@ if ($global:hasGpu) {
     foreach ($repo in $dependencies.pip_packages.git_repos) {
         Write-Log "Installing $($repo.name)..." -Level 2
         
-        # --- START OF LOGIC FOR CUDA_MINOR_VERSION_MISMATCH_OK ---
-        # (This is the fix we discussed for apex)
         $installUrl = "git+$($repo.url)@$($repo.commit)"
         $pipArgs = "-m pip install"
         if ($repo.install_options) {
@@ -144,27 +142,8 @@ if ($global:hasGpu) {
         }
         $pipArgs += " `"$installUrl`""
 
-        $tempEnvVars = @{}
-        if ($repo.PSObject.Properties.Name -contains 'env_vars') {
-            foreach ($key in $repo.env_vars.PSObject.Properties.Name) {
-                $value = $repo.env_vars.$key
-                Write-Log "Setting temporary env var for $($repo.name): $key=$value" -Level 3 -Color Cyan
-                # Utiliser Set-Item pour définir des variables d'environnement dynamiquement
-                Set-Item -Path "Env:\$key" -Value $value
-                $tempEnvVars[$key] = $null
-            }
-        }
-        
-        try {
-            Invoke-AndLog "python" $pipArgs
-        }
-        finally {
-            foreach ($key in $tempEnvVars.Keys) {
-                Write-Log "Cleaning up env var: $key" -Level 3
-                Remove-Item "Env:\$key" -ErrorAction SilentlyContinue
-            }
-        }
-        # --- END OF LOGIC FOR CUDA_MINOR_VERSION_MISMATCH_OK ---
+        # On execute la commande simplement, sans modifier l'environnement
+        Invoke-AndLog "python" $pipArgs
     }
 
 } else {
