@@ -133,81 +133,82 @@ foreach ($node in $customNodes) {
 
 Write-Log "Custom nodes installation summary: $successCount succeeded, $failCount failed" -Level 1 -Color $(if ($failCount -eq 0) { "Green" } else { "Yellow" })
 pip list
-# Write-Log "Installing GPU-specific optimisations" -Level 0
-# Write-Log "Installing packages from git repositories..." -Level 1
-# if ($global:hasGpu) {
-#     Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
-    
-    # Détecter CUDA SEULEMENT pour les compilations
-#     $cudaHome = $null
-#     $cudaPaths = @(
-#         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"
-#     )
-#     foreach ($pattern in $cudaPaths) {
-#         $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
-#                  Sort-Object Name -Descending | Select-Object -First 1
-#         if ($found) { $cudaHome = $found.FullName; break }
-#     }
-    
-#     if ($cudaHome) {
-#         $env:CUDA_HOME = $cudaHome
-#         $env:PATH = "$(Join-Path $cudaHome 'bin');$env:PATH"
-#         Write-Log "CUDA configured for compilation: $cudaHome" -Level 2 -Color Green
-#     } else {
-#         Write-Log "CUDA Toolkit not found - optional packages ignored" -Level 2 -Color Yellow
-#     }
-# 
-#     foreach ($repo in $dependencies.pip_packages.git_repos) {
-#         if (-not $cudaHome -and ($repo.name -match "SageAttention|apex")) {
-#             Write-Log "Skipping $($repo.name) (CUDA Toolkit requis)" -Level 2 -Color Yellow
-#             continue
-#         }
-        
-#         Write-Log "Attempting to install $($repo.name)..." -Level 2
-#         $installUrl = "git+$($repo.url)@$($repo.commit)"
-#         $pipArgs = @("-m", "pip", "install")
-#         if ($repo.install_options) {
-#             $pipArgs += $repo.install_options.Split(' ')
-#         }
-#         $pipArgs += $installUrl
+Write-Log "Installing GPU-specific optimisations" -Level 0
+Write-Log "Installing packages from git repositories..." -Level 1
+if ($global:hasGpu) {
+    Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
+   
+   # Détecter CUDA SEULEMENT pour les compilations
+    $cudaHome = $null
+    $cudaPaths = @(
+        "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"
+    )
+    foreach ($pattern in $cudaPaths) {
+        $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
+                 Sort-Object Name -Descending | Select-Object -First 1
+        if ($found) { $cudaHome = $found.FullName; break }
+    }
+   
+    if ($cudaHome) {
+        $env:CUDA_HOME = $cudaHome
+        $env:PATH = "$(Join-Path $cudaHome 'bin');$env:PATH"
+        Write-Log "CUDA configured for compilation: $cudaHome" -Level 2 -Color Green
+    } else {
+        Write-Log "CUDA Toolkit not found - optional packages ignored" -Level 2 -Color Yellow
+    }
 
-#         try {
-#             $output = & python $pipArgs 2>&1
-#             if ($LASTEXITCODE -eq 0) {
-#                 Write-Log "$($repo.name) installed successfully" -Level 2 -Color Green
-#             } else {
-#                 Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
-#             }
-#         } catch {
-#             Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
-#         }
-#     }
-# } else {
-#     Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
-# }
-# pip list
-# Write-Log "Installing packages from .whl files..." -Level 1
-# foreach ($wheel in $dependencies.pip_packages.wheels) {
-#     Write-Log "Installing $($wheel.name)" -Level 2
-#     $wheelPath = Join-Path $scriptPath "$($wheel.name).whl"
-#     
-#     try {
-#         Download-File -Uri $wheel.url -OutFile $wheelPath
-#         
-#         if (Test-Path $wheelPath) {
-#             $output = & python -m pip install --force-reinstall "`"$wheelPath`"" 2>&1
-#             if ($LASTEXITCODE -eq 0) {
-#                 Write-Log "$($wheel.name) installed successfully" -Level 3 -Color Green
-#             } else {
-#                 Write-Log "$($wheel.name) installation failed (continuing...)" -Level 3 -Color Yellow
-#             }
-#             Remove-Item $wheelPath -ErrorAction SilentlyContinue
-#         }
-#     } catch {
-#         Write-Log "Failed to download/install $($wheel.name) (continuing...)" -Level 3 -Color Yellow
-#     }
-# 	pip list
-# }
+    foreach ($repo in $dependencies.pip_packages.git_repos) {
+        if (-not $cudaHome -and ($repo.name -match "SageAttention|apex")) {
+            Write-Log "Skipping $($repo.name) (CUDA Toolkit requis)" -Level 2 -Color Yellow
+            continue
+        }
+       
+        Write-Log "Attempting to install $($repo.name)..." -Level 2
+        $installUrl = "git+$($repo.url)@$($repo.commit)"
+        $pipArgs = @("-m", "pip", "install")
+        if ($repo.install_options) {
+            $pipArgs += $repo.install_options.Split(' ')
+        }
+        $pipArgs += $installUrl
+
+        try {
+            $output = & python $pipArgs 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "$($repo.name) installed successfully" -Level 2 -Color Green
+				pip list
+            } else {
+                Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
+            }
+        } catch {
+            Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
+        }
+    }
+} else {
+    Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
+}
+pip list
+Write-Log "Installing packages from .whl files..." -Level 1
+foreach ($wheel in $dependencies.pip_packages.wheels) {
+    Write-Log "Installing $($wheel.name)" -Level 2
+    $wheelPath = Join-Path $scriptPath "$($wheel.name).whl"
+     
+    try {
+        Download-File -Uri $wheel.url -OutFile $wheelPath
+        
+        if (Test-Path $wheelPath) {
+            $output = & python -m pip install --force-reinstall "`"$wheelPath`"" 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "$($wheel.name) installed successfully" -Level 3 -Color Green
+            } else {
+                Write-Log "$($wheel.name) installation failed (continuing...)" -Level 3 -Color Yellow
+            }
+            Remove-Item $wheelPath -ErrorAction SilentlyContinue
+        }
+    } catch {
+        Write-Log "Failed to download/install $($wheel.name) (continuing...)" -Level 3 -Color Yellow
+    }
+	pip list
+}
 
 #Write-Log "CRITICAL: Forcing re-installation of PyTorch CUDA version" -Level 3 -Color Cyan
 #Invoke-AndLog "python" "-m pip install --force-reinstall $($dependencies.pip_packages.torch.packages) --index-url $($dependencies.pip_packages.torch.index_url)"
