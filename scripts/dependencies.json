@@ -21,7 +21,7 @@
     ],
     "torch": {
       "packages": "torch==2.8.0+cu129 torchvision torchaudio",
-      "index_url": "https://download.pytorch.org/whl/cu130"
+      "index_url": "https://download.pytorch.org/whl/cu129"
     },
     "comfyui_requirements": "requirements.txt",
     "wheels": [
