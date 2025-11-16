@@ -196,7 +196,7 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
         Download-File -Uri $wheel.url -OutFile $wheelPath
         
         if (Test-Path $wheelPath) {
-            $output = & python -m pip install --force-reinstall "`"$wheelPath`"" 2>&1
+            $output = & python -m pip install --force-reinstall --no-deps "`"$wheelPath`"" 2>&1
             if ($LASTEXITCODE -eq 0) {
                 Write-Log "$($wheel.name) installed successfully" -Level 3 -Color Green
             } else {
