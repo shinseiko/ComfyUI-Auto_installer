@@ -12,7 +12,6 @@ ComfyUI-Frame-Interpolation,https://github.com/Fannovel16/ComfyUI-Frame-Interpol
 rgthree-comfy,https://github.com/rgthree/rgthree-comfy.git,,requirements.txt
 ComfyUI-Easy-Use,https://github.com/yolain/ComfyUI-Easy-Use.git,,requirements.txt
 ComfyUI-HunyuanVideoMultiLora,https://github.com/facok/ComfyUI-HunyuanVideoMultiLora.git,,
-was-node-suite-comfyui,https://github.com/WASasquatch/was-node-suite-comfyui.git,,requirements.txt
 ComfyUI-Florence2,https://github.com/kijai/ComfyUI-Florence2.git,,requirements.txt
 ComfyUI-MultiGPU,https://github.com/pollockjj/ComfyUI-MultiGPU.git,,
 ComfyUI-WanStartEndFramesNative,https://github.com/Flow-two/ComfyUI-WanStartEndFramesNative.git,,
