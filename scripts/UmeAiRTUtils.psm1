@@ -83,9 +83,8 @@ function Download-File {
     $aria2ExePath = Join-Path $env:LOCALAPPDATA "aria2\aria2c.exe"
     
     try {
-        # --- Solution Rapide (Aria2) ---
+        # --- Tentative 1: Aria2 ---
         if (-not (Test-Path $aria2ExePath)) {
-            # Force une erreur pour sauter au bloc 'catch' (le fallback)
             throw "aria2c.exe not found at '$aria2ExePath'."
         }
         
@@ -94,24 +93,30 @@ function Download-File {
         $OutName = Split-Path -Path $OutFile -Leaf
         $aria2Args = "--console-log-level=warn --quiet=true -x 16 -s 16 -k 1M --dir=`"$OutDir`" --out=`"$OutName`" `"$Uri`""
         
-        # Appelle aria2c. Si cela échoue, Invoke-AndLog lèvera une exception
-        # qui sera attrapée par le 'catch' ci-dessous.
-        Invoke-AndLog $aria2ExePath $aria2Args 
+        # Exécution directe SANS Invoke-AndLog pour permettre le fallback
+        Write-Log "Executing: $aria2ExePath $aria2Args" -Level 3 -Color DarkGray
+        
+        # Redirige stderr vers stdout (2>&1) et capture la sortie
+        $output = & $aria2ExePath $aria2Args 2>&1 | Out-String
+        Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue
+
+        if ($LASTEXITCODE -ne 0) {
+            # Force une erreur pour sauter au bloc 'catch' (le fallback)
+            throw "aria2c command failed with code $LASTEXITCODE. Output: $output"
+        }
         
         Write-Log "Download successful (aria2c)." -Level 3
 
     } catch {
-        # --- Solution Lente (Fallback) : Utiliser PowerShell ---
-        # S'exécute si aria2c n'est pas trouvé OU si aria2c a échoué
+        # --- Tentative 2: Fallback PowerShell ---
         Write-Log "aria2c failed or not found ('$($_.Exception.Message)'), using slower Invoke-WebRequest..." -Level 3
         
         try {
-            # Le correctif Tls12 est déjà ici, c'est parfait.
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Tls13
             Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing -ErrorAction Stop
             Write-Log "Download successful (PowerShell)." -Level 3
         } catch {
-            Write-Log "ERREUR: Download failed for '$Uri'. Error: $($_.Exception.Message)" -Color Red
+            Write-Log "ERREUR: Download failed for '$Uri'. Both aria2c and PowerShell failed. Error: $($_.Exception.Message)" -Color Red
             throw "Download failed."
         }
     }
