@@ -42,12 +42,12 @@ if "%InstallType%"=="venv" (
 )
 
 :: ================================================================
-:: 2. LAUNCH COMFYUI (STANDARD MODE)
+:: 2. LAUNCH COMFYUI (LOW VRAM MODE)
 :: ================================================================
-echo Starting ComfyUI (Performance Mode)...
+echo Starting ComfyUI (Low VRAM / Stability Mode)...
 cd /d "%InstallPath%\ComfyUI"
 
-REM Launching with SageAttention and auto-launch
-python main.py --use-sage-attention --listen --auto-launch
+REM Launching with memory optimizations for lower VRAM cards
+python main.py --use-sage-attention --listen --auto-launch --disable-smart-memory --lowvram --fp8_e4m3fn-text-enc
 
 pause

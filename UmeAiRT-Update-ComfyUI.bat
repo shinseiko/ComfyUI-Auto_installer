@@ -31,30 +31,52 @@ echo [OK] All scripts are now up-to-date.
 echo.
 
 :: ============================================================================
-:: Section 2: Running the main update script (Conda Activation)
+:: Section 2: Running the main update script (Environment Activation)
 :: ============================================================================
-echo [INFO] Launching the main update script... 
-echo.
+echo [INFO] Checking installation type...
+set "InstallTypeFile=%InstallPath%\scripts\install_type"
+set "InstallType=conda"
+
 set "CondaPath=%LOCALAPPDATA%\Miniconda3"
 set "CondaActivate=%CondaPath%\Scripts\activate.bat"
-if not exist "%CondaActivate%" (
-    echo [ERROR] Could not find Conda at: %CondaActivate%
-    pause
-    goto :eof
+
+if exist "%InstallTypeFile%" (
+    set /p InstallType=<"%InstallTypeFile%"
+) else (
+    if exist "%InstallPath%\scripts\venv" (
+        set "InstallType=venv"
+    )
 )
-echo [INFO] Activating Conda environment 'UmeAiRT'...
-call "%CondaActivate%" UmeAiRT
-if %errorlevel% neq 0 (
-    echo [ERROR] Failed to activate Conda environment 'UmeAiRT'.
-    pause
-    goto :eof
+
+if "%InstallType%"=="venv" (
+    echo [INFO] Activating venv environment...
+    call "%InstallPath%\scripts\venv\Scripts\activate.bat"
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to activate venv environment.
+        pause
+        goto :eof
+    )
+) else (
+    echo [INFO] Activating Conda environment 'UmeAiRT'...
+    REM set "CondaPath=%LOCALAPPDATA%\Miniconda3"
+    REM set "CondaActivate=%CondaPath%\Scripts\activate.bat"
+    if not exist "%CondaActivate%" (
+        echo [ERROR] Could not find Conda at: %CondaActivate%
+        pause
+        goto :eof
+    )
+    call "%CondaActivate%" UmeAiRT
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to activate Conda environment 'UmeAiRT'.
+        pause
+        goto :eof
+    )
 )
+
 echo [INFO] Launching PowerShell update script...
 powershell.exe -ExecutionPolicy Bypass -File "%ScriptsFolder%\Update-ComfyUI.ps1" -InstallPath "%InstallPath%"
 echo.
 echo [INFO] The update script is complete.
 pause
-
-:: Section 3 (self-update) has been removed
 
 endlocal

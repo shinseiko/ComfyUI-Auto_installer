@@ -5,7 +5,7 @@
 
 param(
     [string]$InstallPath,
-    [switch]$RunAdminTasks # Flag pour le mode élevé
+    [switch]$RunAdminTasks # Flag for elevated mode
 )
 $comfyPath = Join-Path $InstallPath "ComfyUI"
 $scriptPath = Join-Path $InstallPath "scripts"
@@ -15,7 +15,7 @@ $logPath = Join-Path $InstallPath "logs"
 $logFile = Join-Path $logPath "install_log.txt"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Charger les dépendances TÔT
+# Load dependencies EARLY
 $dependenciesFile = Join-Path $scriptPath "dependencies.json"
 if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found at '$dependenciesFile'..." -ForegroundColor Red; Read-Host; exit 1 }
 try { $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json } catch { Write-Host "FATAL: Failed to parse dependencies.json. Error: $($_.Exception.Message)" -ForegroundColor Red; Read-Host; exit 1}
@@ -33,13 +33,13 @@ Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
 #===========================================================================
 # SECTION 2: MAIN SCRIPT EXECUTION
 #===========================================================================
-$global:totalSteps = 9 # Phase 1 = Setup Admin (si besoin) + Setup Conda Env + Lancement Phase 2
+$global:totalSteps = 9 # Phase 1 = Setup Admin (if needed) + Setup Env + Launch Phase 2
 $global:currentStep = 0
 
 if ($RunAdminTasks) {
     Write-Host "`n=== Performing Administrator Tasks ===`n" -ForegroundColor Cyan
 
-    # Tâche 1 : Long paths
+    # Task 1: Long paths
     Write-Host "[Admin Task 1/2] Enabling support for long paths (Registry)..." -ForegroundColor Yellow
     $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
     try {
@@ -49,7 +49,7 @@ if ($RunAdminTasks) {
         } else { Write-Host "- Long path support already enabled." -ForegroundColor Green }
     } catch { Write-Host "- ERROR: Unable to enable long paths. $_" -ForegroundColor Red }
 
-    # Tâche 2 : VS Build Tools
+    # Task 2: VS Build Tools
     Write-Host "[Admin Task 2/2] Checking/Installing VS Build Tools..." -ForegroundColor Yellow
     $depFileAdmin = Join-Path $scriptPath "dependencies.json"
     $vsToolAdmin = $null
@@ -112,7 +112,7 @@ if ($RunAdminTasks) {
          Write-Host "Admin tasks will be performed, but the rest will also run as Admin." -ForegroundColor Yellow
          Write-Log "[Admin Tasks within User Script] Performing Admin tasks..." -Level 1
          $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
-         try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERREUR Long paths" -Level 2 -Color Red}
+         try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERROR Long paths" -Level 2 -Color Red}
     }
 	
     Clear-Host
@@ -127,80 +127,148 @@ if ($RunAdminTasks) {
     Write-Host $asciiBanner -ForegroundColor Cyan
     Write-Host "-------------------------------------------------------------------------------"
     Write-Host "                           ComfyUI - Auto-Installer                            " -ForegroundColor Yellow
-    Write-Host "                                  Version 4.0                                  " -ForegroundColor White
+    Write-Host "                                 Version 4.1                                   " -ForegroundColor White
     Write-Host "-------------------------------------------------------------------------------"
 
+    # --- Step 0: Choose Installation Type ---
+    $validChoices = @("1", "2")
+    Write-Host "`nChoose installation type:" -ForegroundColor Cyan
+    Write-Host "1. Light (Recommended) - Uses your existing Python 3.12 (Standard venv)" -ForegroundColor Green
+    Write-Host "2. Full - Installs Miniconda, Python 3.12, Git, CUDA (Isolated environment)" -ForegroundColor Yellow
 
-    # --- Step 1: Setup Miniconda and Conda Environment ---
-    Write-Log "Setting up Miniconda and Conda Environment" -Level 0 # Étape 1/2
-    if (-not (Test-Path $condaPath)) {
-        Write-Log "Miniconda not found. Installing..." -Level 1 -Color Yellow
-        $minicondaInstaller = Join-Path $env:TEMP "Miniconda3-latest-Windows-x86_64.exe"
-        $minicondaUrl = $dependencies.tools.miniconda.url 
-        if (-not $minicondaUrl) { $minicondaUrl = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe" }
-        Download-File -Uri $minicondaUrl -OutFile $minicondaInstaller 
-        Invoke-AndLog $minicondaInstaller "/InstallationType=JustMe /RegisterPython=0 /S /D=`"$condaPath`""
-        Remove-Item $minicondaInstaller -ErrorAction SilentlyContinue
-    } else { Write-Log "Miniconda is already installed at '$condaPath'" -Level 1 -Color Green }
-
-    if (-not (Test-Path $condaExe)) { Write-Log "FATAL ERROR: conda.exe not found after installation/verification" -Color Red; Read-Host "Press Enter."; exit 1 }
-
-    Write-Log "Accepting Anaconda Terms of Service..." -Level 1
-    Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
-	Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
-	Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2"
-	Write-Log "Installing aria2 via direct download..." -Level 1
-    $aria2Url = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip"
-    $aria2ZipPath = Join-Path $env:TEMP "aria2.zip"
-    $aria2InstallPath = Join-Path $env:LOCALAPPDATA "aria2" 
-    $aria2ExePath = Join-Path $aria2InstallPath "aria2c.exe"
-
-    if (-not (Test-Path $aria2ExePath)) {
-        Write-Log "Downloading aria2..." -Level 2
-        try {
-            Download-File -Uri $aria2Url -OutFile $aria2ZipPath 
-            Write-Log "Extracting aria2..." -Level 2
-            # Crée le dossier d'installation s'il n'existe pas
-            if (-not (Test-Path $aria2InstallPath)) { New-Item -ItemType Directory -Path $aria2InstallPath -Force | Out-Null }
-            # Extrait SEULEMENT aria2c.exe du zip (nécessite PowerShell 5+)
-            Expand-Archive -Path $aria2ZipPath -DestinationPath $aria2InstallPath -Force
-            # Recherche le .exe dans le dossier extrait (le nom peut varier légèrement selon la version du zip)
-            $extractedExe = Get-ChildItem -Path $aria2InstallPath -Filter "aria2c.exe" -Recurse | Select-Object -First 1
-            if ($extractedExe) {
-                 # Déplace l'exe à la racine du dossier aria2 s'il est dans un sous-dossier
-                 if ($extractedExe.DirectoryName -ne $aria2InstallPath) {
-                     Move-Item -Path $extractedExe.FullName -Destination $aria2InstallPath -Force
-                     # Optionnel : Supprimer le reste du dossier extrait s'il existe
-                     Remove-Item -Path $extractedExe.DirectoryName -Recurse -Force -ErrorAction SilentlyContinue
-                 }
-                 Write-Log "aria2c.exe installed successfully to '$aria2InstallPath'." -Level 2 -Color Green
-            } else {
-                 throw "aria2c.exe not found within the extracted archive."
-            }
-        } catch {
-            Write-Log "ERREUR: Failed to download or extract aria2. Error: $($_.Exception.Message)" -Level 1 -Color Red
-            Write-Log "Downloads will be slower (Invoke-WebRequest)." -Level 2
-        } finally {
-             # Nettoie le zip
-             if (Test-Path $aria2ZipPath) { Remove-Item $aria2ZipPath -ErrorAction SilentlyContinue }
-        }
-    } else {
-         Write-Log "aria2c.exe already found at '$aria2InstallPath'." -Level 1 -Color Green
+    $installTypeChoice = ""
+    while ($installTypeChoice -notin $validChoices) {
+        $installTypeChoice = Read-Host "Enter choice (1 or 2)"
     }
-
-    Write-Log "Attempting to remove old 'UmeAiRT' environment for a clean install..." -Level 1
-    Invoke-AndLog "$condaExe" "env remove -n UmeAiRT -y" -IgnoreErrors
-    Write-Log "Creating new Conda environment 'UmeAiRT' from '$scriptPath\environment.yml'..." -Level 1
-    Invoke-AndLog "$condaExe" "env create -f `"$scriptPath\environment.yml`""
-	Write-Log "Environment 'UmeAiRT' created successfully." -Level 2 -Color Green
-
-    Write-Log "Conda environment ready." -Level 1 -Color Green
-    Write-Log "Phase 2 of the installation has been launched..." -Level 0
-
+    $installType = if ($installTypeChoice -eq "1") { "Light" } else { "Full" }
+    $installTypeFile = Join-Path $scriptPath "install_type"
     $phase2LauncherPath = Join-Path $scriptPath "Launch-Phase2.bat"
     $phase2ScriptPath = Join-Path $scriptPath "Install-ComfyUI-Phase2.ps1"
 
-    $launcherContent = @"
+    if ($installType -eq "Light") {
+        Write-Log "Selected: Light Installation (venv)" -Level 0
+        Set-Content -Path $installTypeFile -Value "venv" -Force
+
+        # 1. Check Python Version
+        Write-Log "Checking for Python 3.12..." -Level 1
+        try {
+            $pyVerOutput = python --version 2>&1
+            if ($pyVerOutput -match "Python\s+(3\.12\.\d+)") {
+                Write-Log "Python 3.12 detected: $pyVerOutput" -Level 1 -Color Green
+            } else {
+                 Write-Log "ERROR: Python 3.12 is required for Light mode. Found: $pyVerOutput" -Level 1 -Color Red
+                 Read-Host "Press Enter to exit."
+                 exit 1
+            }
+        } catch {
+             Write-Log "ERROR: Python not found or unable to check version. Python 3.12 is required for Light mode." -Level 1 -Color Red
+             Read-Host "Press Enter to exit."
+             exit 1
+        }
+
+        # 2. Check Git (Implicitly required for later steps)
+        try {
+            $gitVer = git --version 2>&1
+            Write-Log "Git detected: $gitVer" -Level 1 -Color Green
+        } catch {
+            Write-Log "WARNING: Git not found. It is recommended to have Git installed." -Level 1 -Color Yellow
+        }
+
+        # 3. Create venv
+        $venvPath = Join-Path $scriptPath "venv"
+        if (-not (Test-Path $venvPath)) {
+            Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
+            Invoke-AndLog "python" "-m venv `"$venvPath`""
+        } else {
+             Write-Log "Virtual environment already exists." -Level 1 -Color Green
+        }
+
+        # 4. Prepare Launch-Phase2.bat for venv
+        $launcherContent = @"
+@echo off
+call "$venvPath\Scripts\activate.bat"
+if %errorlevel% neq 0 (
+    echo FAILED to activate venv.
+    pause
+    exit /b %errorlevel%
+)
+echo Phase 2 Launch (venv)...
+powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$phase2ScriptPath" -InstallPath "$InstallPath"
+echo End of Phase 2. Press Enter to close this window.
+pause
+"@
+
+    } else {
+        # --- Step 1: Setup Miniconda and Conda Environment ---
+        Write-Log "Selected: Full Installation (Miniconda)" -Level 0
+        Set-Content -Path $installTypeFile -Value "conda" -Force
+
+        Write-Log "Setting up Miniconda and Conda Environment" -Level 0
+        if (-not (Test-Path $condaPath)) {
+            Write-Log "Miniconda not found. Installing..." -Level 1 -Color Yellow
+            $minicondaInstaller = Join-Path $env:TEMP "Miniconda3-latest-Windows-x86_64.exe"
+            $minicondaUrl = $dependencies.tools.miniconda.url
+            if (-not $minicondaUrl) { $minicondaUrl = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe" }
+            Download-File -Uri $minicondaUrl -OutFile $minicondaInstaller
+            Invoke-AndLog $minicondaInstaller "/InstallationType=JustMe /RegisterPython=0 /S /D=`"$condaPath`""
+            Remove-Item $minicondaInstaller -ErrorAction SilentlyContinue
+        } else { Write-Log "Miniconda is already installed at '$condaPath'" -Level 1 -Color Green }
+
+        if (-not (Test-Path $condaExe)) { Write-Log "FATAL ERROR: conda.exe not found after installation/verification" -Color Red; Read-Host "Press Enter."; exit 1 }
+
+        Write-Log "Accepting Anaconda Terms of Service..." -Level 1
+        Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
+        Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
+        Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2"
+        Write-Log "Installing aria2 via direct download..." -Level 1
+        $aria2Url = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip"
+        $aria2ZipPath = Join-Path $env:TEMP "aria2.zip"
+        $aria2InstallPath = Join-Path $env:LOCALAPPDATA "aria2"
+        $aria2ExePath = Join-Path $aria2InstallPath "aria2c.exe"
+
+        if (-not (Test-Path $aria2ExePath)) {
+            Write-Log "Downloading aria2..." -Level 2
+            try {
+                Download-File -Uri $aria2Url -OutFile $aria2ZipPath
+                Write-Log "Extracting aria2..." -Level 2
+                # Create install dir if needed
+                if (-not (Test-Path $aria2InstallPath)) { New-Item -ItemType Directory -Path $aria2InstallPath -Force | Out-Null }
+                # Extract ONLY aria2c.exe
+                Expand-Archive -Path $aria2ZipPath -DestinationPath $aria2InstallPath -Force
+                # Find exe in extracted folder
+                $extractedExe = Get-ChildItem -Path $aria2InstallPath -Filter "aria2c.exe" -Recurse | Select-Object -First 1
+                if ($extractedExe) {
+                    # Move to root of aria2 folder
+                    if ($extractedExe.DirectoryName -ne $aria2InstallPath) {
+                        Move-Item -Path $extractedExe.FullName -Destination $aria2InstallPath -Force
+                        # Optional cleanup
+                        Remove-Item -Path $extractedExe.DirectoryName -Recurse -Force -ErrorAction SilentlyContinue
+                    }
+                    Write-Log "aria2c.exe installed successfully to '$aria2InstallPath'." -Level 2 -Color Green
+                } else {
+                    throw "aria2c.exe not found within the extracted archive."
+                }
+            } catch {
+                Write-Log "ERROR: Failed to download or extract aria2. Error: $($_.Exception.Message)" -Level 1 -Color Red
+                Write-Log "Downloads will be slower (Invoke-WebRequest)." -Level 2
+            } finally {
+                # Clean zip
+                if (Test-Path $aria2ZipPath) { Remove-Item $aria2ZipPath -ErrorAction SilentlyContinue }
+            }
+        } else {
+            Write-Log "aria2c.exe already found at '$aria2InstallPath'." -Level 1 -Color Green
+        }
+
+        Write-Log "Attempting to remove old 'UmeAiRT' environment for a clean install..." -Level 1
+        Invoke-AndLog "$condaExe" "env remove -n UmeAiRT -y" -IgnoreErrors
+        Write-Log "Creating new Conda environment 'UmeAiRT' from '$scriptPath\environment.yml'..." -Level 1
+        Invoke-AndLog "$condaExe" "env create -f `"$scriptPath\environment.yml`""
+        Write-Log "Environment 'UmeAiRT' created successfully." -Level 2 -Color Green
+
+        Write-Log "Conda environment ready." -Level 1 -Color Green
+
+        # Prepare Launch-Phase2.bat for Conda
+        $launcherContent = @"
 @echo off
 call "$($condaExe -replace 'conda.exe', 'activate.bat')" UmeAiRT
 if %errorlevel% neq 0 (
@@ -213,16 +281,20 @@ powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$phase2ScriptPath" -Ins
 echo End of Phase 2. Press Enter to close this window.
 pause
 "@
+    }
+
+    # Write Launcher
     try { 
-    # UTF-8 sans BOM pour compatibilité maximale (GitHub, cross-platform)
-    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-    [System.IO.File]::WriteAllLines($phase2LauncherPath, $launcherContent, $utf8NoBom)
-} catch { 
+        # UTF-8 no BOM
+        $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+        [System.IO.File]::WriteAllLines($phase2LauncherPath, $launcherContent, $utf8NoBom)
+    } catch {
         Write-Log "ERROR: Unable to create '$phase2LauncherPath'. $($_.Exception.Message)" -Color Red
         Read-Host "Press Enter."
         exit 1 
     }
 
+    Write-Log "Phase 2 of the installation has been launched..." -Level 0
     Write-Log "A new window will open for Phase 2..." -Level 2
     try { Start-Process -FilePath $phase2LauncherPath -Wait -ErrorAction Stop } catch { Write-Log "ERROR: Unable to launch Phase 2 ($($_.Exception.Message))." -Color Red; Read-Host "Press Enter."; exit 1 }
 

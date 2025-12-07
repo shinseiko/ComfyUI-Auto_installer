@@ -46,7 +46,8 @@
       "triton-windows",
 	  "hf_xet",
 	  "nvidia-ml-py",
-	  "cupy-cuda12x"
+	  "cupy-cuda12x",
+	  "imageio-ffmpeg"
     ],
     "git_repos": [
 	{

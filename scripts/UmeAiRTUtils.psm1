@@ -1,9 +1,9 @@
-# --- Fonctions utilitaires partagées pour UmeAiRT ---
+# --- Shared Utility Functions for UmeAiRT ---
 
 function Write-Log {
     param([string]$Message, [int]$Level = 1, [string]$Color = "Default")
     
-    # Assure que $logFile est défini, sinon utilise un fallback
+    # Ensure $logFile is defined, otherwise use fallback
     if (-not $global:logFile) {
         $global:logFile = Join-Path $PSScriptRoot "default_module_log.txt"
     }
@@ -35,14 +35,14 @@ function Write-Log {
         Write-Host $consoleMessage -ForegroundColor $Color
         Add-Content -Path $global:logFile -Value $logMessage -ErrorAction SilentlyContinue
     } catch {
-        Write-Host "Erreur interne dans Write-Log: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Internal error in Write-Log: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
 function Invoke-AndLog {
     param( [string]$File, [string]$Arguments, [switch]$IgnoreErrors )
     
-    # Assure que $logFile est défini
+    # Ensure $logFile is defined
     if (-not $global:logFile) {
         $global:logFile = Join-Path $PSScriptRoot "default_module_log.txt"
     }
@@ -54,17 +54,17 @@ function Invoke-AndLog {
         Invoke-Expression $CommandToRun
         $output = if (Test-Path $tempLogFile) { Get-Content $tempLogFile } else { @() }
         if ($LASTEXITCODE -ne 0 -and -not $IgnoreErrors) {
-            Write-Log "ERREUR: La commande a échoué avec le code $LASTEXITCODE." -Color Red
-            Write-Log "Commande: $File $Arguments" -Color Red
-            Write-Log "Sortie de l'erreur:" -Color Red
+            Write-Log "ERROR: Command failed with code $LASTEXITCODE." -Color Red
+            Write-Log "Command: $File $Arguments" -Color Red
+            Write-Log "Error Output:" -Color Red
             $output | ForEach-Object { Write-Host $_ -ForegroundColor Red; Add-Content -Path $global:logFile -Value $_ -ErrorAction SilentlyContinue }
-            throw "L'exécution de la commande a échoué. Vérifiez les logs."
+            throw "Command execution failed. Check logs."
         } else { Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue }
     } catch {
-        $errMsg = "ERREUR FATALE lors de la tentative d'exécution: $File $Arguments. Erreur: $($_.Exception.Message)"
+        $errMsg = "FATAL ERROR executing: $File $Arguments. Error: $($_.Exception.Message)"
         Write-Log $errMsg -Color Red
         Add-Content -Path $global:logFile -Value $errMsg -ErrorAction SilentlyContinue
-        Read-Host "Une erreur fatale est survenue. Appuyez sur Entrée pour quitter."
+        Read-Host "A fatal error occurred. Press Enter to exit."
         exit 1
     } finally { if (Test-Path $tempLogFile) { Remove-Item $tempLogFile -ErrorAction SilentlyContinue } }
 }
@@ -79,11 +79,11 @@ function Download-File {
     }
     Write-Log "Downloading `"$($Uri.Split('/')[-1])`"" -Level 2 -Color DarkGray
     
-    # Chemin attendu pour aria2c.exe (installé par Phase 1)
+    # Expected path for aria2c.exe (installed by Phase 1)
     $aria2ExePath = Join-Path $env:LOCALAPPDATA "aria2\aria2c.exe"
     
     try {
-        # --- Tentative 1: Aria2 ---
+        # --- Attempt 1: Aria2 ---
         if (-not (Test-Path $aria2ExePath)) {
             throw "aria2c.exe not found at '$aria2ExePath'."
         }
@@ -91,27 +91,26 @@ function Download-File {
         Write-Log "Using aria2c from '$aria2ExePath'..." -Level 3
         $OutDir = Split-Path -Path $OutFile -Parent
         $OutName = Split-Path -Path $OutFile -Leaf
-        # Recrée la chaîne d'arguments exactement comme avant
+        # Recreate argument string
         $aria2Args = "--console-log-level=warn --quiet=true -x 16 -s 16 -k 1M --dir=`"$OutDir`" --out=`"$OutName`" `"$Uri`""
         
         Write-Log "Executing: $aria2ExePath $aria2Args" -Level 3 -Color DarkGray
 
-        # *** LA CORRECTION EST ICI ***
-        # Utiliser Invoke-Expression pour forcer PowerShell à analyser la chaîne d'arguments correctement
+        # Use Invoke-Expression to force PowerShell to parse argument string correctly
         $CommandToRun = "& `"$aria2ExePath`" $aria2Args 2>&1"
         $output = Invoke-Expression $CommandToRun | Out-String
         Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue
 
         if ($LASTEXITCODE -ne 0) {
-            # L'échec est maintenant attrapé et lève une exception pour le fallback
+            # Catch failure and throw exception for fallback
             throw "aria2c command failed with code $LASTEXITCODE. Output: $output"
         }
         
         Write-Log "Download successful (aria2c)." -Level 3
 
     } catch {
-        # --- Tentative 2: Fallback PowerShell ---
-        # S'exécute si aria2c n'est pas trouvé OU si l'Invoke-Expression ci-dessus a échoué
+        # --- Attempt 2: Fallback PowerShell ---
+        # Runs if aria2c is not found OR if Invoke-Expression above failed
         Write-Log "aria2c failed or not found ('$($_.Exception.Message)'), using slower Invoke-WebRequest..." -Level 3
         
         try {
@@ -119,7 +118,7 @@ function Download-File {
             Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing -ErrorAction Stop
             Write-Log "Download successful (PowerShell)." -Level 3
         } catch {
-            Write-Log "ERREUR: Download failed for '$Uri'. Both aria2c and PowerShell failed. Error: $($_.Exception.Message)" -Color Red
+            Write-Log "ERROR: Download failed for '$Uri'. Both aria2c and PowerShell failed. Error: $($_.Exception.Message)" -Color Red
             throw "Download failed."
         }
     }
@@ -147,7 +146,7 @@ function Test-NvidiaGpu {
 
     Write-Log "Checking for NVIDIA GPU..." -Level 1
     try {
-        # nvidia-smi.exe is available (from conda env)
+        # nvidia-smi.exe is available (from conda env or system)
         # -L lists GPUs. 2>&1 merges error and output streams.
         $gpuCheck = & "nvidia-smi" -L 2>&1 | Out-String
 
@@ -166,6 +165,5 @@ function Test-NvidiaGpu {
         return $false # Return boolean FALSE
     }
 }
-# --- FIN DU FICHIER ---
-# Exporte les fonctions pour les rendre disponibles à l'importation
+# --- END OF FILE ---
 Export-ModuleMember -Function Write-Log, Invoke-AndLog, Download-File, Test-NvidiaGpu, Ask-Question

@@ -1,6 +1,5 @@
 param(
     [string]$InstallPath,
-    # [CORRECTIF] Accepte le paramètre -SkipSelf (par défaut, il est faux)
     [switch]$SkipSelf = $false 
 )
 
@@ -19,13 +18,16 @@ $filesToDownload = @(
     @{ RepoPath = "scripts/Download-HIDREAM-Models.ps1"; LocalPath = "scripts/Download-HIDREAM-Models.ps1" },
     @{ RepoPath = "scripts/Download-LTXV-Models.ps1";    LocalPath = "scripts/Download-LTXV-Models.ps1" },
     @{ RepoPath = "scripts/Download-QWEN-Models.ps1";    LocalPath = "scripts/Download-QWEN-Models.ps1" },
+    @{ RepoPath = "scripts/Download-Z-IMAGES-Models.ps1";    LocalPath = "scripts/Download-Z-IMAGES-Models.ps1" },
     @{ RepoPath = "scripts/UmeAiRTUtils.psm1";           LocalPath = "scripts/UmeAiRTUtils.psm1" },
     # Configuration Files
     @{ RepoPath = "scripts/environment.yml";             LocalPath = "scripts/environment.yml" },
     @{ RepoPath = "scripts/dependencies.json";           LocalPath = "scripts/dependencies.json" },
     @{ RepoPath = "scripts/custom_nodes.csv";            LocalPath = "scripts/custom_nodes.csv" },
+    @{ RepoPath = "scripts/snapshot.json";            	 LocalPath = "scripts/snapshot.json" },
     # Batch Launchers
     @{ RepoPath = "UmeAiRT-Start-ComfyUI.bat";           LocalPath = "UmeAiRT-Start-ComfyUI.bat" },
+    @{ RepoPath = "UmeAiRT-Start-ComfyUI_LowVRAM.bat";   LocalPath = "UmeAiRT-Start-ComfyUI_LowVRAM.bat" },
     @{ RepoPath = "UmeAiRT-Download_models.bat";         LocalPath = "UmeAiRT-Download_models.bat" },
     @{ RepoPath = "UmeAiRT-Update-ComfyUI.bat";          LocalPath = "UmeAiRT-Update-ComfyUI.bat" }
 )

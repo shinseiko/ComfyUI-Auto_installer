@@ -17,6 +17,7 @@ echo    3. WAN2.2 Models
 echo    4. HIDREAM Models
 echo    5. LTXV Models
 echo    6. QWEN Models
+echo    7. Z-IMAGE Models
 echo.
 echo    Q. Quit
 echo.
@@ -29,6 +30,7 @@ if /i "%CHOICE%"=="3" goto :DOWNLOAD_WAN2.2
 if /i "%CHOICE%"=="4" goto :DOWNLOAD_HIDREAM
 if /i "%CHOICE%"=="5" goto :DOWNLOAD_LTXV
 if /i "%CHOICE%"=="6" goto :DOWNLOAD_QWEN
+if /i "%CHOICE%"=="7" goto :DOWNLOAD_Z-IMG
 if /i "%CHOICE%"=="Q" goto :EOF
 
 echo Invalid choice. Please try again.
@@ -64,6 +66,11 @@ goto :END
 :DOWNLOAD_QWEN
 echo Starting download of QWEN models...
 powershell.exe -ExecutionPolicy Bypass -File "%~dp0scripts\Download-QWEN-Models.ps1" -InstallPath "%~dp0"
+goto :END
+
+:DOWNLOAD_Z-IMG
+echo Starting download of Z-IMAGE models...
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0scripts\Download-Z-IMAGES-Models.ps1" -InstallPath "%~dp0"
 goto :END
 
 :END
