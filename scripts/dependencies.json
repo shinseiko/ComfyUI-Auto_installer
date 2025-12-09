@@ -20,7 +20,7 @@
       "wheel"
     ],
     "torch": {
-      "packages": "torch==2.8.0+cu129 torchvision torchaudio",
+      "packages": "torch==2.8.0+cu129 torchvision torchaudio xformers",
       "index_url": "https://download.pytorch.org/whl/cu129"
     },
     "comfyui_requirements": "requirements.txt",
@@ -50,12 +50,6 @@
 	  "imageio-ffmpeg"
     ],
     "git_repos": [
-	{
-		"name": "xformers",
-		"url": "https://github.com/facebookresearch/xformers.git",
-		"commit": "v0.0.32.post2",
-		"install_options": "--no-build-isolation --verbose"
-	},
 	{
 		"name": "SageAttention",
 		"url": "https://github.com/thu-ml/SageAttention",
