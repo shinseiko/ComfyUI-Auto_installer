@@ -39,12 +39,11 @@
       "cython",
       "onnxruntime",
       "onnxruntime-gpu",
-      "triton-windows",
+      "triton-windows<3.5",
 	  "hf_xet",
 	  "nvidia-ml-py",
 	  "cupy-cuda12x",
-	  "imageio-ffmpeg",
-	  "triton-windows<3.5"
+	  "imageio-ffmpeg"
     ],
     "git_repos": [
 	{
