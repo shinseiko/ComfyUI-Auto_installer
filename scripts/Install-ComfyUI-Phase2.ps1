@@ -333,6 +333,14 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
     }
 }
 
+Write-Log "Downloading cComfyUI custom settings..." -Level 1
+$settingsFile = $dependencies.files.comfy_settings
+$settingsDest = Join-Path $InstallPath $settingsFile.destination
+$settingsDir = Split-Path $settingsDest -Parent
+if (-not (Test-Path $settingsDir)) { New-Item -Path $settingsDir -ItemType Directory -Force | Out-Null }
+Download-File -Uri $settingsFile.url -OutFile $settingsDest
+
+
 # --- Step 7: Optional Model Pack Downloads ---
 Write-Log "Optional Model Pack Downloads" -Level 0
 
