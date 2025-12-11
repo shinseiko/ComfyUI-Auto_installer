@@ -257,58 +257,58 @@ $env:COMFYUI_PATH = $null
 
 # --- Step 6: Install GPU-specific optimisations ---
 Write-Log "Installing GPU-specific optimisations" -Level 0
-if ($global:hasGpu) {
-    Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
-   
+# if ($global:hasGpu) {
+#     Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
+#    
    # Detect CUDA ONLY for compilations
-    $cudaHome = $null
-    $cudaPaths = @(
-        "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"
-    )
-    foreach ($pattern in $cudaPaths) {
-        $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
-                 Sort-Object Name -Descending | Select-Object -First 1
-        if ($found) { $cudaHome = $found.FullName; break }
-    }
-   
-    if ($cudaHome) {
-        $env:CUDA_HOME = $cudaHome
-        $env:PATH = "$(Join-Path $cudaHome 'bin');$env:PATH"
-        Write-Log "CUDA configured for compilation: $cudaHome" -Level 2 -Color Green
-    } else {
-        Write-Log "CUDA Toolkit not found (System) - optional packages ignored if they require compilation" -Level 2 -Color Yellow
-    }
-
-    foreach ($repo in $dependencies.pip_packages.git_repos) {
-        if (-not $cudaHome -and ($repo.name -match "SageAttention|apex")) {
-            Write-Log "Skipping $($repo.name) (CUDA Toolkit required)" -Level 2 -Color Yellow
-            continue
-        }
-       
-        Write-Log "Attempting to install $($repo.name)..." -Level 2
-        $installUrl = "git+$($repo.url)@$($repo.commit)"
-        $pipArgs = @("-m", "pip", "install")
-        if ($repo.install_options) {
-            $pipArgs += $repo.install_options.Split(' ')
-        }
-        $pipArgs += $installUrl
-
-        try {
-            # Use $pythonExe
-            $output = & $pythonExe $pipArgs 2>&1
-            if ($LASTEXITCODE -eq 0) {
-                Write-Log "$($repo.name) installed successfully" -Level 2 -Color Green
-				
-            } else {
-                Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
-            }
-        } catch {
-            Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
-        }
-    }
-} else {
-    Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
-}
+#     $cudaHome = $null
+#     $cudaPaths = @(
+#         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"
+#     )
+#     foreach ($pattern in $cudaPaths) {
+#         $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
+#                  Sort-Object Name -Descending | Select-Object -First 1
+#         if ($found) { $cudaHome = $found.FullName; break }
+#     }
+#    
+#     if ($cudaHome) {
+#         $env:CUDA_HOME = $cudaHome
+#         $env:PATH = "$(Join-Path $cudaHome 'bin');$env:PATH"
+#         Write-Log "CUDA configured for compilation: $cudaHome" -Level 2 -Color Green
+#     } else {
+#         Write-Log "CUDA Toolkit not found (System) - optional packages ignored if they require compilation" -Level 2 -Color Yellow
+#     }
+# 
+#     foreach ($repo in $dependencies.pip_packages.git_repos) {
+#         if (-not $cudaHome -and ($repo.name -match "SageAttention|apex")) {
+#             Write-Log "Skipping $($repo.name) (CUDA Toolkit required)" -Level 2 -Color Yellow
+#             continue
+#         }
+#        
+#         Write-Log "Attempting to install $($repo.name)..." -Level 2
+#         $installUrl = "git+$($repo.url)@$($repo.commit)"
+#         $pipArgs = @("-m", "pip", "install")
+#         if ($repo.install_options) {
+#             $pipArgs += $repo.install_options.Split(' ')
+#         }
+#         $pipArgs += $installUrl
+# 
+#         try {
+#             # Use $pythonExe
+#             $output = & $pythonExe $pipArgs 2>&1
+#             if ($LASTEXITCODE -eq 0) {
+#                 Write-Log "$($repo.name) installed successfully" -Level 2 -Color Green
+# 				
+#             } else {
+#                 Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
+#             }
+#         } catch {
+#             Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
+#         }
+#     }
+# } else {
+#     Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
+# }
 
 Write-Log "Installing packages from .whl files..." -Level 1
 foreach ($wheel in $dependencies.pip_packages.wheels) {

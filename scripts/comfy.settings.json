@@ -205,9 +205,10 @@
             }
         }
     },
-    "Comfy.LinkRenderMode": -1,
-    "Comfy.Graph.CanvasInfo": false,
     "Comfy.Locale": "en",
+    "Comfy.Graph.CanvasInfo": false,
+    "Comfy.LinkRenderMode": 0,
+    "Comfy.NodeBadge.NodeSourceBadgeMode": "None",
     "Comfy.NodeBadge.NodeLifeCycleBadgeMode": "None",
-    "Comfy.NodeBadge.NodeSourceBadgeMode": "None"
+    "Comfy.Minimap.Visible": false
 }

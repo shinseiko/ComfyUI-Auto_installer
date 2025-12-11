@@ -26,8 +26,8 @@
     "comfyui_requirements": "requirements.txt",
     "wheels": [
       {
-        "name": "nunchaku-1.0.0+torch2.9-cp312-cp312-win_amd64",
-        "url": "https://github.com/nunchaku-tech/nunchaku/releases/download/v1.0.0/nunchaku-1.0.0+torch2.9-cp312-cp312-win_amd64.whl"
+        "name": "nunchaku-1.1.0.dev20251111+torch2.9-cp312-cp312-win_amd64",
+        "url": "https://github.com/nunchaku-tech/nunchaku/releases/download/v1.1.0dev20251111/nunchaku-1.1.0.dev20251111+torch2.9-cp312-cp312-win_amd64.whl"
       },
       {
         "name": "insightface-0.7.3-cp312-cp312-win_amd64",
@@ -36,17 +36,20 @@
       {
         "name": "triton-3.5.0.post21-py3-none-any",
         "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/whl/triton-3.5.0.post21-py3-none-any.whl"
+      },
+      {
+        "name": "sageattention-2.2.0+cu130torch2.9.0andhigher.post4-cp39-abi3-win_amd64.whl",
+        "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/whl/sageattention-2.2.0+cu130torch2.9.0andhigher.post4-cp39-abi3-win_amd64.whl"
       }
     ],
     "standard": [
       "facexlib",
       "cython",
-      "onnxruntime",
       "onnxruntime-gpu",
       "triton-windows<3.6",
 	  "hf_xet",
 	  "nvidia-ml-py",
-	  "cupy-cuda12x",
+	  "cupy-cuda13x",
 	  "imageio-ffmpeg"
     ],
     "git_repos": [

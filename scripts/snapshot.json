@@ -1,7 +1,7 @@
 {
-    "comfyui": "f8b981ae9a5676311624bbafa636a1874db79459",
+    "comfyui": "fc657f471a29d07696ca16b566000e8e555d67d1",
     "git_custom_nodes": {
-        "https://github.com/crystian/ComfyUI-Crystools.git": {
+        "https://github.com/crystian/ComfyUI-Crystools": {
             "hash": "2f18256c5b5063937106f29a8e0a7db3ae3869b7",
             "disabled": false
         },
@@ -10,11 +10,11 @@
             "disabled": false
         },
         "https://github.com/Jonseed/ComfyUI-Detail-Daemon": {
-            "hash": "f391accbda2d309cdcbec65cb9fcc80a41197b20",
+            "hash": "f62d51009363083178e0ed8eb20d843ca130b58b",
             "disabled": false
         },
         "https://github.com/yolain/ComfyUI-Easy-Use": {
-            "hash": "9947b8be70e17ceabafa4fa7f476b54626de4704",
+            "hash": "e900c2ca9c0d90b0896881910ca7f3f02d88ebd8",
             "disabled": false
         },
         "https://github.com/kijai/ComfyUI-Florence2": {
@@ -42,7 +42,7 @@
             "disabled": false
         },
         "https://github.com/kijai/ComfyUI-KJNodes": {
-            "hash": "06a60ac3fec854909f35aba20aa5be39ff59a6e3",
+            "hash": "557edbae16975b718672c70a50f1d35e59fc4c01",
             "disabled": false
         },
         "https://github.com/Zehong-Ma/ComfyUI-MagCache": {
@@ -50,15 +50,15 @@
             "disabled": false
         },
         "https://github.com/ltdrdata/ComfyUI-Manager.git": {
-            "hash": "c8dce94c031ed87a8673d354482a39dedc15407b",
+            "hash": "22acaa1d2c612ae2587dbf7652262adc73e613d2",
             "disabled": false
         },
         "https://github.com/Smirnov75/ComfyUI-mxToolkit": {
             "hash": "7f7a0e584f12078a1c589645d866ae96bad0cc35",
             "disabled": false
         },
-        "https://github.com/nunchaku-tech/ComfyUI-nunchaku": {
-            "hash": "dbfd194294b727d9bec597a9a5df6d431c5d3a6f",
+        "https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Sync": {
+            "hash": "b64dc7add361c42cbadc60dfca1d70d78d2ad9f7",
             "disabled": false
         },
         "https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt": {
@@ -74,7 +74,7 @@
             "disabled": false
         },
         "https://github.com/Fannovel16/comfyui_controlnet_aux": {
-            "hash": "12f35647f0d510e03b45a47fb420fe1245a575df",
+            "hash": "136f125c89aed92ced1b6fbb491e13719b72fcc0",
             "disabled": false
         },
         "https://github.com/cubiq/ComfyUI_essentials": {
@@ -82,7 +82,7 @@
             "disabled": false
         },
         "https://github.com/chflame163/ComfyUI_LayerStyle": {
-            "hash": "90f4bfb38aaf121292f429b20eff07c6c121697e",
+            "hash": "ca07ce8edf8342abbe2485cbec88b239aac480e0",
             "disabled": false
         },
         "https://github.com/ssitu/ComfyUI_UltimateSDUpscale": {
@@ -90,7 +90,7 @@
             "disabled": false
         },
         "https://github.com/rgthree/rgthree-comfy": {
-            "hash": "42e73c3c48e8268129a6a1ea6d9766913bfc5435",
+            "hash": "ce6fc334c923a465254a62073fb1677c1cc6a193",
             "disabled": false
         },
         "https://github.com/ltdrdata/was-node-suite-comfyui": {
@@ -106,8 +106,16 @@
             "disabled": false
         }
     },
-    "cnr_custom_nodes": {},
-    "file_custom_nodes": [],
+    "cnr_custom_nodes": {
+        "ComfyUI-nunchaku": "1.0.2",
+        "seedvarianceenhancer": "2.0.1"
+    },
+    "file_custom_nodes": [
+        {
+            "filename": "websocket_image_save.py",
+            "disabled": false
+        }
+    ],
     "pips": {
         "absl-py==2.3.1": "",
         "accelerate==1.12.0": "",
@@ -115,7 +123,7 @@
         "aiofiles==24.1.0": "",
         "aiohappyeyeballs==2.6.1": "",
         "aiohttp==3.13.2": "",
-        "aiohttp_socks==0.10.2": "",
+        "aiohttp_socks==0.11.0": "",
         "aiosignal==1.4.0": "",
         "albucore==0.0.24": "",
         "albumentations==2.0.8": "",
@@ -123,7 +131,6 @@
         "annotated-types==0.7.0": "",
         "antlr4-python3-runtime==4.9.3": "",
         "anyio==4.12.0": "",
-        "apex": "git+https://github.com/UmeAiRT/apex@3b946036d04623d989e26f95c40818e3fc220211",
         "attrs==25.4.0": "",
         "audioread==3.1.0": "",
         "av==16.0.1": "",
@@ -140,46 +147,45 @@
         "colorama==0.4.6": "",
         "coloredlogs==15.0.1": "",
         "colorlog==6.10.1": "",
-        "colour-science==0.4.6": "",
+        "colour-science==0.4.7": "",
         "comfyui-embedded-docs==0.3.1": "",
-        "comfyui-workflow-templates-core==0.3.12": "",
-        "comfyui-workflow-templates-media-api==0.3.14": "",
-        "comfyui-workflow-templates-media-image==0.3.17": "",
-        "comfyui-workflow-templates-media-other==0.3.15": "",
-        "comfyui-workflow-templates-media-video==0.3.12": "",
-        "comfyui_frontend_package==1.32.9": "",
-        "comfyui_workflow_templates==0.7.25": "",
+        "comfyui-workflow-templates-core==0.3.27": "",
+        "comfyui-workflow-templates-media-api==0.3.20": "",
+        "comfyui-workflow-templates-media-image==0.3.27": "",
+        "comfyui-workflow-templates-media-other==0.3.40": "",
+        "comfyui-workflow-templates-media-video==0.3.15": "",
+        "comfyui_frontend_package==1.33.13": "",
+        "comfyui_workflow_templates==0.7.54": "",
         "contourpy==1.3.3": "",
         "cryptography==46.0.3": "",
         "cstr": "git+https://github.com/ltdrdata/cstr@0520c29a18a7a869a6e5983861d6f7a4c86f8e9b",
-        "cupy-cuda12x==13.6.0": "",
         "cycler==0.12.1": "",
         "Cython==3.2.2": "",
         "ddt==1.7.2": "",
         "decorator==5.2.1": "",
         "deepdiff==8.6.1": "",
-        "diffusers==0.35.2": "",
+        "diffusers==0.36.0": "",
         "dill==0.4.0": "",
         "docutils==0.22.3": "",
         "easydict==1.13": "",
-        "einops==0.8.1": "",
+        "einops==0.8.0": "",
         "facexlib==0.3.0": "",
         "fairscale==0.4.13": "",
         "fastrlock==0.8.3": "",
         "ffmpy": "git+https://github.com/ltdrdata/ffmpy.git@f000737698b387ffaeab7cd871b0e9185811230d",
-        "filelock==3.19.1": "",
+        "filelock==3.20.0": "",
         "filterpy==1.4.5": "",
         "flatbuffers==25.9.23": "",
         "fonttools==4.61.0": "",
         "frozenlist==1.8.0": "",
-        "fsspec==2025.9.0": "",
+        "fsspec==2025.12.0": "",
         "ftfy==6.3.1": "",
         "fvcore==0.1.5.post20221221": "",
         "gdown==5.2.0": "",
         "gguf==0.17.1": "",
         "gitdb==4.0.12": "",
         "GitPython==3.1.45": "",
-        "greenlet==3.2.4": "",
+        "greenlet==3.3.0": "",
         "h11==0.16.0": "",
         "h2==4.3.0": "",
         "hf-xet==1.2.0": "",
@@ -195,7 +201,7 @@
         "imageio-ffmpeg==0.6.0": "",
         "img2texture": "git+https://github.com/ltdrdata/img2texture.git@d6159abea44a0b2cf77454d3d46962c8b21eb9d3",
         "importlib_metadata==8.7.0": "",
-        "insightface": "file:///E:/Dev/test/scripts/insightface-0.7.3-cp312-cp312-win_amd64.whl#sha256=4e58a504433ba5a500d48328689e7d6c69873165653ded7553ce804beb8723db",
+        "insightface==0.7.3": "",
         "iopath==0.1.10": "",
         "jax==0.7.1": "",
         "jaxlib==0.7.1": "",
@@ -209,7 +215,7 @@
         "lark==1.3.1": "",
         "lazy_loader==0.4": "",
         "librosa==0.11.0": "",
-        "llvmlite==0.45.1": "",
+        "llvmlite==0.46.0": "",
         "loguru==0.7.3": "",
         "lxml==6.0.2": "",
         "Mako==1.3.10": "",
@@ -217,7 +223,7 @@
         "mapbox_earcut==2.0.0": "",
         "markdown-it-py==4.0.0": "",
         "MarkupSafe==2.1.5": "",
-        "matplotlib==3.10.7": "",
+        "matplotlib==3.10.8": "",
         "matrix-nio==0.25.2": "",
         "mdurl==0.1.2": "",
         "mediapipe==0.10.21": "",
@@ -226,15 +232,15 @@
         "msgpack==1.1.2": "",
         "mss==10.1.0": "",
         "multidict==6.7.0": "",
-        "networkx==3.5": "",
+        "networkx==3.6.1": "",
         "ninja==1.13.0": "",
-        "numba==0.62.1": "",
+        "numba==0.63.1": "",
         "numpy==2.2.6": "",
-        "nunchaku": "file:///E:/Dev/test/scripts/nunchaku-1.0.0%2Btorch2.8-cp312-cp312-win_amd64.whl#sha256=a20df52ae1becfb1d7efae4f4d51597ea113ea2a48baf9708394df3a16079f1a",
+        "nunchaku": "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/nunchaku-1.0.2+torch2.9-cp312-cp312-win_amd64.whl",
         "nvidia-cuda-runtime-cu12==12.9.79": "",
-        "nvidia-ml-py==13.580.82": "",
+        "nvidia-ml-py==13.590.44": "",
         "omegaconf==2.3.0": "",
-        "onnx==1.19.1": "",
+        "onnx==1.20.0": "",
         "onnxruntime==1.23.2": "",
         "onnxruntime-gpu==1.23.2": "",
         "open_clip_torch==3.2.0": "",
@@ -247,11 +253,11 @@
         "peft==0.18.0": "",
         "piexif==1.1.3": "",
         "pilgram==2.0.0": "",
-        "pillow==11.3.0": "",
+        "pillow==12.0.0": "",
         "pixeloe==0.1.4": "",
-        "platformdirs==4.5.0": "",
-        "polars==1.35.2": "",
-        "polars-runtime-32==1.35.2": "",
+        "platformdirs==4.5.1": "",
+        "polars==1.36.1": "",
+        "polars-runtime-32==1.36.1": "",
         "polygraphy==0.49.26": "",
         "pooch==1.8.2": "",
         "portalocker==3.2.0": "",
@@ -277,21 +283,21 @@
         "PySocks==1.7.1": "",
         "python-dateutil==2.9.0.post0": "",
         "python-dotenv==1.2.1": "",
-        "python-socks==2.7.3": "",
+        "python-socks==2.8.0": "",
         "pywin32==311": "",
         "PyYAML==6.0.3": "",
         "referencing==0.37.0": "",
         "regex==2025.11.3": "",
-        "rembg==2.0.68": "",
+        "rembg==2.0.69": "",
         "requests==2.32.5": "",
         "rich==14.2.0": "",
         "rpds-py==0.30.0": "",
         "rtree==1.4.1": "",
         "safetensors==0.7.0": "",
-        "sageattention": "git+https://github.com/thu-ml/SageAttention@1269374b6a1dede796464d57aa53dd2963436f14",
+        "sageattention": "file:///E:/Dev/test/sageattention-2.2.0%2Bcu130torch2.9.0andhigher.post4-cp39-abi3-win_amd64.whl#sha256=f7261c53a1d46202059daff6b8feac5ee806274d47e3e7fb7abf8c5f6d410c92",
         "SAM-2": "git+https://github.com/facebookresearch/sam2@2b90b9f5ceec907a1c18123530e92e794ad901a4",
         "scikit-image==0.25.2": "",
-        "scikit-learn==1.7.2": "",
+        "scikit-learn==1.8.0": "",
         "scipy==1.16.3": "",
         "segment-anything==1.0": "",
         "sentencepiece==0.2.1": "",
@@ -306,7 +312,7 @@
         "soupsieve==2.8": "",
         "soxr==1.0.0": "",
         "spandrel==0.4.1": "",
-        "SQLAlchemy==2.0.44": "",
+        "SQLAlchemy==2.0.45": "",
         "stringzilla==4.4.0": "",
         "svg.path==7.0": "",
         "sympy==1.14.0": "",
@@ -322,32 +328,32 @@
         "tokenizers==0.22.1": "",
         "toml==0.10.2": "",
         "tomli==2.3.0": "",
-        "torch==2.8.0+cu129": "",
-        "torchaudio==2.8.0+cu129": "",
-        "torchcodec==0.8.1": "",
+        "torch==2.9.1+cu130": "",
+        "torchaudio==2.9.1+cu130": "",
+        "torchcodec==0.9.1": "",
         "torchsde==0.2.6": "",
-        "torchvision==0.23.0+cu129": "",
+        "torchvision==0.24.1+cu130": "",
         "tqdm==4.67.1": "",
         "trampoline==0.1.2": "",
-        "transformers==4.57.3": "",
+        "transformers==4.56.2": "",
         "transparent-background==1.3.4": "",
-        "trimesh==4.10.0": "",
+        "trimesh==4.10.1": "",
         "triton": "file:///E:/Dev/test/scripts/triton-3.5.0.post21-py3-none-any.whl#sha256=3d5411c67909e93e4f43837381e75548235f057986873336b6de0d5b85e25a1f",
         "triton-windows==3.5.0.post21": "",
         "typer==0.20.0": "",
         "typing-inspection==0.4.2": "",
         "typing_extensions==4.15.0": "",
-        "ultralytics==8.3.233": "",
+        "ultralytics==8.3.235": "",
         "ultralytics-thop==2.0.18": "",
         "unpaddedbase64==2.1.0": "",
-        "urllib3==2.5.0": "",
-        "uv==0.9.13": "",
-        "vhacdx==0.0.9": "",
+        "urllib3==2.6.1": "",
+        "uv==0.9.17": "",
+        "vhacdx==0.0.10": "",
         "wcwidth==0.2.14": "",
         "wget==3.2": "",
         "wheel==0.45.1": "",
         "win32_setctime==1.2.0": "",
-        "xformers": "git+https://github.com/facebookresearch/xformers.git@5d4b92a5e5a9c6c6d4878283f47d82e17995b468",
+        "xformers==0.0.33.post2": "",
         "xxhash==3.6.0": "",
         "yacs==0.1.8": "",
         "yapf==0.43.0": "",
