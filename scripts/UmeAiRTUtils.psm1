@@ -92,7 +92,7 @@ function Download-File {
         $OutDir = Split-Path -Path $OutFile -Parent
         $OutName = Split-Path -Path $OutFile -Leaf
         # Recreate argument string
-        $aria2Args = "--console-log-level=warn --quiet=true -x 16 -s 16 -k 1M --dir=`"$OutDir`" --out=`"$OutName`" `"$Uri`""
+        $aria2Args = "--console-log-level=warn --disable-ipv6 --quiet=true -x 16 -s 16 -k 1M --dir=`"$OutDir`" --out=`"$OutName`" `"$Uri`""
         
         Write-Log "Executing: $aria2ExePath $aria2Args" -Level 3 -Color DarkGray
 
