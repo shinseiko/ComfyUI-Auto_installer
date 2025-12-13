@@ -26,6 +26,7 @@ This project provides a suite of PowerShell scripts to fully automate the instal
 - Windows 10 or Windows 11 (64-bit).
 - An active internet connection.
 - CUDA 13.0.
+- Python 3.12.
 - GIT for Windows.
 
 ## Installation and Usage
