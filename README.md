@@ -25,7 +25,8 @@ This project provides a suite of PowerShell scripts to fully automate the instal
 
 - Windows 10 or Windows 11 (64-bit).
 - An active internet connection.
-- An NVIDIA GPU is strongly recommended to use the models.
+- CUDA 13.0.
+- GIT for Windows.
 
 ## Installation and Usage
 
