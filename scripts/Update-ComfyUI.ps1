@@ -74,15 +74,6 @@ Write-Log "Checking main ComfyUI requirements..." -Level 1
 $mainReqs = Join-Path $comfyPath "requirements.txt"
 Invoke-AndLog $pythonExe "-m pip install -r `"$mainReqs`""
 
-Write-Log "Updating UmeAiRT Workflows (Forcing)..." -Level 1
-# Since user/ folder is now a junction, this works perfectly on external files
-Write-Log "  Step 1/3: Resetting local changes (reset)..." -Level 2
-Invoke-AndLog "git" "-C `"$workflowPath`" reset --hard HEAD"
-Write-Log "  Step 2/3: Removing untracked local files (clean)..." -Level 2
-Invoke-AndLog "git" "-C `"$workflowPath`" clean -fd"
-Write-Log "  Step 3/3: Pulling updates (pull)..." -Level 2
-Invoke-AndLog "git" "-C `"$workflowPath`" pull"
-
 # --- 2. Update and Install Custom Nodes (Manager CLI) ---
 Write-Log "Updating/Installing Custom Nodes..." -Level 0 -Color Green
 
@@ -113,78 +104,32 @@ $env:COMFYUI_PATH = $comfyPath
 # --- D. Snapshot vs CSV Logic ---
 $snapshotFile = Join-Path $scriptPath "snapshot.json"
 
-if (Test-Path $snapshotFile) {
-    # --- METHOD 1: Snapshot (Preferred) ---
-    Write-Log "SNAPSHOT DETECTED: Syncing nodes via Manager CLI..." -Level 1 -Color Cyan
-    
-    try {
-        # [FIX] Using correct command: restore-snapshot
-        Invoke-AndLog $pythonExe "`"$cmCliScript`" restore-snapshot `"$snapshotFile`""
-        Write-Log "Snapshot sync complete!" -Level 1 -Color Green
-    } catch {
-        Write-Log "ERROR: Snapshot sync failed. Check logs." -Level 1 -Color Red
-    }
+# --- D. Global Update Strategy ---
 
-} else {
-    # --- METHOD 2: CSV Fallback ---
-    Write-Log "No snapshot.json found. Falling back to custom_nodes.csv..." -Level 1 -Color Yellow
-    
-    $csvPath = Join-Path $InstallPath "scripts\custom_nodes.csv"
-    if (Test-Path $csvPath) {
-        $customNodesList = Import-Csv -Path $csvPath
-        
-        foreach ($node in $customNodesList) {
-            $nodeName = $node.Name
-            $repoUrl = $node.RepoUrl
-            $nodePath = if ($node.Subfolder) { Join-Path $internalCustomNodesPath $node.Subfolder } else { Join-Path $internalCustomNodesPath $nodeName }
-        
-            if (Test-Path $nodePath) {
-                Write-Log "Updating $nodeName (Git Pull)..." -Level 2 -Color Cyan
-                # For existing nodes, simple git pull is often safer/faster than CLI reinstall
-                Invoke-AndLog "git" "-C `"$nodePath`" pull"
-            } else {
-                Write-Log "Installing $nodeName via CLI..." -Level 2 -Color Yellow
-                # Use CLI for new installs to handle install.py scripts
-                try {
-                    Invoke-AndLog $pythonExe "`"$cmCliScript`" install $repoUrl"
-                } catch {
-                    Write-Log "Failed to install $nodeName via CLI." -Level 2 -Color Red
-                }
-            }
-        }
-    } else {
-        Write-Log "WARNING: custom_nodes.csv not found locally either." -Level 1 -Color Yellow
+# 1. Restore Snapshot (if available) to ensure all nodes are present
+if (Test-Path $snapshotFile) {
+    Write-Log "Install missing nodes first..." -Level 1 -Color Cyan
+    try {
+        Invoke-AndLog $pythonExe "`"$cmCliScript`" restore-snapshot `"$snapshotFile`""
+    } catch {
+        Write-Log "WARNING: Snapshot restore encountered issues." -Level 1 -Color Yellow
     }
+}
+
+# 2. Update All Nodes (New & Existing)
+Write-Log "Performing GLOBAL UPDATE of all custom nodes..." -Level 1 -Color Cyan
+try {
+    # 'update all' handles git pulls, requirements.txt, and install.py scripts automatically
+    Invoke-AndLog $pythonExe "`"$cmCliScript`" update all"
+    Write-Log "All custom nodes updated successfully via CLI!" -Level 1 -Color Green
+} catch {
+    Write-Log "ERROR: Global update failed. Check logs." -Level 1 -Color Red
 }
 
 # --- Cleanup Env Vars ---
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$comfyPath;"), ""
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$managerPath;"), ""
 $env:COMFYUI_PATH = $null
-
-# --- 3. Update Python Dependencies ---
-Write-Log "Updating all Python dependencies..." -Level 0 -Color Green
-
-# Reinstall wheel packages to ensure correct versions from JSON
-Write-Log "Update wheel packages..." -Level 1
-foreach ($wheel in $dependencies.pip_packages.wheels) {
-    $wheelName = $wheel.name
-    $wheelUrl = $wheel.url
-    $localWheelPath = Join-Path $env:TEMP "$($wheelName).whl"
-
-    Write-Log "Processing wheel: $wheelName" -Level 2 -Color Cyan
-
-    try {
-        Download-File -Uri $wheelUrl -OutFile $localWheelPath
-        if (Test-Path $localWheelPath) {
-            Invoke-AndLog $pythonExe "-m pip install `"$localWheelPath`""
-        }
-    } catch {
-        Write-Log "ERROR processing $wheelName : $($_.Exception.Message)" -Level 2 -Color Red
-    } finally {
-        if (Test-Path $localWheelPath) { Remove-Item $localWheelPath -Force -ErrorAction SilentlyContinue }
-    }
-}
 
 Write-Log "===============================================================================" -Level -2
 Write-Log "Update process complete!" -Level -2 -Color Yellow
