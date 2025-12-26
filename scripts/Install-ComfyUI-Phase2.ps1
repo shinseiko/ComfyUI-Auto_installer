@@ -48,7 +48,8 @@ if (Test-Path $installTypeFile) {
             $pythonExe = $venvPython
             Write-Log "VENV MODE DETECTED: Using $pythonExe" -Level 1 -Color Cyan
         }
-    } elseif ($iType -eq "conda") {
+    }
+    elseif ($iType -eq "conda") {
         # Checks specifically for the UmeAiRT environment python
         $condaEnvPython = Join-Path $env:LOCALAPPDATA "Miniconda3\envs\UmeAiRT\python.exe"
         if (Test-Path $condaEnvPython) {
@@ -56,7 +57,8 @@ if (Test-Path $installTypeFile) {
             Write-Log "CONDA MODE DETECTED: Using $pythonExe" -Level 1 -Color Cyan
         }
     }
-} else {
+}
+else {
     Write-Log "WARNING: Installation type not detected. Using system Python (if available)." -Level 1 -Color Yellow
 }
 
@@ -84,7 +86,8 @@ if (-not (Test-Path $comfyPath)) {
         Read-Host "Press Enter to exit."
         exit 1
     }
-} else {
+}
+else {
     Write-Log "ComfyUI directory already exists" -Level 1 -Color Green
 }
 
@@ -110,7 +113,8 @@ foreach ($folder in $externalFolders) {
                 # We MOVE the internal folder to external. This preserves subfolders (checkpoints, loras, vae...)!
                 Write-Log "Moving default structure of '$folder' to external location..." -Level 1
                 Move-Item -Path $internalPath -Destination $externalPath -Force
-            } else {
+            }
+            else {
                 # CASE 2: External ALREADY exists (Previous install).
                 # We COPY content from internal to external (to fill missing default folders), then delete internal.
                 Write-Log "External '$folder' detected. Merging default structure..." -Level 1
@@ -118,7 +122,8 @@ foreach ($folder in $externalFolders) {
                 Remove-Item -Path $internalPath -Recurse -Force
             }
         }
-    } elseif (-not (Test-Path $externalPath)) {
+    }
+    elseif (-not (Test-Path $externalPath)) {
         # CASE 3: Neither exist (rare). Create empty external.
         New-Item -ItemType Directory -Force -Path $externalPath | Out-Null
     }
@@ -144,7 +149,8 @@ try {
         Write-Log "Installing ninja..." -Level 1
         Invoke-AndLog $pythonExe "-m pip install ninja"
     }
-} catch {
+}
+catch {
     Write-Log "Installing ninja..." -Level 1
     Invoke-AndLog $pythonExe "-m pip install ninja"
 }
@@ -200,11 +206,13 @@ if (Test-Path $snapshotFile) {
         # Using 'restore-snapshot' command
         Invoke-AndLog $pythonExe "`"$cmCliScript`" restore-snapshot `"$snapshotFile`""
         Write-Log "Custom nodes installation complete!" -Level 1 -Color Green
-    } catch {
+    }
+    catch {
         Write-Log "ERROR: Snapshot restoration failed. Check logs." -Level 1 -Color Red
     }
 
-} else {
+}
+else {
     # --- METHOD B: Fallback to CSV ---
     Write-Log "No snapshot.json found. Falling back to custom_nodes.csv..." -Level 1 -Color Yellow
     
@@ -224,29 +232,33 @@ if (Test-Path $snapshotFile) {
                 try {
                     Invoke-AndLog $pythonExe "`"$cmCliScript`" install $repoUrl"
                     $successCount++
-                } catch {
+                }
+                catch {
                     Write-Log "Failed to install $nodeName via CLI." -Level 2 -Color Red
                     $failCount++
                 }
-            } else {
+            }
+            else {
                 Write-Log "$nodeName already exists." -Level 1 -Color Green
                 $successCount++
             }
         }
         Write-Log "Custom nodes installation summary: $successCount processed." -Level 1
-    } else {
+    }
+    else {
         Write-Log "WARNING: Neither snapshot.json nor custom_nodes.csv were found." -Level 1 -Color Red
     }
 }
 # UmeAiRT-Sync instalation
 $umeSyncPath = Join-Path $internalCustomNodes "ComfyUI-UmeAiRT-Sync"
 if (-not (Test-Path $umeSyncPath)) {
-	Write-Log "Installing ComfyUI-UmeAiRT-Sync (for workflows auto-update)..." -Level 1 -Color Cyan
+    Write-Log "Installing ComfyUI-UmeAiRT-Sync (for workflows auto-update)..." -Level 1 -Color Cyan
     Invoke-AndLog "git" "clone https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Sync.git `"$umeSyncPath`""
     if (Test-Path "$umeSyncPath\requirements.txt") {
         Invoke-AndLog "python" "-m pip install -r `"$umeSyncPath\requirements.txt`""
     }
-} else {
+}
+else {
     Write-Log "UmeAiRT Sync Manager already installed." -Level 1 -Color Green
 }
 # --- CLEANUP ENV VARS ---
@@ -260,7 +272,7 @@ Write-Log "Installing GPU-specific optimisations" -Level 0
 # if ($global:hasGpu) {
 #     Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
 #    
-   # Detect CUDA ONLY for compilations
+# Detect CUDA ONLY for compilations
 #     $cudaHome = $null
 #     $cudaPaths = @(
 #         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"
@@ -316,19 +328,21 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
     $wheelPath = Join-Path $scriptPath "$($wheel.name).whl"
      
     try {
-        Download-File -Uri $wheel.url -OutFile $wheelPath
+        Save-File -Uri $wheel.url -OutFile $wheelPath
         
         if (Test-Path $wheelPath) {
             # Use $pythonExe
             $output = & $pythonExe -m pip install "`"$wheelPath`"" 2>&1
             if ($LASTEXITCODE -eq 0) {
                 Write-Log "$($wheel.name) installed successfully" -Level 3 -Color Green
-            } else {
+            }
+            else {
                 Write-Log "$($wheel.name) installation failed (continuing...)" -Level 3 -Color Yellow
             }
             Remove-Item $wheelPath -ErrorAction SilentlyContinue
         }
-    } catch {
+    }
+    catch {
         Write-Log "Failed to download/install $($wheel.name) (continuing...)" -Level 3 -Color Yellow
     }
 }
@@ -338,20 +352,20 @@ $settingsFile = $dependencies.files.comfy_settings
 $settingsDest = Join-Path $InstallPath $settingsFile.destination
 $settingsDir = Split-Path $settingsDest -Parent
 if (-not (Test-Path $settingsDir)) { New-Item -Path $settingsDir -ItemType Directory -Force | Out-Null }
-Download-File -Uri $settingsFile.url -OutFile $settingsDest
+Save-File -Uri $settingsFile.url -OutFile $settingsDest
 
 
 # --- Step 7: Optional Model Pack Downloads ---
 Write-Log "Optional Model Pack Downloads" -Level 0
 
 $modelPacks = @(
-    @{Name="FLUX"; ScriptName="Download-FLUX-Models.ps1"},
-    @{Name="WAN2.1"; ScriptName="Download-WAN2.1-Models.ps1"},
-    @{Name="WAN2.2"; ScriptName="Download-WAN2.2-Models.ps1"},
-    @{Name="HIDREAM"; ScriptName="Download-HIDREAM-Models.ps1"},
-    @{Name="LTXV"; ScriptName="Download-LTXV-Models.ps1"},
-    @{Name="QWEN"; ScriptName="Download-QWEN-Models.ps1"},
-    @{Name="Z-IMAGE"; ScriptName="Download-Z-IMAGES-Models.ps1"}
+    @{Name = "FLUX"; ScriptName = "Download-FLUX-Models.ps1" },
+    @{Name = "WAN2.1"; ScriptName = "Download-WAN2.1-Models.ps1" },
+    @{Name = "WAN2.2"; ScriptName = "Download-WAN2.2-Models.ps1" },
+    @{Name = "HIDREAM"; ScriptName = "Download-HIDREAM-Models.ps1" },
+    @{Name = "LTXV"; ScriptName = "Download-LTXV-Models.ps1" },
+    @{Name = "QWEN"; ScriptName = "Download-QWEN-Models.ps1" },
+    @{Name = "Z-IMAGE"; ScriptName = "Download-Z-IMAGES-Models.ps1" }
 )
 $scriptsSubFolder = Join-Path $InstallPath "scripts"
 
@@ -372,10 +386,12 @@ foreach ($pack in $modelPacks) {
             # External script call: We pass InstallPath
             & $scriptPath -InstallPath $InstallPath
             $validInput = $true
-        } elseif ($choice -eq 'N' -or $choice -eq 'n') {
+        }
+        elseif ($choice -eq 'N' -or $choice -eq 'n') {
             Write-Log "Skipping download for $($pack.Name) models." -Level 2
             $validInput = $true
-        } else {
+        }
+        else {
             Write-Log "Invalid choice. Please enter Y or N." -Level 2 -Color Red
         }
     }

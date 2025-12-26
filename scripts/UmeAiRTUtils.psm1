@@ -34,7 +34,8 @@ function Write-Log {
         }
         Write-Host $consoleMessage -ForegroundColor $Color
         Add-Content -Path $global:logFile -Value $logMessage -ErrorAction SilentlyContinue
-    } catch {
+    }
+    catch {
         Write-Host "Internal error in Write-Log: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
@@ -59,17 +60,20 @@ function Invoke-AndLog {
             Write-Log "Error Output:" -Color Red
             $output | ForEach-Object { Write-Host $_ -ForegroundColor Red; Add-Content -Path $global:logFile -Value $_ -ErrorAction SilentlyContinue }
             throw "Command execution failed. Check logs."
-        } else { Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue }
-    } catch {
+        }
+        else { Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue }
+    }
+    catch {
         $errMsg = "FATAL ERROR executing: $File $Arguments. Error: $($_.Exception.Message)"
         Write-Log $errMsg -Color Red
         Add-Content -Path $global:logFile -Value $errMsg -ErrorAction SilentlyContinue
         Read-Host "A fatal error occurred. Press Enter to exit."
         exit 1
-    } finally { if (Test-Path $tempLogFile) { Remove-Item $tempLogFile -ErrorAction SilentlyContinue } }
+    }
+    finally { if (Test-Path $tempLogFile) { Remove-Item $tempLogFile -ErrorAction SilentlyContinue } }
 }
 
-function Download-File {
+function Save-File {
     param([string]$Uri, [string]$OutFile)
     
     if (Test-Path $OutFile) {
@@ -108,7 +112,8 @@ function Download-File {
         
         Write-Log "Download successful (aria2c)." -Level 3
 
-    } catch {
+    }
+    catch {
         # --- Attempt 2: Fallback PowerShell ---
         # Runs if aria2c is not found OR if Invoke-Expression above failed
         Write-Log "aria2c failed or not found ('$($_.Exception.Message)'), using slower Invoke-WebRequest..." -Level 3
@@ -117,14 +122,15 @@ function Download-File {
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Tls13
             Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing -ErrorAction Stop
             Write-Log "Download successful (PowerShell)." -Level 3
-        } catch {
+        }
+        catch {
             Write-Log "ERROR: Download failed for '$Uri'. Both aria2c and PowerShell failed. Error: $($_.Exception.Message)" -Color Red
             throw "Download failed."
         }
     }
 }
 
-function Ask-Question {
+function Read-UserChoice {
     param([string]$Prompt, [string[]]$Choices, [string[]]$ValidAnswers)
     $choice = ''
     while ($choice -notin $ValidAnswers) {
@@ -154,16 +160,18 @@ function Test-NvidiaGpu {
             Write-Log "NVIDIA GPU detected." -Level 2 -Color Green
             Write-Log "$($gpuCheck.Trim())" -Level 3
             return $true # Return boolean TRUE
-        } else {
+        }
+        else {
             Write-Log "WARNING: No NVIDIA GPU detected. Skipping GPU-only packages." -Level 1 -Color Yellow
             Write-Log "nvidia-smi output (for debugging): $gpuCheck" -Level 3
             return $false # Return boolean FALSE
         }
-    } catch {
+    }
+    catch {
         Write-Log "WARNING: 'nvidia-smi' command failed. Assuming no GPU." -Level 1 -Color Yellow
         Write-Log "Error details: $($_.Exception.Message)" -Level 3
         return $false # Return boolean FALSE
     }
 }
 # --- END OF FILE ---
-Export-ModuleMember -Function Write-Log, Invoke-AndLog, Download-File, Test-NvidiaGpu, Ask-Question
+Export-ModuleMember -Function Write-Log, Invoke-AndLog, Save-File, Test-NvidiaGpu, Read-UserChoice

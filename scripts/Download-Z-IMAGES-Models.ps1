@@ -31,7 +31,7 @@ Write-Log "---------------------------------------------------------------------
 Write-Log "Checking for NVIDIA GPU to provide model recommendations..." -Color Yellow
 if (Get-Command 'nvidia-smi' -ErrorAction SilentlyContinue) {
     try {
-        $gpuInfoCsv = nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+        $gpuInfoCsv = nvidia-smi --query-gpu=name, memory.total --format=csv, noheader
         if ($gpuInfoCsv) {
             $gpuInfoParts = $gpuInfoCsv.Split(','); $gpuName = $gpuInfoParts[0].Trim(); $gpuMemoryMiB = ($gpuInfoParts[1] -replace ' MiB').Trim(); $gpuMemoryGiB = [math]::Round([int]$gpuMemoryMiB / 1024)
             Write-Log "GPU: $gpuName" -Color Green; Write-Log "VRAM: $gpuMemoryGiB GB" -Color Green
@@ -65,14 +65,16 @@ if (Get-Command 'nvidia-smi' -ErrorAction SilentlyContinue) {
                 Write-Log "Recommendation: GGUF Q3_K_S (Expect system memory usage)" -Color Red 
             }
         }
-    } catch { Write-Log "Could not retrieve GPU information. Error: $($_.Exception.Message)" -Color Red }
-} else { Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray }
+    }
+    catch { Write-Log "Could not retrieve GPU information. Error: $($_.Exception.Message)" -Color Red }
+}
+else { Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray }
 Write-Log "-------------------------------------------------------------------------------"
 
 # --- Interactive Questions ---
-$baseChoice = Ask-Question "Do you want to download Z-IMAGE Turbo BF16 (Base Model)? " @("A) Yes (Best Quality)", "B) No") @("A", "B")
-$ggufChoice = Ask-Question "Do you want to download Z-IMAGE Turbo GGUF models (Optimized)?" @("A) Q8_0 (High Quality)", "B) Q6_K", "C) Q5_K_S (Balanced)", "D) Q4_K_S (Fast)", "E) Q3_K_S (Low VRAM)", "F) All", "G) No") @("A", "B", "C", "D", "E", "F", "G")
-$upscalerChoice = Ask-Question "Do you want to download RealESRGAN Upscalers? " @("A) Yes", "B) No") @("A", "B")
+$baseChoice = Read-UserChoice "Do you want to download Z-IMAGE Turbo BF16 (Base Model)? " @("A) Yes (Best Quality)", "B) No") @("A", "B")
+$ggufChoice = Read-UserChoice "Do you want to download Z-IMAGE Turbo GGUF models (Optimized)?" @("A) Q8_0 (High Quality)", "B) Q6_K", "C) Q5_K_S (Balanced)", "D) Q4_K_S (Fast)", "E) Q3_K_S (Low VRAM)", "F) All", "G) No") @("A", "B", "C", "D", "E", "F", "G")
+$upscalerChoice = Read-UserChoice "Do you want to download RealESRGAN Upscalers? " @("A) Yes", "B) No") @("A", "B")
 
 # --- Setup Paths ---
 Write-Log "Starting Z-IMAGE Turbo model downloads..." -Color Cyan
@@ -92,14 +94,14 @@ $doDownload = ($baseChoice -eq 'A' -or $ggufChoice -ne 'G')
 
 if ($doDownload) {
     Write-Log "Downloading common support files (VAE)..."
-    Download-File -Uri "$baseUrl/vae/ae.safetensors" -OutFile (Join-Path $vaeDir "ae.safetensors")
+    Save-File -Uri "$baseUrl/vae/ae.safetensors" -OutFile (Join-Path $vaeDir "ae.safetensors")
 }
 
 # --- Download BF16 Base Model ---
 if ($baseChoice -eq 'A') {
     Write-Log "Downloading Z-IMAGE Turbo BF16 Base Model..."
-    Download-File -Uri "$baseUrl/diffusion_models/Z-IMG/z_image_turbo_bf16.safetensors" -OutFile (Join-Path $ZImgDiffDir "z_image_turbo_bf16.safetensors")
-    Download-File -Uri "$baseUrl/clip/qwen_3_4b.safetensors" -OutFile (Join-Path $clipDir "qwen_3_4b.safetensors")
+    Save-File -Uri "$baseUrl/diffusion_models/Z-IMG/z_image_turbo_bf16.safetensors" -OutFile (Join-Path $ZImgDiffDir "z_image_turbo_bf16.safetensors")
+    Save-File -Uri "$baseUrl/clip/qwen_3_4b.safetensors" -OutFile (Join-Path $clipDir "qwen_3_4b.safetensors")
 }
 
 # --- Download GGUF Models ---
@@ -109,44 +111,44 @@ if ($ggufChoice -ne 'G') {
     # Option A: Q8 (High Quality) -> CLIP Q8
     if ($ggufChoice -in 'A', 'F') {
         Write-Log "Downloading Q8_0 Set (UNet + CLIP)..."
-        Download-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q8_0.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q8_0.gguf")
-        Download-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q8_0.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q8_0.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q8_0.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q8_0.gguf")
     }
 
     # Option B: Q6 (Good Quality) -> CLIP Q6
     if ($ggufChoice -in 'B', 'F') {
         Write-Log "Downloading Q6_K Set (UNet + CLIP)..."
-        Download-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q6_K.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q6_K.gguf")
-        Download-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q6_K_XL.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q6_K_XL.gguf")
+        Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q6_K.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q6_K.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q6_K_XL.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q6_K_XL.gguf")
     }
 
     # Option C: Q5 (Balanced) -> CLIP Q5
     if ($ggufChoice -in 'C', 'F') {
         Write-Log "Downloading Q5_K Set (UNet + CLIP)..."
-        Download-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q5_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q5_K_S.gguf")
-        Download-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q5_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q5_K_S.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q5_K_M.gguf")
     }
 
     # Option D: Q4 (Fast) -> CLIP Q4
     if ($ggufChoice -in 'D', 'F') {
         Write-Log "Downloading Q4_K Set (UNet + CLIP)..."
-        Download-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q4_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q4_K_S.gguf")
-        Download-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q4_K_M.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q4_K_M.gguf")
+        Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q4_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q4_K_M.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q4_K_M.gguf")
     }
 
     # Option E: Q3 (Low VRAM) -> CLIP Q3
     if ($ggufChoice -in 'E', 'F') {
         Write-Log "Downloading Q3_K Set (UNet + CLIP)..."
-        Download-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q3_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q3_K_S.gguf")
-        Download-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q3_K_XL.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q3_K_XL.gguf")
+        Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q3_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q3_K_XL.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q3_K_XL.gguf")
     }
 }
 
 # --- Download Upscalers ---
 if ($upscalerChoice -eq 'A') {
     Write-Log "Downloading RealESRGAN Upscalers..."
-    Download-File -Uri "$esrganUrl/RealESRGAN_x4plus.pth" -OutFile (Join-Path $upscaleDir "RealESRGAN_x4plus.pth")
-    Download-File -Uri "$esrganUrl/RealESRGAN_x4plus_anime_6B.pth" -OutFile (Join-Path $upscaleDir "RealESRGAN_x4plus_anime_6B.pth")
+    Save-File -Uri "$esrganUrl/RealESRGAN_x4plus.pth" -OutFile (Join-Path $upscaleDir "RealESRGAN_x4plus.pth")
+    Save-File -Uri "$esrganUrl/RealESRGAN_x4plus_anime_6B.pth" -OutFile (Join-Path $upscaleDir "RealESRGAN_x4plus_anime_6B.pth")
 }
 
 Write-Log "Z-IMAGE Turbo model downloads complete." -Color Green

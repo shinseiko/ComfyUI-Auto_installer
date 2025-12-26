@@ -18,14 +18,15 @@ $logFile = Join-Path $logPath "install_log.txt"
 # Load dependencies EARLY
 $dependenciesFile = Join-Path $scriptPath "dependencies.json"
 if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found at '$dependenciesFile'..." -ForegroundColor Red; Read-Host; exit 1 }
-try { $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json } catch { Write-Host "FATAL: Failed to parse dependencies.json. Error: $($_.Exception.Message)" -ForegroundColor Red; Read-Host; exit 1}
+try { $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json } catch { Write-Host "FATAL: Failed to parse dependencies.json. Error: $($_.Exception.Message)" -ForegroundColor Red; Read-Host; exit 1 }
 if (-not (Test-Path $logPath)) { try { New-Item -ItemType Directory -Force -Path $logPath | Out-Null } catch { Write-Host "WARN: Could not create log directory '$logPath'" -ForegroundColor Yellow } }
 
 function Test-IsAdmin {
     try {
         $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
         return $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    } catch { return $false }
+    }
+    catch { return $false }
 }
 
 Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
@@ -46,8 +47,10 @@ if ($RunAdminTasks) {
         if ((Get-ItemPropertyValue -Path $regPath -Name $regKey -ErrorAction SilentlyContinue) -ne 1) {
             Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop
             Write-Host "- Long path support enabled." -ForegroundColor Green
-        } else { Write-Host "- Long path support already enabled." -ForegroundColor Green }
-    } catch { Write-Host "- ERROR: Unable to enable long paths. $_" -ForegroundColor Red }
+        }
+        else { Write-Host "- Long path support already enabled." -ForegroundColor Green }
+    }
+    catch { Write-Host "- ERROR: Unable to enable long paths. $_" -ForegroundColor Red }
 
     # Task 2: VS Build Tools
     Write-Host "[Admin Task 2/2] Checking/Installing VS Build Tools..." -ForegroundColor Yellow
@@ -56,7 +59,7 @@ if ($RunAdminTasks) {
     if (Test-Path $depFileAdmin) {
         try { $depsAdmin = Get-Content -Raw -Path $depFileAdmin | ConvertFrom-Json } catch { $depsAdmin = $null }
         if ($depsAdmin -ne $null -and $depsAdmin.PSObject.Properties.Name -contains 'tools' -and $depsAdmin.tools.PSObject.Properties.Name -contains 'vs_build_tools') {
-             $vsToolAdmin = $depsAdmin.tools.vs_build_tools
+            $vsToolAdmin = $depsAdmin.tools.vs_build_tools
         }
     }
     if ($vsToolAdmin -ne $null -and $vsToolAdmin.install_path) {
@@ -71,28 +74,35 @@ if ($RunAdminTasks) {
                 Start-Process -FilePath $vsInstallerAdmin -ArgumentList $vsToolAdmin.arguments -Wait -ErrorAction Stop
                 Remove-Item $vsInstallerAdmin -ErrorAction SilentlyContinue
                 Write-Host "- VS Build Tools installed." -ForegroundColor Green
-            } catch { Write-Host "- ERROR: Failed to download/install VS Build Tools. $_" -ForegroundColor Red }
-        } else { Write-Host "- VS Build Tools already installed." -ForegroundColor Green }
-    } else { Write-Host "- ERROR: Unable to find VS Build Tools information in '$depFileAdmin'." -ForegroundColor Red }
+            }
+            catch { Write-Host "- ERROR: Failed to download/install VS Build Tools. $_" -ForegroundColor Red }
+        }
+        else { Write-Host "- VS Build Tools already installed." -ForegroundColor Green }
+    }
+    else { Write-Host "- ERROR: Unable to find VS Build Tools information in '$depFileAdmin'." -ForegroundColor Red }
 
     Write-Host "`n=== Administrative tasks completed. Closing this window. ===" -ForegroundColor Green
     Start-Sleep -Seconds 3
     exit 0
 
-} else {
+}
+else {
     $needsElevation = $false
     Write-Log "Checking for prerequisites that may require admin rights..." -Level 1
     # Long paths
     if ((Get-ItemPropertyValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -ErrorAction SilentlyContinue) -ne 1) {
         Write-Log "Long path support must be enabled (Admin required)." -Level 2 -Color Yellow; $needsElevation = $true
-    } else { Write-Log "Long path support OK." -Level 2 -Color Green }
+    }
+    else { Write-Log "Long path support OK." -Level 2 -Color Green }
     # VS Build Tools
     if ($dependencies -ne $null -and $dependencies.tools -ne $null -and $dependencies.tools.vs_build_tools -ne $null -and $dependencies.tools.vs_build_tools.install_path) {
         $vsInstallCheckPath = $ExecutionContext.InvokeCommand.ExpandString($dependencies.tools.vs_build_tools.install_path)
         if (-not (Test-Path $vsInstallCheckPath)) {
             Write-Log "VS Build Tools must be installed (Admin required)." -Level 2 -Color Yellow; $needsElevation = $true
-        } else { Write-Log "VS Build Tools OK." -Level 2 -Color Green }
-    } else { Write-Log "WARNING: Unable to verify VS Build Tools. Elevation may be required." -Level 2 -Color Yellow; $needsElevation = $true }
+        }
+        else { Write-Log "VS Build Tools OK." -Level 2 -Color Green }
+    }
+    else { Write-Log "WARNING: Unable to verify VS Build Tools. Elevation may be required." -Level 2 -Color Yellow; $needsElevation = $true }
 
     if ($needsElevation -and -not (Test-IsAdmin)) {
         Write-Host "`nAdministrator privileges are required for initial setup." -ForegroundColor Yellow
@@ -103,16 +113,18 @@ if ($RunAdminTasks) {
             $adminProcess = Start-Process powershell.exe -Verb RunAs -ArgumentList $psArgs -Wait -PassThru -ErrorAction Stop
             if ($adminProcess.ExitCode -ne 0) { throw "The administrator process failed (code $($adminProcess.ExitCode))." }
             Write-Host "`nAdmin configuration completed successfully. Resuming installation..." -ForegroundColor Green; Start-Sleep 2
-        } catch {
+        }
+        catch {
             Write-Host "ERROR: Elevation failed or admin script failed: $($_.Exception.Message)" -ForegroundColor Red
             Read-Host "Press Enter to exit."; exit 1
         }
-    } elseif ($needsElevation -and (Test-IsAdmin)) {
-         Write-Host "`nWARNING: The script was run as Admin, but elevation was required." -ForegroundColor Yellow
-         Write-Host "Admin tasks will be performed, but the rest will also run as Admin." -ForegroundColor Yellow
-         Write-Log "[Admin Tasks within User Script] Performing Admin tasks..." -Level 1
-         $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
-         try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERROR Long paths" -Level 2 -Color Red}
+    }
+    elseif ($needsElevation -and (Test-IsAdmin)) {
+        Write-Host "`nWARNING: The script was run as Admin, but elevation was required." -ForegroundColor Yellow
+        Write-Host "Admin tasks will be performed, but the rest will also run as Admin." -ForegroundColor Yellow
+        Write-Log "[Admin Tasks within User Script] Performing Admin tasks..." -Level 1
+        $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
+        try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERROR Long paths" -Level 2 -Color Red }
     }
 	
     Clear-Host
@@ -155,22 +167,25 @@ if ($RunAdminTasks) {
             $pyVerOutput = python --version 2>&1
             if ($pyVerOutput -match "Python\s+(3\.12\.\d+)") {
                 Write-Log "Python 3.12 detected: $pyVerOutput" -Level 1 -Color Green
-            } else {
-                 Write-Log "ERROR: Python 3.12 is required for Light mode. Found: $pyVerOutput" -Level 1 -Color Red
-                 Read-Host "Press Enter to exit."
-                 exit 1
             }
-        } catch {
-             Write-Log "ERROR: Python not found or unable to check version. Python 3.12 is required for Light mode." -Level 1 -Color Red
-             Read-Host "Press Enter to exit."
-             exit 1
+            else {
+                Write-Log "ERROR: Python 3.12 is required for Light mode. Found: $pyVerOutput" -Level 1 -Color Red
+                Read-Host "Press Enter to exit."
+                exit 1
+            }
+        }
+        catch {
+            Write-Log "ERROR: Python not found or unable to check version. Python 3.12 is required for Light mode." -Level 1 -Color Red
+            Read-Host "Press Enter to exit."
+            exit 1
         }
 
         # 2. Check Git (Implicitly required for later steps)
         try {
             $gitVer = git --version 2>&1
             Write-Log "Git detected: $gitVer" -Level 1 -Color Green
-        } catch {
+        }
+        catch {
             Write-Log "WARNING: Git not found. It is recommended to have Git installed." -Level 1 -Color Yellow
         }
 
@@ -179,8 +194,9 @@ if ($RunAdminTasks) {
         if (-not (Test-Path $venvPath)) {
             Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
             Invoke-AndLog "python" "-m venv `"$venvPath`""
-        } else {
-             Write-Log "Virtual environment already exists." -Level 1 -Color Green
+        }
+        else {
+            Write-Log "Virtual environment already exists." -Level 1 -Color Green
         }
 
         # 4. Prepare Launch-Phase2.bat for venv
@@ -198,7 +214,8 @@ echo End of Phase 2. Press Enter to close this window.
 pause
 "@
 
-    } else {
+    }
+    else {
         # --- Step 1: Setup Miniconda and Conda Environment ---
         Write-Log "Selected: Full Installation (Miniconda)" -Level 0
         Set-Content -Path $installTypeFile -Value "conda" -Force
@@ -209,10 +226,11 @@ pause
             $minicondaInstaller = Join-Path $env:TEMP "Miniconda3-latest-Windows-x86_64.exe"
             $minicondaUrl = $dependencies.tools.miniconda.url
             if (-not $minicondaUrl) { $minicondaUrl = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe" }
-            Download-File -Uri $minicondaUrl -OutFile $minicondaInstaller
+            Save-File -Uri $minicondaUrl -OutFile $minicondaInstaller
             Invoke-AndLog $minicondaInstaller "/InstallationType=JustMe /RegisterPython=0 /S /D=`"$condaPath`""
             Remove-Item $minicondaInstaller -ErrorAction SilentlyContinue
-        } else { Write-Log "Miniconda is already installed at '$condaPath'" -Level 1 -Color Green }
+        }
+        else { Write-Log "Miniconda is already installed at '$condaPath'" -Level 1 -Color Green }
 
         if (-not (Test-Path $condaExe)) { Write-Log "FATAL ERROR: conda.exe not found after installation/verification" -Color Red; Read-Host "Press Enter."; exit 1 }
 
@@ -229,7 +247,7 @@ pause
         if (-not (Test-Path $aria2ExePath)) {
             Write-Log "Downloading aria2..." -Level 2
             try {
-                Download-File -Uri $aria2Url -OutFile $aria2ZipPath
+                Save-File -Uri $aria2Url -OutFile $aria2ZipPath
                 Write-Log "Extracting aria2..." -Level 2
                 # Create install dir if needed
                 if (-not (Test-Path $aria2InstallPath)) { New-Item -ItemType Directory -Path $aria2InstallPath -Force | Out-Null }
@@ -245,17 +263,21 @@ pause
                         Remove-Item -Path $extractedExe.DirectoryName -Recurse -Force -ErrorAction SilentlyContinue
                     }
                     Write-Log "aria2c.exe installed successfully to '$aria2InstallPath'." -Level 2 -Color Green
-                } else {
+                }
+                else {
                     throw "aria2c.exe not found within the extracted archive."
                 }
-            } catch {
+            }
+            catch {
                 Write-Log "ERROR: Failed to download or extract aria2. Error: $($_.Exception.Message)" -Level 1 -Color Red
                 Write-Log "Downloads will be slower (Invoke-WebRequest)." -Level 2
-            } finally {
+            }
+            finally {
                 # Clean zip
                 if (Test-Path $aria2ZipPath) { Remove-Item $aria2ZipPath -ErrorAction SilentlyContinue }
             }
-        } else {
+        }
+        else {
             Write-Log "aria2c.exe already found at '$aria2InstallPath'." -Level 1 -Color Green
         }
 
@@ -288,7 +310,8 @@ pause
         # UTF-8 no BOM
         $utf8NoBom = New-Object System.Text.UTF8Encoding $false
         [System.IO.File]::WriteAllLines($phase2LauncherPath, $launcherContent, $utf8NoBom)
-    } catch {
+    }
+    catch {
         Write-Log "ERROR: Unable to create '$phase2LauncherPath'. $($_.Exception.Message)" -Color Red
         Read-Host "Press Enter."
         exit 1 
