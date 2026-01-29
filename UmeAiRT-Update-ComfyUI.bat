@@ -10,10 +10,26 @@ echo.
 set "InstallPath=%~dp0"
 if "%InstallPath:~-1%"=="\" set "InstallPath=%InstallPath:~0,-1%"
 
-set "ScriptsFolder=%InstallPath%\scripts" 
-set "BootstrapScript=%ScriptsFolder%\Bootstrap-Downloader.ps1" 
-:: Use your main branch URL
-set "BootstrapUrl=https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/scripts/Bootstrap-Downloader.ps1" 
+set "ScriptsFolder=%InstallPath%\scripts"
+set "BootstrapScript=%ScriptsFolder%\Bootstrap-Downloader.ps1"
+set "RepoConfigFile=%InstallPath%\repo-config.json"
+
+:: Default values for GitHub repo source
+set "GhUser=UmeAiRT"
+set "GhRepoName=ComfyUI-Auto_installer"
+set "GhBranch=main"
+
+:: Check for repo-config.json and read custom values if present
+if exist "%RepoConfigFile%" (
+    echo [INFO] Found repo-config.json, reading custom repository settings...
+    for /f "usebackq delims=" %%a in (`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-Content '%RepoConfigFile%' | ConvertFrom-Json; if ($c.gh_user) { $c.gh_user }"`) do set "GhUser=%%a"
+    for /f "usebackq delims=" %%a in (`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-Content '%RepoConfigFile%' | ConvertFrom-Json; if ($c.gh_reponame) { $c.gh_reponame }"`) do set "GhRepoName=%%a"
+    for /f "usebackq delims=" %%a in (`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-Content '%RepoConfigFile%' | ConvertFrom-Json; if ($c.gh_branch) { $c.gh_branch }"`) do set "GhBranch=%%a"
+    echo [INFO] Using: %GhUser%/%GhRepoName% @ %GhBranch%
+)
+
+:: Build the bootstrap URL from the configured values
+set "BootstrapUrl=https://github.com/%GhUser%/%GhRepoName%/raw/%GhBranch%/scripts/Bootstrap-Downloader.ps1"
 
 echo [INFO] Forcing update of the bootstrap script itself...
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%BootstrapUrl%' -OutFile '%BootstrapScript%' -UseBasicParsing"
@@ -24,9 +40,9 @@ if %errorlevel% neq 0 (
 )
 echo [OK] Bootstrap script is now up-to-date.
 
-echo [INFO] Running the bootstrap script to update all other files... 
+echo [INFO] Running the bootstrap script to update all other files...
 :: [FIX] We send -SkipSelf so the (now updated) bootstrap doesn't download this .bat file
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -SkipSelf 
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -GhUser "%GhUser%" -GhRepoName "%GhRepoName%" -GhBranch "%GhBranch%" -SkipSelf 
 echo [OK] All scripts are now up-to-date. 
 echo.
 

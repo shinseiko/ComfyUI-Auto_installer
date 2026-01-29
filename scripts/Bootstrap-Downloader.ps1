@@ -1,10 +1,13 @@
 param(
     [string]$InstallPath,
-    [switch]$SkipSelf = $false 
+    [string]$GhUser = "UmeAiRT",
+    [string]$GhRepoName = "ComfyUI-Auto_installer",
+    [string]$GhBranch = "main",
+    [switch]$SkipSelf = $false
 )
 
-# Set the base URL for the GitHub repository's raw content
-$baseUrl = "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/"
+# Build the base URL from parameters (allows developer testing of forks)
+$baseUrl = "https://github.com/$GhUser/$GhRepoName/raw/$GhBranch/"
 
 # Define the list of files to download
 $filesToDownload = @(
