@@ -197,11 +197,29 @@ $snapshotFile = Join-Path $scriptPath "snapshot.json"
 $env:PYTHONPATH = "$comfyPath;$managerPath;$env:PYTHONPATH"
 $env:COMFYUI_PATH = $comfyPath
 
+# --- Helper: Load ignore list ---
+$ignoreFile = Join-Path $scriptPath "custom_nodes.ignore"
+$ignoredNodes = @()
+if (Test-Path $ignoreFile) {
+    Write-Log "Loading custom_nodes.ignore..." -Level 2
+    $ignoredNodes = Get-Content $ignoreFile | Where-Object { $_ -and $_ -notmatch '^\s*#' } | ForEach-Object { $_.Trim() }
+    Write-Log "Ignoring $($ignoredNodes.Count) node(s) from ignore list." -Level 2
+}
+
+# --- Helper: Load local CSV additions ---
+$localCsvPath = Join-Path $scriptPath "custom_nodes.local.csv"
+$localNodes = @()
+if (Test-Path $localCsvPath) {
+    Write-Log "Loading custom_nodes.local.csv..." -Level 2
+    $localNodes = Import-Csv -Path $localCsvPath
+    Write-Log "Found $($localNodes.Count) local node(s) to install." -Level 2
+}
+
 if (Test-Path $snapshotFile) {
     # --- METHOD A: Snapshot (Recommended) ---
     Write-Log "Installing custom nodes from snapshot.json..." -Level 1 -Color Cyan
     Write-Log "This may take a while as it installs all nodes and dependencies..." -Level 2
-    
+
     try {
         # Using 'restore-snapshot' command
         Invoke-AndLog $pythonExe "`"$cmCliScript`" restore-snapshot `"$snapshotFile`""
@@ -211,14 +229,63 @@ if (Test-Path $snapshotFile) {
         Write-Log "ERROR: Snapshot restoration failed. Check logs." -Level 1 -Color Red
     }
 
+    # Install local additions (from custom_nodes.local.csv)
+    if ($localNodes.Count -gt 0) {
+        Write-Log "Installing local custom nodes from custom_nodes.local.csv..." -Level 1 -Color Cyan
+        $successCount = 0
+        $failCount = 0
+
+        foreach ($node in $localNodes) {
+            $nodeName = $node.Name
+            $repoUrl = $node.RepoUrl
+            $possiblePath = Join-Path $internalCustomNodes $nodeName
+
+            if (-not (Test-Path $possiblePath)) {
+                Write-Log "Installing $nodeName via CLI..." -Level 1
+                try {
+                    Invoke-AndLog $pythonExe "`"$cmCliScript`" install $repoUrl"
+                    $successCount++
+                }
+                catch {
+                    Write-Log "Failed to install $nodeName via CLI." -Level 2 -Color Red
+                    $failCount++
+                }
+            }
+            else {
+                Write-Log "$nodeName already exists." -Level 1 -Color Green
+                $successCount++
+            }
+        }
+        Write-Log "Local custom nodes installation summary: $successCount processed." -Level 1
+    }
 }
 else {
     # --- METHOD B: Fallback to CSV ---
     Write-Log "No snapshot.json found. Falling back to custom_nodes.csv..." -Level 1 -Color Yellow
-    
+
     $csvPath = Join-Path $InstallPath $dependencies.files.custom_nodes_csv.destination
+    $customNodes = @()
+
     if (Test-Path $csvPath) {
         $customNodes = Import-Csv -Path $csvPath
+    }
+
+    # Concatenate local additions
+    if ($localNodes.Count -gt 0) {
+        $customNodes = $customNodes + $localNodes
+    }
+
+    # Filter out ignored nodes
+    if ($ignoredNodes.Count -gt 0) {
+        $beforeCount = $customNodes.Count
+        $customNodes = $customNodes | Where-Object { $_.Name -notin $ignoredNodes }
+        $filteredCount = $beforeCount - $customNodes.Count
+        if ($filteredCount -gt 0) {
+            Write-Log "Filtered out $filteredCount ignored node(s)." -Level 2
+        }
+    }
+
+    if ($customNodes.Count -gt 0) {
         $successCount = 0
         $failCount = 0
 
@@ -246,7 +313,7 @@ else {
         Write-Log "Custom nodes installation summary: $successCount processed." -Level 1
     }
     else {
-        Write-Log "WARNING: Neither snapshot.json nor custom_nodes.csv were found." -Level 1 -Color Red
+        Write-Log "WARNING: No custom nodes found to install." -Level 1 -Color Red
     }
 }
 # UmeAiRT-Sync instalation

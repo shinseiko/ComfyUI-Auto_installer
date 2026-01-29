@@ -126,6 +126,40 @@ try {
     Write-Log "ERROR: Global update failed. Check logs." -Level 1 -Color Red
 }
 
+# 3. Install local additions (from custom_nodes.local.csv)
+$localCsvPath = Join-Path $scriptPath "custom_nodes.local.csv"
+if (Test-Path $localCsvPath) {
+    Write-Log "Loading custom_nodes.local.csv..." -Level 1 -Color Cyan
+    $localNodes = Import-Csv -Path $localCsvPath
+    Write-Log "Found $($localNodes.Count) local node(s) to check/install." -Level 2
+
+    $successCount = 0
+    $failCount = 0
+
+    foreach ($node in $localNodes) {
+        $nodeName = $node.Name
+        $repoUrl = $node.RepoUrl
+        $possiblePath = Join-Path $internalCustomNodesPath $nodeName
+
+        if (-not (Test-Path $possiblePath)) {
+            Write-Log "Installing $nodeName via CLI..." -Level 1
+            try {
+                Invoke-AndLog $pythonExe "`"$cmCliScript`" install $repoUrl"
+                $successCount++
+            }
+            catch {
+                Write-Log "Failed to install $nodeName via CLI." -Level 2 -Color Red
+                $failCount++
+            }
+        }
+        else {
+            Write-Log "$nodeName already exists (will be updated by 'update all')." -Level 2 -Color Green
+            $successCount++
+        }
+    }
+    Write-Log "Local custom nodes: $successCount processed." -Level 1
+}
+
 # --- Cleanup Env Vars ---
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$comfyPath;"), ""
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$managerPath;"), ""
