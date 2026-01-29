@@ -260,7 +260,7 @@ pause
             if (-not $minicondaUrl) { $minicondaUrl = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe" }
             Save-File -Uri $minicondaUrl -OutFile $minicondaInstaller
             Write-Log "Running Miniconda installer (this may take a minute)..." -Level 2
-            $installerProcess = Start-Process -FilePath $minicondaInstaller -ArgumentList "/InstallationType=JustMe /RegisterPython=0 /S /D=`"$condaPath`"" -Wait -PassThru
+            $installerProcess = Start-Process -FilePath $minicondaInstaller -ArgumentList "/InstallationType=JustMe /RegisterPython=0 /S /D=$condaPath" -Wait -PassThru
             if ($installerProcess.ExitCode -ne 0) {
                 Write-Log "ERROR: Miniconda installer failed with exit code $($installerProcess.ExitCode)" -Level 1 -Color Red
                 Read-Host "Press Enter to exit."
