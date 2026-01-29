@@ -130,7 +130,7 @@ try {
 $localCsvPath = Join-Path $scriptPath "custom_nodes.local.csv"
 if (Test-Path $localCsvPath) {
     Write-Log "Loading custom_nodes.local.csv..." -Level 1 -Color Cyan
-    $localNodes = Import-Csv -Path $localCsvPath
+    $localNodes = @(Import-Csv -Path $localCsvPath)
     Write-Log "Found $($localNodes.Count) local node(s) to check/install." -Level 2
 
     $successCount = 0
