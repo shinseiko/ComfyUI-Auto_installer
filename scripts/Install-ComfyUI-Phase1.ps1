@@ -157,6 +157,41 @@ else {
     $phase2LauncherPath = Join-Path $scriptPath "Launch-Phase2.bat"
     $phase2ScriptPath = Join-Path $scriptPath "Install-ComfyUI-Phase2.ps1"
 
+	Write-Log "Checking/Installing aria2 (Download Accelerator)..." -Level 1
+    $aria2Url = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip"
+    $aria2ZipPath = Join-Path $env:TEMP "aria2.zip"
+    $aria2InstallPath = Join-Path $env:LOCALAPPDATA "aria2"
+    $aria2ExePath = Join-Path $aria2InstallPath "aria2c.exe"
+
+	if (-not (Test-Path $aria2ExePath)) {
+        Write-Log "Downloading aria2..." -Level 2
+        try {
+            Save-File -Uri $aria2Url -OutFile $aria2ZipPath
+            Write-Log "Extracting aria2..." -Level 2
+            if (-not (Test-Path $aria2InstallPath)) { New-Item -ItemType Directory -Path $aria2InstallPath -Force | Out-Null }
+            Expand-Archive -Path $aria2ZipPath -DestinationPath $aria2InstallPath -Force
+            $extractedExe = Get-ChildItem -Path $aria2InstallPath -Filter "aria2c.exe" -Recurse | Select-Object -First 1
+            if ($extractedExe) {
+                if ($extractedExe.DirectoryName -ne $aria2InstallPath) {
+                    Move-Item -Path $extractedExe.FullName -Destination $aria2InstallPath -Force
+                    Remove-Item -Path $extractedExe.DirectoryName -Recurse -Force -ErrorAction SilentlyContinue
+                }
+                Write-Log "aria2c.exe installed successfully." -Level 2 -Color Green
+            }
+        }
+        catch {
+            Write-Log "WARNING: Failed to install aria2. Downloads will be standard speed." -Level 2 -Color Yellow
+        }
+        finally {
+            if (Test-Path $aria2ZipPath) { Remove-Item $aria2ZipPath -ErrorAction SilentlyContinue }
+        }
+    }
+    else {
+        Write-Log "aria2 is already installed." -Level 1 -Color Green
+    }
+    # Ajouter aria2 au PATH pour la session actuelle (important pour que Save-File le trouve)
+    $env:PATH = "$aria2InstallPath;$env:PATH"
+
     if ($installType -eq "Light") {
         Write-Log "Selected: Light Installation (venv)" -Level 0
         Set-Content -Path $installTypeFile -Value "venv" -Force
@@ -166,10 +201,10 @@ else {
         $pythonCommand = $null
         $pythonArgs = $null
 
-        # MÉTHODE A : Vérifier via le Python Launcher (py) - Syntaxe corrigée
+        # METHOD A: Check via the Python Launcher (py)
         if (Get-Command 'py' -ErrorAction SilentlyContinue) {
             try {
-                # On demande spécifiquement si la version 3.12 répond
+                # We are specifically asking if version 3.12 responds
                 $pyVer = py -3.12 --version 2>&1
                 if ($pyVer -match "Python 3\.12") {
                     Write-Log "Python Launcher detected with Python 3.12." -Level 1 -Color Green
@@ -179,7 +214,7 @@ else {
             } catch {}
         }
 
-        # MÉTHODE B : Vérifier via la commande système standard (python) si Méthode A échoue
+        # METHOD B: Check via the standard system command (python) if Method A fails
         if ($null -eq $pythonCommand -and (Get-Command 'python' -ErrorAction SilentlyContinue)) {
             try {
                 $sysVer = python --version 2>&1
@@ -191,7 +226,7 @@ else {
             } catch {}
         }
 
-        # Si aucune méthode n'a fonctionné
+        # If no method worked
         if ($null -eq $pythonCommand) {
             Write-Log "ERROR: Python 3.12 is required but not found." -Level 1 -Color Red
             Write-Log "Diagnostics:" -Level 2
@@ -207,9 +242,9 @@ else {
         if (-not (Test-Path $venvPath)) {
             Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
             
-            # Construction de la commande pour Invoke-AndLog
+            # Building the command for Invoke-AndLog
             $venvArgs = "$pythonArgs -m venv `"$venvPath`""
-            # On nettoie les espaces en trop si pythonArgs est vide
+            # We clean up extra spaces if pythonArgs is empty
             $venvArgs = $venvArgs.Trim()
             
             Invoke-AndLog $pythonCommand $venvArgs
@@ -283,48 +318,6 @@ pause
         Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
         Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
         Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2"
-        Write-Log "Installing aria2 via direct download..." -Level 1
-        $aria2Url = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip"
-        $aria2ZipPath = Join-Path $env:TEMP "aria2.zip"
-        $aria2InstallPath = Join-Path $env:LOCALAPPDATA "aria2"
-        $aria2ExePath = Join-Path $aria2InstallPath "aria2c.exe"
-
-        if (-not (Test-Path $aria2ExePath)) {
-            Write-Log "Downloading aria2..." -Level 2
-            try {
-                Save-File -Uri $aria2Url -OutFile $aria2ZipPath
-                Write-Log "Extracting aria2..." -Level 2
-                # Create install dir if needed
-                if (-not (Test-Path $aria2InstallPath)) { New-Item -ItemType Directory -Path $aria2InstallPath -Force | Out-Null }
-                # Extract ONLY aria2c.exe
-                Expand-Archive -Path $aria2ZipPath -DestinationPath $aria2InstallPath -Force
-                # Find exe in extracted folder
-                $extractedExe = Get-ChildItem -Path $aria2InstallPath -Filter "aria2c.exe" -Recurse | Select-Object -First 1
-                if ($extractedExe) {
-                    # Move to root of aria2 folder
-                    if ($extractedExe.DirectoryName -ne $aria2InstallPath) {
-                        Move-Item -Path $extractedExe.FullName -Destination $aria2InstallPath -Force
-                        # Optional cleanup
-                        Remove-Item -Path $extractedExe.DirectoryName -Recurse -Force -ErrorAction SilentlyContinue
-                    }
-                    Write-Log "aria2c.exe installed successfully to '$aria2InstallPath'." -Level 2 -Color Green
-                }
-                else {
-                    throw "aria2c.exe not found within the extracted archive."
-                }
-            }
-            catch {
-                Write-Log "ERROR: Failed to download or extract aria2. Error: $($_.Exception.Message)" -Level 1 -Color Red
-                Write-Log "Downloads will be slower (Invoke-WebRequest)." -Level 2
-            }
-            finally {
-                # Clean zip
-                if (Test-Path $aria2ZipPath) { Remove-Item $aria2ZipPath -ErrorAction SilentlyContinue }
-            }
-        }
-        else {
-            Write-Log "aria2c.exe already found at '$aria2InstallPath'." -Level 1 -Color Green
-        }
 
         Write-Log "Attempting to remove old 'UmeAiRT' environment for a clean install..." -Level 1
         Invoke-AndLog "$condaExe" "env remove -n UmeAiRT -y" -IgnoreErrors
