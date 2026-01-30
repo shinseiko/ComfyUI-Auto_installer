@@ -29,44 +29,38 @@ if (-not (Test-Path $modelsPath)) {
 # --- GPU Detection & Recommendation ---
 Write-Log "-------------------------------------------------------------------------------"
 Write-Log "Checking for NVIDIA GPU to provide model recommendations..." -Color Yellow
-if (Get-Command 'nvidia-smi' -ErrorAction SilentlyContinue) {
-    try {
-        $gpuInfoCsv = nvidia-smi --query-gpu=name, memory.total --format=csv, noheader
-        if ($gpuInfoCsv) {
-            $gpuInfoParts = $gpuInfoCsv.Split(','); $gpuName = $gpuInfoParts[0].Trim(); $gpuMemoryMiB = ($gpuInfoParts[1] -replace ' MiB').Trim(); $gpuMemoryGiB = [math]::Round([int]$gpuMemoryMiB / 1024)
-            Write-Log "GPU: $gpuName" -Color Green; Write-Log "VRAM: $gpuMemoryGiB GB" -Color Green
-            
-            # Precise Recommendations based on file sizes + ~3-4GB overhead for System/CLIP/Context
-            if ($gpuMemoryGiB -ge 24) { 
-                Write-Log "Recommendation: BF16 (Best Quality) or GGUF Q8_0" -Color Cyan 
-            }
-            elseif ($gpuMemoryGiB -ge 16) { 
-                Write-Log "Recommendation: BF16 (Might use shared RAM) or GGUF Q8_0 (Safe)" -Color Cyan 
-            }
-            elseif ($gpuMemoryGiB -ge 12) { 
-                # Q8 is 7.22GB. Leaves ~4.8GB. Safe.
-                Write-Log "Recommendation: GGUF Q8_0 (High Quality)" -Color Cyan 
-            }
-            elseif ($gpuMemoryGiB -ge 10) {
-                # Q6 is 5.91GB. Leaves ~4GB. Safe.
-                Write-Log "Recommendation: GGUF Q6_K" -Color Cyan
-            }
-            elseif ($gpuMemoryGiB -ge 8) { 
-                # Q6 (5.9GB) is risky (leaves <2GB). 
-                # Q5 (5.19GB) leaves ~2.8GB. Sweet spot.
-                Write-Log "Recommendation: GGUF Q5_K_S (Balanced) or Q4_K_S (Safe)" -Color Cyan 
-            }
-            elseif ($gpuMemoryGiB -ge 6) { 
-                # Q4 (4.66GB) is risky (leaves <1.4GB).
-                # Q3 (3.79GB) leaves ~2.2GB. Safe.
-                Write-Log "Recommendation: GGUF Q3_K_S" -Color Cyan 
-            }
-            else { 
-                Write-Log "Recommendation: GGUF Q3_K_S (Expect system memory usage)" -Color Red 
-            }
-        }
+$gpuInfo = Get-GpuVramInfo
+if ($gpuInfo) {
+    Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
+    Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
+    # Precise Recommendations based on file sizes + ~3-4GB overhead for System/CLIP/Context
+    if ($gpuInfo.VramGiB -ge 24) {
+        Write-Log "Recommendation: BF16 (Best Quality) or GGUF Q8_0" -Color Cyan
     }
-    catch { Write-Log "Could not retrieve GPU information. Error: $($_.Exception.Message)" -Color Red }
+    elseif ($gpuInfo.VramGiB -ge 16) {
+        Write-Log "Recommendation: BF16 (Might use shared RAM) or GGUF Q8_0 (Safe)" -Color Cyan
+    }
+    elseif ($gpuInfo.VramGiB -ge 12) {
+        # Q8 is 7.22GB. Leaves ~4.8GB. Safe.
+        Write-Log "Recommendation: GGUF Q8_0 (High Quality)" -Color Cyan
+    }
+    elseif ($gpuInfo.VramGiB -ge 10) {
+        # Q6 is 5.91GB. Leaves ~4GB. Safe.
+        Write-Log "Recommendation: GGUF Q6_K" -Color Cyan
+    }
+    elseif ($gpuInfo.VramGiB -ge 8) {
+        # Q6 (5.9GB) is risky (leaves <2GB).
+        # Q5 (5.19GB) leaves ~2.8GB. Sweet spot.
+        Write-Log "Recommendation: GGUF Q5_K_S (Balanced) or Q4_K_S (Safe)" -Color Cyan
+    }
+    elseif ($gpuInfo.VramGiB -ge 6) {
+        # Q4 (4.66GB) is risky (leaves <1.4GB).
+        # Q3 (3.79GB) leaves ~2.2GB. Safe.
+        Write-Log "Recommendation: GGUF Q3_K_S" -Color Cyan
+    }
+    else {
+        Write-Log "Recommendation: GGUF Q3_K_S (Expect system memory usage)" -Color Red
+    }
 }
 else { Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray }
 Write-Log "-------------------------------------------------------------------------------"

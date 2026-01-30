@@ -173,5 +173,50 @@ function Test-NvidiaGpu {
         return $false # Return boolean FALSE
     }
 }
+
+function Get-GpuVramInfo {
+    <#
+    .SYNOPSIS
+        Queries NVIDIA GPU information including name and total VRAM.
+    .DESCRIPTION
+        Uses nvidia-smi to get GPU name and memory. Returns a PSObject with
+        GpuName and VramGiB properties, or $null if detection fails.
+    .OUTPUTS
+        PSObject with GpuName (string) and VramGiB (int) properties, or $null
+    #>
+
+    if (-not (Get-Command 'nvidia-smi' -ErrorAction SilentlyContinue)) {
+        return $null
+    }
+
+    try {
+        # Properly quote arguments to handle spaces in CSV format; nounits removes " MiB" suffix
+        $gpuInfoCsv = & nvidia-smi --query-gpu="name,memory.total" --format="csv,noheader,nounits" 2>&1
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log "nvidia-smi query failed with exit code $LASTEXITCODE" -Level 3 -Color Yellow
+            return $null
+        }
+
+        if ($gpuInfoCsv) {
+            $gpuInfoParts = $gpuInfoCsv.Split(',')
+            $gpuName = $gpuInfoParts[0].Trim()
+            # nounits format gives raw MiB value, no string replacement needed
+            $gpuMemoryMiB = [int]$gpuInfoParts[1].Trim()
+            $gpuMemoryGiB = [math]::Round($gpuMemoryMiB / 1024)
+
+            return [PSCustomObject]@{
+                GpuName = $gpuName
+                VramGiB = $gpuMemoryGiB
+            }
+        }
+    }
+    catch {
+        Write-Log "Could not retrieve GPU information. Error: $($_.Exception.Message)" -Level 3 -Color Red
+    }
+
+    return $null
+}
+
 # --- END OF FILE ---
-Export-ModuleMember -Function Write-Log, Invoke-AndLog, Save-File, Test-NvidiaGpu, Read-UserChoice
+Export-ModuleMember -Function Write-Log, Invoke-AndLog, Save-File, Test-NvidiaGpu, Read-UserChoice, Get-GpuVramInfo

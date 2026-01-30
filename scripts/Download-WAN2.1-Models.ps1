@@ -26,18 +26,16 @@ if (-not (Test-Path $modelsPath)) { Write-Log "Could not find ComfyUI models pat
 # --- GPU Detection ---
 Write-Log "-------------------------------------------------------------------------------"
 Write-Log "Checking for NVIDIA GPU to provide model recommendations..." -Color Yellow
-if (Get-Command 'nvidia-smi' -ErrorAction SilentlyContinue) {
-    try {
-        $gpuInfoCsv = nvidia-smi --query-gpu=name, memory.total --format=csv, noheader
-        if ($gpuInfoCsv) {
-            $gpuInfoParts = $gpuInfoCsv.Split(','); $gpuName = $gpuInfoParts[0].Trim(); $gpuMemoryMiB = ($gpuInfoParts[1] -replace ' MiB').Trim(); $gpuMemoryGiB = [math]::Round([int]$gpuMemoryMiB / 1024)
-            Write-Log "GPU: $gpuName" -Color Green; Write-Log "VRAM: $gpuMemoryGiB GB" -Color Green
-            if ($gpuMemoryGiB -ge 24) { Write-Log "Recommendation: bf16/fp16 or GGUF Q8_0." -Color Cyan } elseif ($gpuMemoryGiB -ge 16) { Write-Log "Recommendation: fp8 or GGUF Q5_K_M." -Color Cyan } else { Write-Log "Recommendation: GGUF Q3_K_S." -Color Cyan }
-        }
-    }
-    catch { Write-Log "Could not retrieve GPU information. Error: $($_.Exception.Message)" -Color Red }
+$gpuInfo = Get-GpuVramInfo
+if ($gpuInfo) {
+    Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
+    Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
+    # Recommendations based on WAN 2.1 models
+    if ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: bf16/fp16 or GGUF Q8_0." -Color Cyan }
+    elseif ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: fp8 or GGUF Q5_K_M." -Color Cyan }
+    else { Write-Log "Recommendation: GGUF Q3_K_S." -Color Cyan }
 }
-else { Write-Log "No NVIDIA GPU detected (nvidia-smi not found). Please choose based on your hardware." -Color Gray }
+else { Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray }
 Write-Log "-------------------------------------------------------------------------------"
 
 # --- Ask all questions ---
