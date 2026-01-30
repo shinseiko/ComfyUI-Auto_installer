@@ -163,53 +163,59 @@ else {
 
         # 1. Check for Python 3.12 using py launcher
         Write-Log "Checking for Python 3.12..." -Level 1
+        $pythonCommand = $null
+        $pythonArgs = $null
 
-        # First, check if py launcher exists
-        if (-not (Get-Command 'py' -ErrorAction SilentlyContinue)) {
-            Write-Log "ERROR: Python Launcher (py) not found." -Level 1 -Color Red
-            Write-Log "" -Level 1
-            Write-Log "Please install the Python Install Manager (from Python.org, distributed via Windows Store):" -Level 1 -Color Cyan
-            Write-Log "  winget install 9NQ7512CXL7T" -Level 2 -Color White
-            Write-Log "" -Level 1
-            Write-Log "Then install Python 3.12:" -Level 1 -Color Cyan
-            Write-Log "  py install 3.12" -Level 2 -Color White
+        # MÉTHODE A : Vérifier via le Python Launcher (py) - Syntaxe corrigée
+        if (Get-Command 'py' -ErrorAction SilentlyContinue) {
+            try {
+                # On demande spécifiquement si la version 3.12 répond
+                $pyVer = py -3.12 --version 2>&1
+                if ($pyVer -match "Python 3\.12") {
+                    Write-Log "Python Launcher detected with Python 3.12." -Level 1 -Color Green
+                    $pythonCommand = "py"
+                    $pythonArgs = "-3.12"
+                }
+            } catch {}
+        }
+
+        # MÉTHODE B : Vérifier via la commande système standard (python) si Méthode A échoue
+        if ($null -eq $pythonCommand -and (Get-Command 'python' -ErrorAction SilentlyContinue)) {
+            try {
+                $sysVer = python --version 2>&1
+                if ($sysVer -match "Python 3\.12") {
+                    Write-Log "System Python 3.12 detected (standard PATH)." -Level 1 -Color Green
+                    $pythonCommand = "python"
+                    $pythonArgs = ""
+                }
+            } catch {}
+        }
+
+        # Si aucune méthode n'a fonctionné
+        if ($null -eq $pythonCommand) {
+            Write-Log "ERROR: Python 3.12 is required but not found." -Level 1 -Color Red
+            Write-Log "Diagnostics:" -Level 2
+            Write-Log "1. 'py -3.12 --version' did not return 3.12" -Level 2
+            Write-Log "2. 'python --version' did not return 3.12" -Level 2
+            Write-Log "Please install Python 3.12 from python.org and check 'Add to PATH' or ensure the launcher is installed." -Level 1 -Color Yellow
             Read-Host "Press Enter to exit."
             exit 1
         }
 
-        # List installed Python versions
-        $pyListOutput = py list 2>&1 | Out-String
-        Write-Log "Installed Python versions:" -Level 2
-        Write-Log $pyListOutput.Trim() -Level 3
-
-        # Check if 3.12 is available
-        if ($pyListOutput -notmatch "3\.12") {
-            Write-Log "ERROR: Python 3.12 is required but not installed." -Level 1 -Color Red
-            Write-Log "Detected versions:" -Level 1 -Color Yellow
-            Write-Log $pyListOutput.Trim() -Level 2
-            Write-Log "" -Level 1
-            Write-Log "Please install Python 3.12:" -Level 1 -Color Cyan
-            Write-Log "  py install 3.12" -Level 2 -Color White
-            Read-Host "Press Enter to exit."
-            exit 1
+        # 3. Create venv using the detected command
+        $venvPath = Join-Path $scriptPath "venv"
+        if (-not (Test-Path $venvPath)) {
+            Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
+            
+            # Construction de la commande pour Invoke-AndLog
+            $venvArgs = "$pythonArgs -m venv `"$venvPath`""
+            # On nettoie les espaces en trop si pythonArgs est vide
+            $venvArgs = $venvArgs.Trim()
+            
+            Invoke-AndLog $pythonCommand $venvArgs
         }
-
-        # Verify py -3.12 works
-        try {
-            $pyVerOutput = py -3.12 --version 2>&1
-            if ($pyVerOutput -match "Python\s+(3\.12\.\d+)") {
-                Write-Log "Python 3.12 detected: $pyVerOutput" -Level 1 -Color Green
-            }
-            else {
-                Write-Log "ERROR: py -3.12 returned unexpected output: $pyVerOutput" -Level 1 -Color Red
-                Read-Host "Press Enter to exit."
-                exit 1
-            }
-        }
-        catch {
-            Write-Log "ERROR: Failed to run py -3.12. Error: $($_.Exception.Message)" -Level 1 -Color Red
-            Read-Host "Press Enter to exit."
-            exit 1
+        else {
+            Write-Log "Virtual environment already exists." -Level 1 -Color Green
         }
 
         # 2. Check Git (Implicitly required for later steps)
@@ -219,16 +225,6 @@ else {
         }
         catch {
             Write-Log "WARNING: Git not found. It is recommended to have Git installed." -Level 1 -Color Yellow
-        }
-
-        # 3. Create venv using py -3.12
-        $venvPath = Join-Path $scriptPath "venv"
-        if (-not (Test-Path $venvPath)) {
-            Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
-            Invoke-AndLog "py" "-3.12 -m venv `"$venvPath`""
-        }
-        else {
-            Write-Log "Virtual environment already exists." -Level 1 -Color Green
         }
 
         # 4. Prepare Launch-Phase2.bat for venv
