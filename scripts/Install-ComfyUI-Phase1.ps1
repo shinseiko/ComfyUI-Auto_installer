@@ -161,21 +161,53 @@ else {
         Write-Log "Selected: Light Installation (venv)" -Level 0
         Set-Content -Path $installTypeFile -Value "venv" -Force
 
-        # 1. Check Python Version
+        # 1. Check for Python 3.12 using py launcher
         Write-Log "Checking for Python 3.12..." -Level 1
+
+        # First, check if py launcher exists
+        if (-not (Get-Command 'py' -ErrorAction SilentlyContinue)) {
+            Write-Log "ERROR: Python Launcher (py) not found." -Level 1 -Color Red
+            Write-Log "" -Level 1
+            Write-Log "Please install the Python Install Manager (from Python.org, distributed via Windows Store):" -Level 1 -Color Cyan
+            Write-Log "  winget install 9NQ7512CXL7T" -Level 2 -Color White
+            Write-Log "" -Level 1
+            Write-Log "Then install Python 3.12:" -Level 1 -Color Cyan
+            Write-Log "  py install 3.12" -Level 2 -Color White
+            Read-Host "Press Enter to exit."
+            exit 1
+        }
+
+        # List installed Python versions
+        $pyListOutput = py list 2>&1 | Out-String
+        Write-Log "Installed Python versions:" -Level 2
+        Write-Log $pyListOutput.Trim() -Level 3
+
+        # Check if 3.12 is available
+        if ($pyListOutput -notmatch "3\.12") {
+            Write-Log "ERROR: Python 3.12 is required but not installed." -Level 1 -Color Red
+            Write-Log "Detected versions:" -Level 1 -Color Yellow
+            Write-Log $pyListOutput.Trim() -Level 2
+            Write-Log "" -Level 1
+            Write-Log "Please install Python 3.12:" -Level 1 -Color Cyan
+            Write-Log "  py install 3.12" -Level 2 -Color White
+            Read-Host "Press Enter to exit."
+            exit 1
+        }
+
+        # Verify py -3.12 works
         try {
-            $pyVerOutput = python --version 2>&1
+            $pyVerOutput = py -3.12 --version 2>&1
             if ($pyVerOutput -match "Python\s+(3\.12\.\d+)") {
                 Write-Log "Python 3.12 detected: $pyVerOutput" -Level 1 -Color Green
             }
             else {
-                Write-Log "ERROR: Python 3.12 is required for Light mode. Found: $pyVerOutput" -Level 1 -Color Red
+                Write-Log "ERROR: py -3.12 returned unexpected output: $pyVerOutput" -Level 1 -Color Red
                 Read-Host "Press Enter to exit."
                 exit 1
             }
         }
         catch {
-            Write-Log "ERROR: Python not found or unable to check version. Python 3.12 is required for Light mode." -Level 1 -Color Red
+            Write-Log "ERROR: Failed to run py -3.12. Error: $($_.Exception.Message)" -Level 1 -Color Red
             Read-Host "Press Enter to exit."
             exit 1
         }
@@ -189,11 +221,11 @@ else {
             Write-Log "WARNING: Git not found. It is recommended to have Git installed." -Level 1 -Color Yellow
         }
 
-        # 3. Create venv
+        # 3. Create venv using py -3.12
         $venvPath = Join-Path $scriptPath "venv"
         if (-not (Test-Path $venvPath)) {
             Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
-            Invoke-AndLog "python" "-m venv `"$venvPath`""
+            Invoke-AndLog "py" "-3.12 -m venv `"$venvPath`""
         }
         else {
             Write-Log "Virtual environment already exists." -Level 1 -Color Green
@@ -227,7 +259,24 @@ pause
             $minicondaUrl = $dependencies.tools.miniconda.url
             if (-not $minicondaUrl) { $minicondaUrl = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe" }
             Save-File -Uri $minicondaUrl -OutFile $minicondaInstaller
-            Invoke-AndLog $minicondaInstaller "/InstallationType=JustMe /RegisterPython=0 /S /D=`"$condaPath`""
+            Write-Log "Running Miniconda installer (this may take a minute)..." -Level 2
+            $installerProcess = Start-Process -FilePath $minicondaInstaller -ArgumentList "/InstallationType=JustMe /RegisterPython=0 /S /D=$condaPath" -Wait -PassThru
+            if ($installerProcess.ExitCode -ne 0) {
+                Write-Log "ERROR: Miniconda installer failed with exit code $($installerProcess.ExitCode)" -Level 1 -Color Red
+                Read-Host "Press Enter to exit."
+                exit 1
+            }
+            Write-Log "Miniconda installed successfully." -Level 2 -Color Green
+
+            # Verify conda.exe exists with retry (installer may still be finishing)
+            $retryCount = 0
+            $maxRetries = 10
+            while (-not (Test-Path $condaExe) -and $retryCount -lt $maxRetries) {
+                $retryCount++
+                Write-Log "Waiting for Miniconda installation to complete... ($retryCount/$maxRetries)" -Level 3
+                Start-Sleep -Seconds 2
+            }
+
             Remove-Item $minicondaInstaller -ErrorAction SilentlyContinue
         }
         else { Write-Log "Miniconda is already installed at '$condaPath'" -Level 1 -Color Green }
