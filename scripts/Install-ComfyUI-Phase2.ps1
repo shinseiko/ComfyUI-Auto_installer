@@ -261,6 +261,40 @@ if (-not (Test-Path $umeSyncPath)) {
 else {
     Write-Log "UmeAiRT Sync Manager already installed." -Level 1 -Color Green
 }
+
+# ===========================================================================
+# HOTFIX: ComfyUI-MagCache (Line 13 Import Fix)
+# ===========================================================================
+$magCacheFolder = Join-Path $internalCustomNodes "ComfyUI-MagCache"
+$filesToPatch = @("nodes.py", "nodes_calibration.py")
+
+foreach ($fileName in $filesToPatch) {
+    $targetFile = Join-Path $magCacheFolder $fileName
+
+    if (Test-Path $targetFile) {
+        Write-Log "Applying Hotfix to $fileName (Line 13)..." -Level 1
+        try {
+            $content = Get-Content -Path $targetFile
+            
+            # Safety check: Ensure file has enough lines
+            if ($content.Count -ge 13) {
+                # Modify line 13 (Index 12)
+                $content[12] = "from comfy.ldm.lightricks.model import LTXBaseModel"
+                
+                # Save modifications
+                Set-Content -Path $targetFile -Value $content -Encoding UTF8
+                Write-Log "Hotfix applied successfully to $fileName." -Level 2 -Color Green
+            }
+            else {
+                Write-Log "WARNING: Could not patch $fileName, file is too short." -Level 2 -Color Yellow
+            }
+        }
+        catch {
+            Write-Log "ERROR: Failed to apply hotfix to $fileName." -Level 2 -Color Red
+        }
+    }
+}
+
 # --- CLEANUP ENV VARS ---
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$comfyPath;"), ""
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$managerPath;"), ""
