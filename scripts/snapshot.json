@@ -1,5 +1,5 @@
 {
-    "comfyui": "bbe2c13a7075bcf4de3b6744f96d84d12c334350",
+    "comfyui": "b0d9708974f50fce7d2448ac84e9260c87f7ade3",
     "git_custom_nodes": {
         "https://github.com/crystian/ComfyUI-Crystools": {
             "hash": "2f18256c5b5063937106f29a8e0a7db3ae3869b7",
@@ -120,9 +120,9 @@
     },
     "cnr_custom_nodes": {
         "ComfyUI-MelBandRoFormer": "1.0.1",
-        "ComfyUI-nunchaku": "1.0.2",
+        "ComfyUI-nunchaku": "1.0.1",
         "derfuu_comfyui_moddednodes": "1.0.1",
-        "seedvarianceenhancer": "2.0.1",
+        "seedvarianceenhancer": "2.2.0",
         "seedvr2_videoupscaler": "2.5.24"
     },
     "file_custom_nodes": [
@@ -248,7 +248,7 @@
         "mss==10.1.0": "",
         "multidict==6.7.1": "",
         "networkx==3.6.1": "",
-        "ninja==1.13.0": "",
+        "ninja==1.11.1.4": "",
         "numba==0.63.1": "",
         "numpy==2.3.5": "",
         "nunchaku": "file:///C:/AI/ComfyUI/scripts/nunchaku-1.1.0.dev20251111%2Btorch2.9-cp312-cp312-win_amd64.whl#sha256=0641be99bbfae64e55367cde13fed02e178a898d0882d423307d10b24d397c85",
@@ -342,6 +342,7 @@
         "timm==1.0.24": "",
         "tokenizers==0.22.2": "",
         "toml==0.10.2": "",
+        "tomli==2.4.0": "",
         "torch==2.9.1+cu130": "",
         "torchaudio==2.9.1+cu130": "",
         "torchcodec==0.10.0": "",
