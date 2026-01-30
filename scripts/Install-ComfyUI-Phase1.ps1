@@ -192,74 +192,183 @@ else {
     # Ajouter aria2 au PATH pour la session actuelle (important pour que Save-File le trouve)
     $env:PATH = "$aria2InstallPath;$env:PATH"
 
+	# ---------------------------------------------------------
+    # GIT DETECTION AND INSTALLATION (ADDED)
+    # ---------------------------------------------------------
+    Write-Log "Checking for Git..." -Level 1
+    if (Get-Command "git" -ErrorAction SilentlyContinue) {
+        $gitVer = git --version 2>&1
+        Write-Log "Git detected: $gitVer" -Level 1 -Color Green
+    }
+    else {
+        Write-Log "WARNING: Git is not installed." -Level 1 -Color Yellow
+        Write-Host "Git is required to download ComfyUI and custom nodes." -ForegroundColor Yellow
+
+        $choice = ""
+        while ($choice -notin @("Y","N")) {
+            $choice = Read-Host "Would you like to download and install Git automatically? (Y/N)"
+        }
+
+        if ($choice -eq "Y") {
+            Write-Log "Initiating Git installation..." -Level 1
+            # Git for Windows 2.47.1 (64-bit) - Official Standalone Installer
+            $gitUrl = "https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.1/Git-2.47.1-64-bit.exe"
+            $gitInstaller = Join-Path $env:TEMP "git-installer.exe"
+
+            try {
+                Save-File -Uri $gitUrl -OutFile $gitInstaller
+                Write-Log "Installing Git (Please accept UAC if prompted)..." -Level 2
+
+                # Silent Install Arguments
+                # /VERYSILENT: No GUI
+                # /NORESTART: Don't reboot
+                # /SP-: Skip setup prompt
+                $gitArgs = "/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS"
+                
+                $proc = Start-Process -FilePath $gitInstaller -ArgumentList $gitArgs -Wait -PassThru
+
+                if ($proc.ExitCode -eq 0) {
+                    Write-Log "Git installed successfully." -Level 1 -Color Green
+                    
+                    # Refresh PATH for the current session so we can use 'git' immediately
+                    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+                    
+                    if (Get-Command "git" -ErrorAction SilentlyContinue) {
+                        Write-Log "Git is now available for this session." -Level 2 -Color Green
+                    }
+                }
+                else {
+                    Write-Log "ERROR: Git installer failed with code $($proc.ExitCode)." -Level 1 -Color Red
+                    Read-Host "Press Enter to exit."; exit 1
+                }
+            }
+            catch {
+                Write-Log "ERROR downloading/installing Git: $($_.Exception.Message)" -Level 1 -Color Red
+                Read-Host "Press Enter to exit."; exit 1
+            }
+            finally {
+                Remove-Item $gitInstaller -ErrorAction SilentlyContinue
+            }
+        }
+        else {
+             Write-Log "Installation aborted. Git is mandatory." -Level 1 -Color Red
+             Read-Host "Press Enter to exit."; exit 1
+        }
+    }
+
     if ($installType -eq "Light") {
         Write-Log "Selected: Light Installation (venv)" -Level 0
         Set-Content -Path $installTypeFile -Value "venv" -Force
 
-        # 1. Check for Python 3.12 using py launcher
+		# ---------------------------------------------------------
+        # AUTOMATIC DETECTION AND INSTALLATION OF PYTHON 3.12
+        # ---------------------------------------------------------
         Write-Log "Checking for Python 3.12..." -Level 1
         $pythonCommand = $null
         $pythonArgs = $null
 
-        # METHOD A: Check via the Python Launcher (py)
+        # 1. Attempt detection via Launcher (py)
         if (Get-Command 'py' -ErrorAction SilentlyContinue) {
-            try {
-                # We are specifically asking if version 3.12 responds
-                $pyVer = py -3.12 --version 2>&1
-                if ($pyVer -match "Python 3\.12") {
-                    Write-Log "Python Launcher detected with Python 3.12." -Level 1 -Color Green
-                    $pythonCommand = "py"
-                    $pythonArgs = "-3.12"
-                }
-            } catch {}
+            # Uses Test-PyVersion from UmeAiRTUtils.psm1
+            if (Test-PyVersion -Command "py" -Arguments "-3.12") {
+                $pythonCommand = "py"; $pythonArgs = "-3.12"
+                Write-Log "Python Launcher detected with Python 3.12." -Level 1 -Color Green
+            }
         }
 
-        # METHOD B: Check via the standard system command (python) if Method A fails
+        # 2. Attempt detection via System PATH (python)
         if ($null -eq $pythonCommand -and (Get-Command 'python' -ErrorAction SilentlyContinue)) {
-            try {
-                $sysVer = python --version 2>&1
-                if ($sysVer -match "Python 3\.12") {
-                    Write-Log "System Python 3.12 detected (standard PATH)." -Level 1 -Color Green
-                    $pythonCommand = "python"
-                    $pythonArgs = ""
-                }
-            } catch {}
+            # Uses Test-PyVersion from UmeAiRTUtils.psm1
+            if (Test-PyVersion -Command "python" -Arguments "") {
+                $pythonCommand = "python"; $pythonArgs = ""
+                Write-Log "System Python 3.12 detected." -Level 1 -Color Green
+            }
         }
 
-        # If no method worked
+        # 3. DETECTION FAILED -> PROPOSE INSTALLATION
         if ($null -eq $pythonCommand) {
-            Write-Log "ERROR: Python 3.12 is required but not found." -Level 1 -Color Red
-            Write-Log "Diagnostics:" -Level 2
-            Write-Log "1. 'py -3.12 --version' did not return 3.12" -Level 2
-            Write-Log "2. 'python --version' did not return 3.12" -Level 2
-            Write-Log "Please install Python 3.12 from python.org and check 'Add to PATH' or ensure the launcher is installed." -Level 1 -Color Yellow
+            Write-Log "WARNING: Python 3.12 was not found on your system." -Level 1 -Color Yellow
+            Write-Host "`nPython 3.12 is required for ComfyUI." -ForegroundColor Yellow
+            
+            $choice = ""
+            while ($choice -notin @("Y","N")) {
+                $choice = Read-Host "Would you like to download and install Python 3.12 automatically? (Y/N)"
+            }
+
+            if ($choice -eq "Y") {
+                Write-Log "Initiating Python 3.12 installation..." -Level 1
+                
+                # Official Python 3.12.10 URL (Stable)
+                $pyUrl = "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe"
+                $pyInstaller = Join-Path $env:TEMP "python-3.12.10-installer.exe"
+                
+                try {
+                    # Download
+                    Write-Log "Downloading Python 3.12 installer..." -Level 2
+                    Save-File -Uri $pyUrl -OutFile $pyInstaller 
+                    
+                    # Installation
+                    Write-Log "Installing Python (this may take a minute)..." -Level 2
+                    $proc = Start-Process -FilePath $pyInstaller -ArgumentList "/passive PrependPath=1 Include_launcher=1 Include_test=0" -Wait -PassThru
+                    
+                    if ($proc.ExitCode -eq 0) {
+                        Write-Log "Python 3.12 installed successfully." -Level 1 -Color Green
+                        
+                        # POST-INSTALLATION REDETECTION (Manual path check)
+                        $possiblePaths = @(
+                            "C:\Program Files\Python312\python.exe",
+                            "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe"
+                        )
+                        
+                        foreach ($path in $possiblePaths) {
+                            if (Test-Path $path) {
+                                $pythonCommand = $path
+                                $pythonArgs = ""
+                                Write-Log "New installation detected at: $path" -Level 2 -Color Green
+                                break
+                            }
+                        }
+                        
+                        # Fallback to launcher check
+                        if ($null -eq $pythonCommand) {
+                            try {
+                                cmd /c "py -3.12 --version" | Out-Null
+                                if ($LASTEXITCODE -eq 0) {
+                                    $pythonCommand = "py"; $pythonArgs = "-3.12"
+                                    Write-Log "New installation detected via Launcher." -Level 2 -Color Green
+                                }
+                            } catch {}
+                        }
+                    }
+                    else {
+                        Write-Log "ERROR: Python installer failed with code $($proc.ExitCode)." -Level 1 -Color Red
+                    }
+                    Remove-Item $pyInstaller -ErrorAction SilentlyContinue
+                }
+                catch {
+                    Write-Log "ERROR during Python download/install: $($_.Exception.Message)" -Level 1 -Color Red
+                }
+            }
+        }
+
+        # 4. FINAL CHECK
+        if ($null -eq $pythonCommand) {
+            Write-Log "FATAL ERROR: Python 3.12 is required." -Level 1 -Color Red
+            Write-Log "Please install it manually from python.org and restart this script." -Level 1
             Read-Host "Press Enter to exit."
             exit 1
         }
 
-        # 3. Create venv using the detected command
+        # 5. Create venv
         $venvPath = Join-Path $scriptPath "venv"
         if (-not (Test-Path $venvPath)) {
             Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
-            
-            # Building the command for Invoke-AndLog
-            $venvArgs = "$pythonArgs -m venv `"$venvPath`""
-            # We clean up extra spaces if pythonArgs is empty
-            $venvArgs = $venvArgs.Trim()
-            
+            if ($pythonArgs) { $venvArgs = "$pythonArgs -m venv `"$venvPath`"" } 
+            else { $venvArgs = "-m venv `"$venvPath`"" }
             Invoke-AndLog $pythonCommand $venvArgs
         }
         else {
             Write-Log "Virtual environment already exists." -Level 1 -Color Green
-        }
-
-        # 2. Check Git (Implicitly required for later steps)
-        try {
-            $gitVer = git --version 2>&1
-            Write-Log "Git detected: $gitVer" -Level 1 -Color Green
-        }
-        catch {
-            Write-Log "WARNING: Git not found. It is recommended to have Git installed." -Level 1 -Color Yellow
         }
 
         # 4. Prepare Launch-Phase2.bat for venv

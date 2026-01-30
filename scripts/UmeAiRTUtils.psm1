@@ -218,5 +218,35 @@ function Get-GpuVramInfo {
     return $null
 }
 
+# ===========================================================================
+# FUNCTION: Test-PyVersion
+# DESCRIPTION: Checks if a specific Python command corresponds to version 3.12
+# PARAMETERS:
+#   $Command   - The executable (e.g., "python", "py")
+#   $Arguments - The arguments (e.g., "-3.12", "")
+# ===========================================================================
+function Test-PyVersion {
+    param(
+        [string]$Command,
+        [string]$Arguments
+    )
+    
+    try {
+        # Execute command to get version (redirect stderr to stdout)
+        $output = & $Command $Arguments --version 2>&1
+        
+        # Check if output contains "Python 3.12"
+        if ($output -match "Python 3\.12") { 
+            return $true 
+        }
+    }
+    catch {
+        # Command failed or not found
+        return $false
+    }
+    
+    return $false
+}
+
 # --- END OF FILE ---
-Export-ModuleMember -Function Write-Log, Invoke-AndLog, Save-File, Test-NvidiaGpu, Read-UserChoice, Get-GpuVramInfo
+Export-ModuleMember -Function Write-Log, Invoke-AndLog, Save-File, Test-NvidiaGpu, Read-UserChoice, Get-GpuVramInfo, Test-PyVersion
