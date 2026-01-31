@@ -106,7 +106,7 @@ if ($ggufChoice -ne 'G') {
     if ($ggufChoice -in 'A', 'F') {
         Write-Log "Downloading Q8_0 Set (UNet + CLIP)..."
         Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q8_0.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q8_0.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q8_K_XL.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q8_K_XL.gguf")
     }
 
     # Option B: Q6 (Good Quality) -> CLIP Q6
@@ -120,14 +120,14 @@ if ($ggufChoice -ne 'G') {
     if ($ggufChoice -in 'C', 'F') {
         Write-Log "Downloading Q5_K Set (UNet + CLIP)..."
         Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q5_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q5_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q5_K_XL.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q5_K_XL.gguf")
     }
 
     # Option D: Q4 (Fast) -> CLIP Q4
     if ($ggufChoice -in 'D', 'F') {
         Write-Log "Downloading Q4_K Set (UNet + CLIP)..."
         Save-File -Uri "$baseUrl/unet/Z-IMG/z_image_turbo-Q4_K_S.gguf" -OutFile (Join-Path $ZImgUnetDir "z_image_turbo-Q4_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q4_K_M.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q4_K_M.gguf")
+        Save-File -Uri "$baseUrl/clip/Qwen3-4B-UD-Q4_K_XL.gguf" -OutFile (Join-Path $clipDir "Qwen3-4B-UD-Q4_K_XL.gguf")
     }
 
     # Option E: Q3 (Low VRAM) -> CLIP Q3
