@@ -1,55 +1,55 @@
 {
     "comfyui": "b0d9708974f50fce7d2448ac84e9260c87f7ade3",
     "git_custom_nodes": {
-        "https://github.com/crystian/ComfyUI-Crystools": {
+        "https://github.com/crystian/ComfyUI-Crystools.git": {
             "hash": "2f18256c5b5063937106f29a8e0a7db3ae3869b7",
             "disabled": false
         },
-        "https://github.com/pythongosssss/ComfyUI-Custom-Scripts": {
+        "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git": {
             "hash": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
             "disabled": false
         },
-        "https://github.com/Jonseed/ComfyUI-Detail-Daemon": {
+        "https://github.com/Jonseed/ComfyUI-Detail-Daemon.git": {
             "hash": "39206d10849584e0b6ded943faca4dcd8747beb7",
             "disabled": false
         },
-        "https://github.com/yolain/ComfyUI-Easy-Use": {
+        "https://github.com/yolain/ComfyUI-Easy-Use.git": {
             "hash": "5ec3b5ef861fe45c4e9966d17c4546e943417723",
             "disabled": false
         },
-        "https://github.com/kijai/ComfyUI-Florence2": {
+        "https://github.com/kijai/ComfyUI-Florence2.git": {
             "hash": "ee64d1ef3fedcb26fff9bcc78065f9eea21ccb87",
             "disabled": false
         },
-        "https://github.com/Fannovel16/ComfyUI-Frame-Interpolation": {
+        "https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git": {
             "hash": "a969c01dbccd9e5510641be04eb51fe93f6bfc3d",
             "disabled": false
         },
-        "https://github.com/city96/ComfyUI-GGUF": {
+        "https://github.com/city96/ComfyUI-GGUF.git": {
             "hash": "6ea2651e7df66d7585f6ffee804b20e92fb38b8a",
             "disabled": false
         },
-        "https://github.com/alexopus/ComfyUI-Image-Saver": {
+        "https://github.com/alexopus/ComfyUI-Image-Saver.git": {
             "hash": "a7c3d376645821d327a4c4ada5630390a124552f",
             "disabled": false
         },
-        "https://github.com/ltdrdata/ComfyUI-Impact-Pack": {
+        "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git": {
             "hash": "6a517ebe06fea2b74fc41b3bd089c0d7173eeced",
             "disabled": false
         },
-        "https://github.com/ltdrdata/ComfyUI-Impact-Subpack": {
+        "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git": {
             "hash": "50c7b71a6a224734cc9b21963c6d1926816a97f1",
             "disabled": false
         },
-        "https://github.com/kijai/ComfyUI-KJNodes": {
+        "https://github.com/kijai/ComfyUI-KJNodes.git": {
             "hash": "f710f2635dbadbaf1ccf7d25572daa7dfec80bfd",
             "disabled": false
         },
-        "https://github.com/Lightricks/ComfyUI-LTXVideo": {
+        "https://github.com/Lightricks/ComfyUI-LTXVideo.git": {
             "hash": "49add6dddb2e1bb2d23bc509a9fac3edd2834961",
             "disabled": false
         },
-        "https://github.com/Zehong-Ma/ComfyUI-MagCache": {
+        "https://github.com/Zehong-Ma/ComfyUI-MagCache.git": {
             "hash": "47bdd2aca97e568087c4e92d2d2f0426bdce7a37",
             "disabled": false
         },
@@ -57,69 +57,69 @@
             "hash": "df1eaff802b2e2fac858551a18fd1e6389d18e81",
             "disabled": false
         },
-        "https://github.com/Smirnov75/ComfyUI-mxToolkit": {
+        "https://github.com/Smirnov75/ComfyUI-mxToolkit.git": {
             "hash": "7f7a0e584f12078a1c589645d866ae96bad0cc35",
             "disabled": false
         },
-        "https://github.com/moonwhaler/comfyui-seedvr2-tilingupscaler": {
+        "https://github.com/moonwhaler/comfyui-seedvr2-tilingupscaler.git": {
             "hash": "595df014387459f9e070810d6691bed596941bc8",
             "disabled": false
         },
-        "https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Sync": {
+        "https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Sync.git": {
             "hash": "3e79d6c80ca40492d78dabd32b428f66882dab2e",
             "disabled": false
         },
-        "https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt": {
+        "https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt.git": {
             "hash": "dfc266538368e4c9a03a296917716a214517ccb5",
             "disabled": false
         },
-        "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite": {
+        "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git": {
             "hash": "993082e4f2473bf4acaf06f51e33877a7eb38960",
             "disabled": false
         },
-        "https://github.com/vrgamegirl19/comfyui-vrgamedevgirl": {
+        "https://github.com/vrgamegirl19/comfyui-vrgamedevgirl.git": {
             "hash": "ba70d2b933225851500cdd0ea4882e1e2d291d94",
             "disabled": false
         },
-        "https://github.com/Fannovel16/comfyui_controlnet_aux": {
+        "https://github.com/Fannovel16/comfyui_controlnet_aux.git": {
             "hash": "136f125c89aed92ced1b6fbb491e13719b72fcc0",
             "disabled": false
         },
-        "https://github.com/cubiq/ComfyUI_essentials": {
+        "https://github.com/cubiq/ComfyUI_essentials.git": {
             "hash": "9d9f4bedfc9f0321c19faf71855e228c93bd0dc9",
             "disabled": false
         },
-        "https://github.com/chflame163/ComfyUI_LayerStyle": {
+        "https://github.com/chflame163/ComfyUI_LayerStyle.git": {
             "hash": "d94bef1ee5ed3656f5ff1bb2830a4ffd94f40935",
             "disabled": false
         },
-        "https://github.com/ssitu/ComfyUI_UltimateSDUpscale": {
+        "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git": {
             "hash": "177019948d900fcd97e5b4167ceae259dd9dd312",
             "disabled": false
         },
-        "https://github.com/ClownsharkBatwing/RES4LYF": {
+        "https://github.com/ClownsharkBatwing/RES4LYF.git": {
             "hash": "0dc91c00c4c3fb38e7874fcd7a2a327765e8882c",
             "disabled": false
         },
-        "https://github.com/rgthree/rgthree-comfy": {
+        "https://github.com/rgthree/rgthree-comfy.git": {
             "hash": "8ff50e4521881eca1fe26aec9615fc9362474931",
             "disabled": false
         },
-        "https://github.com/ltdrdata/was-node-suite-comfyui": {
+        "https://github.com/ltdrdata/was-node-suite-comfyui.git": {
             "hash": "afeee09ba44e713ec52a413ac6b105fd06b2d356",
             "disabled": false
         },
-        "https://github.com/wallish77/wlsh_nodes": {
+        "https://github.com/wallish77/wlsh_nodes.git": {
             "hash": "97807467bf7ff4ea01d529fcd6e666758f34e3c1",
             "disabled": false
         },
-        "https://github.com/XLabs-AI/x-flux-comfyui": {
+        "https://github.com/XLabs-AI/x-flux-comfyui.git": {
             "hash": "00328556efc9472410d903639dc9e68a8471f7ac",
             "disabled": false
         }
     },
     "cnr_custom_nodes": {
-        "ComfyUI-MelBandRoFormer": "1.0.1",
+        "ComfyUI-MelBandRoFormer": "1.0.2",
         "ComfyUI-nunchaku": "1.0.1",
         "derfuu_comfyui_moddednodes": "1.0.1",
         "seedvarianceenhancer": "2.2.0",
@@ -251,7 +251,7 @@
         "ninja==1.11.1.4": "",
         "numba==0.63.1": "",
         "numpy==2.3.5": "",
-        "nunchaku": "file:///C:/AI/ComfyUI/scripts/nunchaku-1.1.0.dev20251111%2Btorch2.9-cp312-cp312-win_amd64.whl#sha256=0641be99bbfae64e55367cde13fed02e178a898d0882d423307d10b24d397c85",
+        "nunchaku==1.2.1": "https://github.com/nunchaku-ai/nunchaku/releases/download/v1.2.1/nunchaku-1.2.1+cu13.0torch2.9-cp312-cp312-win_amd64.whl#sha256=81cb888fab2ff5d3d6dbc65eb407cd3b05bfd26bd21b92dd956fa11a03f04eeb",
         "nvidia-ml-py==13.590.48": "",
         "omegaconf==2.3.0": "",
         "onnx==1.20.1": "",
