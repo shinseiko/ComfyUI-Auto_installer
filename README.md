@@ -10,7 +10,7 @@ This project provides a suite of PowerShell scripts to fully automate the instal
 
 - **Clean Installation:** Clones the latest version of ComfyUI from the official repository and installs it in a dedicated Anaconda Python virtual environment.
 - **Dependency Management:** Automatically checks for and installs necessary tools:
-    - Anaconda Python 3.12 (if not present on the system)
+    - Anaconda Python 3.13 (if not present on the system)
     - Git
     - 7-Zip
     - Aria2 (for accelerated downloads)
@@ -26,7 +26,7 @@ This project provides a suite of PowerShell scripts to fully automate the instal
 - Windows 10 or Windows 11 (64-bit).
 - An active internet connection.
 - CUDA 13.0.
-- Python 3.12.
+- Python 3.13.
 - GIT for Windows.
 
 ## Installation and Usage
