@@ -39,83 +39,83 @@
         },
         "https://github.com/crystian/ComfyUI-Crystools": {
             "hash": "2f18256c5b5063937106f29a8e0a7db3ae3869b7",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/pythongosssss/ComfyUI-Custom-Scripts": {
             "hash": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/Jonseed/ComfyUI-Detail-Daemon": {
             "hash": "39206d10849584e0b6ded943faca4dcd8747beb7",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/yolain/ComfyUI-Easy-Use": {
             "hash": "7c470c67d6df44498e52c902173c1ac77cd5bdfd",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/kijai/ComfyUI-Florence2": {
             "hash": "ee64d1ef3fedcb26fff9bcc78065f9eea21ccb87",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/Fannovel16/ComfyUI-Frame-Interpolation": {
             "hash": "a969c01dbccd9e5510641be04eb51fe93f6bfc3d",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/city96/ComfyUI-GGUF": {
             "hash": "6ea2651e7df66d7585f6ffee804b20e92fb38b8a",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/alexopus/ComfyUI-Image-Saver": {
             "hash": "a7c3d376645821d327a4c4ada5630390a124552f",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/ltdrdata/ComfyUI-Impact-Pack": {
             "hash": "6a517ebe06fea2b74fc41b3bd089c0d7173eeced",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/ltdrdata/ComfyUI-Impact-Subpack": {
             "hash": "50c7b71a6a224734cc9b21963c6d1926816a97f1",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/kijai/ComfyUI-KJNodes": {
             "hash": "16a335c8c40b1b3eef8b770022276004d5bea66b",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/Smirnov75/ComfyUI-mxToolkit": {
             "hash": "7f7a0e584f12078a1c589645d866ae96bad0cc35",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Sync": {
             "hash": "3e79d6c80ca40492d78dabd32b428f66882dab2e",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite": {
             "hash": "993082e4f2473bf4acaf06f51e33877a7eb38960",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/Fannovel16/comfyui_controlnet_aux": {
             "hash": "136f125c89aed92ced1b6fbb491e13719b72fcc0",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/cubiq/ComfyUI_essentials": {
             "hash": "9d9f4bedfc9f0321c19faf71855e228c93bd0dc9",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/chflame163/ComfyUI_LayerStyle": {
             "hash": "d94bef1ee5ed3656f5ff1bb2830a4ffd94f40935",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/ssitu/ComfyUI_UltimateSDUpscale": {
             "hash": "177019948d900fcd97e5b4167ceae259dd9dd312",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/rgthree/rgthree-comfy": {
             "hash": "8ff50e4521881eca1fe26aec9615fc9362474931",
-            "disabled": true
+            "disabled": false
         },
         "https://github.com/ltdrdata/was-node-suite-comfyui": {
             "hash": "afeee09ba44e713ec52a413ac6b105fd06b2d356",
-            "disabled": true
+            "disabled": false
         }
     },
     "cnr_custom_nodes": {
@@ -132,7 +132,7 @@
         "comfyui-kjnodes": "1.2.9",
         "ComfyUI-MelBandRoFormer": "1.0.2",
         "comfyui-mxtoolkit": "0.9.92",
-        "ComfyUI-nunchaku": "1.0.1",
+        "ComfyUI-nunchaku": "1.2.1",
         "comfyui-umeairt-sync": "1.0.2",
         "comfyui-videohelpersuite": "1.7.9",
         "comfyui_controlnet_aux": "1.1.3",
@@ -239,7 +239,6 @@
         "imageio-ffmpeg==0.6.0": "",
         "img2texture": "git+https://github.com/ltdrdata/img2texture.git@d6159abea44a0b2cf77454d3d46962c8b21eb9d3",
         "importlib_metadata==8.7.1": "",
-        "insightface": "file:///C:/AI/ComfyUI-TEST/scripts/insightface-0.7.3-cp313-cp313-win_amd64.whl#sha256=ebe005bfc7ab874f9ec83f31cae03eea3a084d95cf9549dcdbac3f23222346d1",
         "iopath==0.1.10": "",
         "Jinja2==3.1.6": "",
         "joblib==1.5.3": "",
@@ -272,7 +271,6 @@
         "ninja==1.11.1.4": "",
         "numba==0.63.1": "",
         "numpy==2.3.5": "",
-        "nunchaku": "file:///C:/AI/ComfyUI-TEST/scripts/nunchaku-1.2.1%2Bcu13.0torch2.10-cp313-cp313-win_amd64.whl#sha256=d3a922fa918fb2c3c815bf4fc5645ce663ec5354e7c026b384269813785b913d",
         "nvidia-ml-py==13.590.48": "",
         "omegaconf==2.3.0": "",
         "onnx==1.20.1": "",
