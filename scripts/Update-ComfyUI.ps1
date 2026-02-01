@@ -126,6 +126,24 @@ try {
     Write-Log "ERROR: Global update failed. Check logs." -Level 1 -Color Red
 }
 
+# --- 3. Update Optimized Components (Triton/SageAttention) ---
+Write-Log "Updating Optimized Components (Triton/SageAttention)..." -Level 0 -Color Green
+$installerInfo = $dependencies.files.installer_script
+$installerDest = Join-Path $InstallPath $installerInfo.destination
+
+try {
+    # Always download fresh to get latest logic
+    Save-File -Uri $installerInfo.url -OutFile $installerDest
+
+    if (Test-Path $installerDest) {
+        Write-Log "Executing DazzleML Installer (Upgrade Mode)..." -Level 1
+        Invoke-AndLog $pythonExe "`"$installerDest`" --upgrade --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
+    }
+}
+catch {
+    Write-Log "Error updating optimized components: $($_.Exception.Message)" -Level 1 -Color Red
+}
+
 # --- Cleanup Env Vars ---
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$comfyPath;"), ""
 $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$managerPath;"), ""

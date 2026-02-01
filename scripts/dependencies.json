@@ -32,34 +32,18 @@
       {
         "name": "insightface-0.7.3-cp312-cp312-win_amd64",
         "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/whl/insightface-0.7.3-cp312-cp312-win_amd64.whl"
-      },
-      {
-        "name": "triton-3.5.0.post21-py3-none-any",
-        "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/whl/triton-3.5.0.post21-py3-none-any.whl"
-      },
-      {
-        "name": "sageattention-2.2.0+cu130torch2.9.0andhigher.post4-cp39-abi3-win_amd64.whl",
-        "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/whl/sageattention-2.2.0+cu130torch2.9.0andhigher.post4-cp39-abi3-win_amd64.whl"
       }
     ],
     "standard": [
       "facexlib",
       "cython",
       "onnxruntime-gpu",
-      "triton-windows<3.6",
-	  "hf_xet",
-	  "nvidia-ml-py",
-	  "cupy-cuda13x",
-	  "imageio-ffmpeg"
+      "hf_xet",
+      "nvidia-ml-py",
+      "cupy-cuda13x",
+      "imageio-ffmpeg"
     ],
-    "git_repos": [
-	{
-		"name": "SageAttention",
-		"url": "https://github.com/thu-ml/SageAttention",
-		"commit": "main",
-		"install_options": "--no-build-isolation"
-	}
-	]
+    "git_repos": []
   },
   "files": {
     "comfy_settings": {
@@ -69,6 +53,10 @@
     "custom_nodes_csv": {
         "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/scripts/custom_nodes.csv",
         "destination": "scripts/custom_nodes.csv"
+    },
+    "installer_script": {
+        "url": "https://raw.githubusercontent.com/DazzleML/comfyui-triton-and-sageattention-installer/main/comfyui_triton_sageattention.py",
+        "destination": "scripts/comfyui_triton_sageattention.py"
     }
   }
 }
