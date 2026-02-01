@@ -137,7 +137,7 @@ try {
 
     if (Test-Path $installerDest) {
         Write-Log "Executing DazzleML Installer (Upgrade Mode)..." -Level 1
-        Invoke-AndLog $pythonExe "`"$installerDest`" --upgrade --non-interactive --base-path `"$comfyPath`""
+        Invoke-AndLog $pythonExe "`"$installerDest`" --upgrade --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
     }
 }
 catch {

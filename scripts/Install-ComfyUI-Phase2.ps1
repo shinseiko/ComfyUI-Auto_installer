@@ -391,7 +391,7 @@ try {
 
     if (Test-Path $installerDest) {
         Write-Log "Executing DazzleML Installer..." -Level 2
-        Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`""
+        Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
     }
     else {
         Write-Log "Failed to download installer script." -Level 2 -Color Red
