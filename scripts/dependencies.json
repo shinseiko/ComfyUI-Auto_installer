@@ -42,7 +42,14 @@
       "nvidia-ml-py",
       "cupy-cuda13x",
       "imageio-ffmpeg",
-	  "rotary_embedding_torch"
+	  "rotary_embedding_torch",
+	  "blend_modes",
+	  "omegaconf",
+	  "segment_anything",
+	  "gguf",
+	  "deepdiff",
+	  "pynvml",
+	  "py-cpuinfo"
     ],
     "git_repos": []
   },
