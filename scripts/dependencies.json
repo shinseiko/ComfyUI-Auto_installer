@@ -20,18 +20,18 @@
       "wheel"
     ],
     "torch": {
-      "packages": "torch==2.9.1+cu130 torchvision torchaudio xformers",
+      "packages": "torch==2.10.0+cu130 torchvision torchaudio xformers",
       "index_url": "https://download.pytorch.org/whl/cu130"
     },
     "comfyui_requirements": "requirements.txt",
     "wheels": [
       {
-        "name": "nunchaku-1.1.0.dev20251111+torch2.9-cp312-cp312-win_amd64",
-        "url": "https://github.com/nunchaku-tech/nunchaku/releases/download/v1.1.0dev20251111/nunchaku-1.1.0.dev20251111+torch2.9-cp312-cp312-win_amd64.whl"
+        "name": "nunchaku-1.2.1+cu13.0torch2.10-cp313-cp313-win_amd64",
+        "url": "https://github.com/nunchaku-ai/nunchaku/releases/download/v1.2.1/nunchaku-1.2.1+cu13.0torch2.10-cp313-cp313-win_amd64.whl"
       },
       {
-        "name": "insightface-0.7.3-cp312-cp312-win_amd64",
-        "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/whl/insightface-0.7.3-cp312-cp312-win_amd64.whl"
+        "name": "insightface-0.7.3-cp313-cp313-win_amd64",
+        "url": "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/whl/insightface-0.7.3-cp313-cp313-win_amd64.whl"
       }
     ],
     "standard": [

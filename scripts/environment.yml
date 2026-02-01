@@ -5,7 +5,7 @@ channels:
   - nvidia
   - defaults
 dependencies:
-  - python=3.12.12
+  - python=3.13.11
   - git
   - nvidia::cuda-toolkit=13.0.2
   - pip

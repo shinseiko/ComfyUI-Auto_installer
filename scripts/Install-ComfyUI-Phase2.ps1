@@ -401,7 +401,38 @@ catch {
     Write-Log "Error during optimized installation: $($_.Exception.Message)" -Level 2 -Color Red
 }
 
-Write-Log "Downloading cComfyUI custom settings..." -Level 1
+# --- Nunchaku Configuration Section ---
+
+# 1. Define variables
+$JsonUrl = "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer/main/scripts/nunchaku_versions.json" 
+
+# Use $comfyPath (defined at script start) instead of $ComfyPath for consistency
+$TargetDir = "$comfyPath\custom_nodes\ComfyUI-nunchaku"
+$TargetFile = "$TargetDir\nunchaku_versions.json"
+
+Write-Log "Configuring nunchaku_versions.json..." -Level 1 -Color Cyan
+
+# 2. Create the directory if it doesn't exist
+if (-not (Test-Path $TargetDir)) {
+    Write-Log "Directory 'ComfyUI-nunchaku' not found. Creating it..." -Level 1
+    New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
+}
+
+# 3. Download the file
+try {
+    Write-Log "Downloading configuration file from UmeAiRT repository..." -Level 1
+    Invoke-WebRequest -Uri $JsonUrl -OutFile $TargetFile -ErrorAction Stop
+    Write-Log "Success: nunchaku_versions.json installed." -Level 1 -Color Green
+}
+catch {
+    Write-Log "ERROR: Failed to download nunchaku_versions.json." -Level 2 -Color Red
+    Write-Log "Details: $($_.Exception.Message)" -Level 2 -Color Red
+    Write-Log "Make sure the file exists at: $JsonUrl" -Level 2 -Color Gray
+}
+
+# --- End of Nunchaku Configuration ---
+
+Write-Log "Downloading ComfyUI custom settings..." -Level 1
 $settingsFile = $dependencies.files.comfy_settings
 $settingsDest = Join-Path $InstallPath $settingsFile.destination
 $settingsDir = Split-Path $settingsDest -Parent

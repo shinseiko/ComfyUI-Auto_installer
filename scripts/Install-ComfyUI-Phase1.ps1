@@ -145,8 +145,8 @@ else {
     # --- Step 0: Choose Installation Type ---
     $validChoices = @("1", "2")
     Write-Host "`nChoose installation type:" -ForegroundColor Cyan
-    Write-Host "1. Light (Recommended) - Uses your existing Python 3.12 (Standard venv)" -ForegroundColor Green
-    Write-Host "2. Full - Installs Miniconda, Python 3.12, Git, CUDA (Isolated environment)" -ForegroundColor Yellow
+    Write-Host "1. Light (Recommended) - Uses your existing Python 3.13 (Standard venv)" -ForegroundColor Green
+    Write-Host "2. Full - Installs Miniconda, Python 3.13, Git, CUDA (Isolated environment)" -ForegroundColor Yellow
 
     $installTypeChoice = ""
     while ($installTypeChoice -notin $validChoices) {
@@ -261,18 +261,18 @@ else {
         Set-Content -Path $installTypeFile -Value "venv" -Force
 
 		# ---------------------------------------------------------
-        # AUTOMATIC DETECTION AND INSTALLATION OF PYTHON 3.12
+        # AUTOMATIC DETECTION AND INSTALLATION OF PYTHON 3.13
         # ---------------------------------------------------------
-        Write-Log "Checking for Python 3.12..." -Level 1
+        Write-Log "Checking for Python 3.13..." -Level 1
         $pythonCommand = $null
         $pythonArgs = $null
 
         # 1. Attempt detection via Launcher (py)
         if (Get-Command 'py' -ErrorAction SilentlyContinue) {
             # Uses Test-PyVersion from UmeAiRTUtils.psm1
-            if (Test-PyVersion -Command "py" -Arguments "-3.12") {
-                $pythonCommand = "py"; $pythonArgs = "-3.12"
-                Write-Log "Python Launcher detected with Python 3.12." -Level 1 -Color Green
+            if (Test-PyVersion -Command "py" -Arguments "-3.13") {
+                $pythonCommand = "py"; $pythonArgs = "-3.13"
+                Write-Log "Python Launcher detected with Python 3.13." -Level 1 -Color Green
             }
         }
 
@@ -281,30 +281,30 @@ else {
             # Uses Test-PyVersion from UmeAiRTUtils.psm1
             if (Test-PyVersion -Command "python" -Arguments "") {
                 $pythonCommand = "python"; $pythonArgs = ""
-                Write-Log "System Python 3.12 detected." -Level 1 -Color Green
+                Write-Log "System Python 3.13 detected." -Level 1 -Color Green
             }
         }
 
         # 3. DETECTION FAILED -> PROPOSE INSTALLATION
         if ($null -eq $pythonCommand) {
-            Write-Log "WARNING: Python 3.12 was not found on your system." -Level 1 -Color Yellow
-            Write-Host "`nPython 3.12 is required for ComfyUI." -ForegroundColor Yellow
+            Write-Log "WARNING: Python 3.13 was not found on your system." -Level 1 -Color Yellow
+            Write-Host "`nPython 3.13 is required for ComfyUI." -ForegroundColor Yellow
             
             $choice = ""
             while ($choice -notin @("Y","N")) {
-                $choice = Read-Host "Would you like to download and install Python 3.12 automatically? (Y/N)"
+                $choice = Read-Host "Would you like to download and install Python 3.13 automatically? (Y/N)"
             }
 
             if ($choice -eq "Y") {
-                Write-Log "Initiating Python 3.12 installation..." -Level 1
+                Write-Log "Initiating Python 3.13 installation..." -Level 1
                 
-                # Official Python 3.12.10 URL (Stable)
-                $pyUrl = "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe"
-                $pyInstaller = Join-Path $env:TEMP "python-3.12.10-installer.exe"
+                # Official Python 3.13.11 URL (Stable)
+                $pyUrl = "https://www.python.org/ftp/python/3.13.11/python-3.13.11-amd64.exe"
+                $pyInstaller = Join-Path $env:TEMP "python-3.13.11-amd64.exe"
                 
                 try {
                     # Download
-                    Write-Log "Downloading Python 3.12 installer..." -Level 2
+                    Write-Log "Downloading Python 3.13 installer..." -Level 2
                     Save-File -Uri $pyUrl -OutFile $pyInstaller 
                     
                     # Installation
@@ -312,12 +312,12 @@ else {
                     $proc = Start-Process -FilePath $pyInstaller -ArgumentList "/passive PrependPath=1 Include_launcher=1 Include_test=0" -Wait -PassThru
                     
                     if ($proc.ExitCode -eq 0) {
-                        Write-Log "Python 3.12 installed successfully." -Level 1 -Color Green
+                        Write-Log "Python 3.13 installed successfully." -Level 1 -Color Green
                         
                         # POST-INSTALLATION REDETECTION (Manual path check)
                         $possiblePaths = @(
                             "C:\Program Files\Python312\python.exe",
-                            "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe"
+                            "$env:LOCALAPPDATA\Programs\Python\Python313\python.exe"
                         )
                         
                         foreach ($path in $possiblePaths) {
@@ -332,9 +332,9 @@ else {
                         # Fallback to launcher check
                         if ($null -eq $pythonCommand) {
                             try {
-                                cmd /c "py -3.12 --version" | Out-Null
+                                cmd /c "py -3.13 --version" | Out-Null
                                 if ($LASTEXITCODE -eq 0) {
-                                    $pythonCommand = "py"; $pythonArgs = "-3.12"
+                                    $pythonCommand = "py"; $pythonArgs = "-3.13"
                                     Write-Log "New installation detected via Launcher." -Level 2 -Color Green
                                 }
                             } catch {}
@@ -353,7 +353,7 @@ else {
 
         # 4. FINAL CHECK
         if ($null -eq $pythonCommand) {
-            Write-Log "FATAL ERROR: Python 3.12 is required." -Level 1 -Color Red
+            Write-Log "FATAL ERROR: Python 3.13 is required." -Level 1 -Color Red
             Write-Log "Please install it manually from python.org and restart this script." -Level 1
             Read-Host "Press Enter to exit."
             exit 1
