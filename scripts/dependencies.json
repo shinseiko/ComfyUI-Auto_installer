@@ -41,7 +41,8 @@
       "hf_xet",
       "nvidia-ml-py",
       "cupy-cuda13x",
-      "imageio-ffmpeg"
+      "imageio-ffmpeg",
+	  "rotary_embedding_torch"
     ],
     "git_repos": []
   },
