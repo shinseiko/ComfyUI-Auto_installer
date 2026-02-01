@@ -381,6 +381,26 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
     }
 }
 
+# --- Step 6b: Install Triton and SageAttention (Optimized) ---
+Write-Log "Installing Triton and SageAttention (Optimized)..." -Level 1
+$installerInfo = $dependencies.files.installer_script
+$installerDest = Join-Path $InstallPath $installerInfo.destination
+
+try {
+    Save-File -Uri $installerInfo.url -OutFile $installerDest
+
+    if (Test-Path $installerDest) {
+        Write-Log "Executing DazzleML Installer..." -Level 2
+        Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`""
+    }
+    else {
+        Write-Log "Failed to download installer script." -Level 2 -Color Red
+    }
+}
+catch {
+    Write-Log "Error during optimized installation: $($_.Exception.Message)" -Level 2 -Color Red
+}
+
 Write-Log "Downloading cComfyUI custom settings..." -Level 1
 $settingsFile = $dependencies.files.comfy_settings
 $settingsDest = Join-Path $InstallPath $settingsFile.destination
