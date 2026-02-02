@@ -58,7 +58,7 @@ Write-Log "Starting LTX-2 model downloads..." -Color Cyan
 
 $baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
 $ltxvChkptDir = Join-Path $modelsPath "checkpoints\LTX2"
-$ChkptDir = Join-Path $modelsPath "checkpoints"
+$difftDir = Join-Path $modelsPath "diffusion_models"
 $ltxvUnetDir = Join-Path $modelsPath "unet\LTX2"
 $vaeDir = Join-Path $modelsPath "vae"
 $upscaleDir = Join-Path $modelsPath "upscale_models"
@@ -80,7 +80,7 @@ if ($doDownload) {
     Save-File -Uri "$baseUrl/clip/gemma-3-12b-it-IQ4_XS.gguf" -OutFile (Join-Path $clipDir "gemma-3-12b-it-IQ4_XS.gguf")
 
     Write-Log "Downloading MelBandRoformer..."
-    Save-File -Uri "$baseUrl/diffusion_models/MelBandRoFormer/MelBandRoformer_fp32.safetensors" -OutFile (Join-Path $ChkptDir "MelBandRoformer_fp32.safetensors")
+    Save-File -Uri "$baseUrl/diffusion_models/MelBandRoFormer/MelBandRoformer_fp32.safetensors" -OutFile (Join-Path $difftDir "MelBandRoformer_fp32.safetensors")
 	
     Write-Log "Downloading LTX2 spatial upscaler..."
     Save-File -Uri "$baseUrl/upscale_models/ltx-2-spatial-upscaler-x2-1.0.safetensors" -OutFile (Join-Path $upscaleDir "ltx-2-spatial-upscaler-x2-1.0.safetensors")
