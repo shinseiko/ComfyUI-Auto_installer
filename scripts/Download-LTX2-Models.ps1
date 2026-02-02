@@ -80,7 +80,7 @@ if ($doDownload) {
     Save-File -Uri "$baseUrl/clip/gemma-3-12b-it-IQ4_XS.gguf" -OutFile (Join-Path $clipDir "gemma-3-12b-it-IQ4_XS.gguf")
 
     Write-Log "Downloading MelBandRoformer..."
-    Save-File -Uri "$baseUrl/diffusion_models/Mel-Band-Roformer/MelBandRoformer_fp32.safetensors" -OutFile (Join-Path $ChkptDir "MelBandRoformer_fp32.safetensors")
+    Save-File -Uri "$baseUrl/diffusion_models/MelBandRoFormer/MelBandRoformer_fp32.safetensors" -OutFile (Join-Path $ChkptDir "MelBandRoformer_fp32.safetensors")
 	
     Write-Log "Downloading LTX2 spatial upscaler..."
     Save-File -Uri "$baseUrl/upscale_models/ltx-2-spatial-upscaler-x2-1.0.safetensors" -OutFile (Join-Path $upscaleDir "ltx-2-spatial-upscaler-x2-1.0.safetensors")
