@@ -374,14 +374,16 @@ else {
         # 4. Prepare Launch-Phase2.bat for venv
         $launcherContent = @"
 @echo off
-call "$venvPath\Scripts\activate.bat"
+chcp 65001 > nul
+cd /d "%~dp0"
+call "venv\Scripts\activate.bat"
 if %errorlevel% neq 0 (
     echo FAILED to activate venv.
     pause
     exit /b %errorlevel%
 )
 echo Phase 2 Launch (venv)...
-powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$phase2ScriptPath" -InstallPath "$InstallPath"
+powershell.exe -ExecutionPolicy Bypass -NoProfile -File "Install-ComfyUI-Phase2.ps1"
 echo End of Phase 2. Press Enter to close this window.
 pause
 "@
@@ -454,9 +456,7 @@ pause
 
     # Write Launcher
     try { 
-        $launcherContent = "chcp 65001 > nul`r`n" + $launcherContent
-		$utf8WithBom = New-Object System.Text.UTF8Encoding $true
-		[System.IO.File]::WriteAllText($phase2LauncherPath, $launcherContent, $utf8WithBom)
+        [System.IO.File]::WriteAllText($phase2LauncherPath, $launcherContent, [System.Text.Encoding]::Default)
     }
     catch {
         Write-Log "ERROR: Unable to create '$phase2LauncherPath'. $($_.Exception.Message)" -Color Red
