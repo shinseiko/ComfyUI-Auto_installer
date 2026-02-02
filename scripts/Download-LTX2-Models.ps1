@@ -36,10 +36,9 @@ if ($gpuInfo) {
     Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
     Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
 
-    if ($gpuInfo.VramGiB -ge 30) { Write-Log "Recommendation: Base 13B" -Color Cyan }
-    elseif ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: GGUF Q8_0" -Color Cyan }
+	if ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: GGUF Q8_0" -Color Cyan }
     elseif ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: GGUF Q5_K_M" -Color Cyan }
-    elseif ($gpuInfo.VramGiB -ge 7) { Write-Log "Recommendation: Base 2B or GGUF Q3_K_S" -Color Cyan }
+    elseif ($gpuInfo.VramGiB -ge 7) { Write-Log "Recommendation: GGUF Q4_K_S" -Color Cyan }
     else { Write-Log "Recommendation: GGUF Q3_K_S (performance may vary)" -Color Cyan }
 }
 else {
@@ -51,16 +50,19 @@ Write-Log "---------------------------------------------------------------------
 # Base model download is currently disabled/commented out in source logic
 # $baseChoice = Read-UserChoice -Prompt "Do you want to download LTXV base models?" -Choices @("A) 13B (30Gb)", "B) 2B (7Gb)", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
 
-$ggufChoice = Read-UserChoice -Prompt "Do you want to download LTXV GGUF models?" -Choices @("A) Q8_0 (24GB Vram)", "B) Q5_K_M (16GB Vram)", "C) Q3_K_S (less than 12GB Vram)", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$ggufChoice = Read-UserChoice -Prompt "Do you want to download LTXV GGUF models?" -Choices @("A) Q8_0 (24+GB Vram)", "B) Q5_K_M (12-16GB Vram)", "C) Q4_K_S (less than 12GB Vram)", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
 
 # --- Download Process ---
 Write-Log "Starting LTX-2 model downloads..." -Color Cyan
 
 $baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
 $ltxvChkptDir = Join-Path $modelsPath "checkpoints\LTX2"
+$difftDir = Join-Path $modelsPath "diffusion_models"
 $ltxvUnetDir = Join-Path $modelsPath "unet\LTX2"
 $vaeDir = Join-Path $modelsPath "vae"
 $upscaleDir = Join-Path $modelsPath "upscale_models"
+$lorasDir = Join-Path $modelsPath "loras"
+$clipDir = Join-Path $modelsPath "clip"
 
 New-Item -Path $ltxvChkptDir, $ltxvUnetDir, $vaeDir, $upscaleDir -ItemType Directory -Force | Out-Null
 
@@ -73,15 +75,18 @@ if ($doDownload) {
     Save-File -Uri "$baseUrl/vae/LTX2_audio_vae_bf16.safetensors" -OutFile (Join-Path $vaeDir "LTX2_audio_vae_bf16.safetensors")
 
     Write-Log "Downloading LTX2 text encoder..."
-    Save-File -Uri "$baseUrl/clip/ltx-2-19b-embeddings_connector_dev_bf16.safetensors" -OutFile (Join-Path $vaeDir "ltx-2-19b-embeddings_connector_dev_bf16.safetensors")
-    Save-File -Uri "$baseUrl/clip/gemma-3-12b-it-IQ4_XS.gguf" -OutFile (Join-Path $vaeDir "gemma-3-12b-it-IQ4_XS.gguf")
+    Save-File -Uri "$baseUrl/clip/ltx-2-19b-embeddings_connector_dev_bf16.safetensors" -OutFile (Join-Path $clipDir "ltx-2-19b-embeddings_connector_dev_bf16.safetensors")
+    Save-File -Uri "$baseUrl/clip/gemma-3-12b-it-IQ4_XS.gguf" -OutFile (Join-Path $clipDir "gemma-3-12b-it-IQ4_XS.gguf")
 
+    Write-Log "Downloading MelBandRoformer..."
+    Save-File -Uri "$baseUrl/diffusion_models/MelBandRoFormer/MelBandRoformer_fp32.safetensors" -OutFile (Join-Path $difftDir "MelBandRoformer_fp32.safetensors")
+	
     Write-Log "Downloading LTX2 spatial upscaler..."
     Save-File -Uri "$baseUrl/upscale_models/ltx-2-spatial-upscaler-x2-1.0.safetensors" -OutFile (Join-Path $upscaleDir "ltx-2-spatial-upscaler-x2-1.0.safetensors")
 
     Write-Log "Downloading recommended LoRA..."
-    Save-File -Uri "$baseUrl/loras/LTX-2/ltx-2-19b-distilled-lora-384.safetensors" -OutFile (Join-Path $vaeDir "ltx-2-19b-distilled-lora-384.safetensors")
-    Save-File -Uri "$baseUrl/loras/LTX-2/ltx-2-19b-ic-lora-detailer.safetensors" -OutFile (Join-Path $vaeDir "ltx-2-19b-ic-lora-detailer.safetensors")
+    Save-File -Uri "$baseUrl/loras/LTX-2/ltx-2-19b-distilled-lora-384.safetensors" -OutFile (Join-Path $lorasDir "ltx-2-19b-distilled-lora-384.safetensors")
+    Save-File -Uri "$baseUrl/loras/LTX-2/ltx-2-19b-ic-lora-detailer.safetensors" -OutFile (Join-Path $lorasDir "ltx-2-19b-ic-lora-detailer.safetensors")
 }
 
 if ($ggufChoice -ne 'E') {
@@ -93,7 +98,7 @@ if ($ggufChoice -ne 'E') {
         Save-File -Uri "$baseUrl/unet/LTX-2/ltx-2-19b-dev-Q5_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "ltx-2-19b-dev-Q5_K_S.gguf")
     }
     if ($ggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTX-2/ltx-2-19b-dev-Q3_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "ltx-2-19b-dev-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/unet/LTX-2/ltx-2-19b-dev-Q4_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "ltx-2-19b-dev-Q4_K_S.gguf")
     }
 }
 
