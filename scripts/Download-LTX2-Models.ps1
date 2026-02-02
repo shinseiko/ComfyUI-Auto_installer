@@ -60,7 +60,7 @@ $ltxvChkptDir = Join-Path $modelsPath "checkpoints\LTX2"
 $difftDir = Join-Path $modelsPath "diffusion_models"
 $ltxvUnetDir = Join-Path $modelsPath "unet\LTX2"
 $vaeDir = Join-Path $modelsPath "vae"
-$upscaleDir = Join-Path $modelsPath "upscale_models"
+$upscaleDir = Join-Path $modelsPath "latent_upscale_models"
 $lorasDir = Join-Path $modelsPath "loras"
 $clipDir = Join-Path $modelsPath "clip"
 
@@ -82,7 +82,7 @@ if ($doDownload) {
     Save-File -Uri "$baseUrl/diffusion_models/MelBandRoFormer/MelBandRoformer_fp32.safetensors" -OutFile (Join-Path $difftDir "MelBandRoformer_fp32.safetensors")
 	
     Write-Log "Downloading LTX2 spatial upscaler..."
-    Save-File -Uri "$baseUrl/upscale_models/ltx-2-spatial-upscaler-x2-1.0.safetensors" -OutFile (Join-Path $upscaleDir "ltx-2-spatial-upscaler-x2-1.0.safetensors")
+    Save-File -Uri "$baseUrl/latent_upscale_models/ltx-2-spatial-upscaler-x2-1.0.safetensors" -OutFile (Join-Path $upscaleDir "ltx-2-spatial-upscaler-x2-1.0.safetensors")
 
     Write-Log "Downloading recommended LoRA..."
     Save-File -Uri "$baseUrl/loras/LTX-2/ltx-2-19b-distilled-lora-384.safetensors" -OutFile (Join-Path $lorasDir "ltx-2-19b-distilled-lora-384.safetensors")
