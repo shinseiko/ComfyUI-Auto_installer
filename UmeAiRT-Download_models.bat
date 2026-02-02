@@ -15,9 +15,10 @@ echo    1. FLUX Models
 echo    2. WAN2.1 Models
 echo    3. WAN2.2 Models
 echo    4. HIDREAM Models
-echo    5. LTXV Models
-echo    6. QWEN Models
-echo    7. Z-IMAGE Models
+echo    5. LTX1 Models
+echo    6. LTX2 Models
+echo    7. QWEN Models
+echo    8. Z-IMAGE Models
 echo.
 echo    Q. Quit
 echo.
@@ -28,9 +29,10 @@ if /i "%CHOICE%"=="1" goto :DOWNLOAD_FLUX
 if /i "%CHOICE%"=="2" goto :DOWNLOAD_WAN2.1
 if /i "%CHOICE%"=="3" goto :DOWNLOAD_WAN2.2
 if /i "%CHOICE%"=="4" goto :DOWNLOAD_HIDREAM
-if /i "%CHOICE%"=="5" goto :DOWNLOAD_LTXV
-if /i "%CHOICE%"=="6" goto :DOWNLOAD_QWEN
-if /i "%CHOICE%"=="7" goto :DOWNLOAD_Z-IMG
+if /i "%CHOICE%"=="5" goto :DOWNLOAD_LTX1
+if /i "%CHOICE%"=="6" goto :DOWNLOAD_LTX2
+if /i "%CHOICE%"=="7" goto :DOWNLOAD_QWEN
+if /i "%CHOICE%"=="8" goto :DOWNLOAD_Z-IMG
 if /i "%CHOICE%"=="Q" goto :EOF
 
 echo Invalid choice. Please try again.
@@ -58,9 +60,14 @@ echo Starting download of HIDREAM models...
 powershell.exe -ExecutionPolicy Bypass -File "%~dp0scripts\Download-HIDREAM-Models.ps1" -InstallPath "%~dp0"
 goto :END
 
-:DOWNLOAD_LTXV
+:DOWNLOAD_LTX1
 echo Starting download of LTXV models...
-powershell.exe -ExecutionPolicy Bypass -File "%~dp0scripts\Download-LTXV-Models.ps1" -InstallPath "%~dp0"
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0scripts\Download-LTX1-Models.ps1" -InstallPath "%~dp0"
+goto :END
+
+:DOWNLOAD_LTX2
+echo Starting download of LTXV models...
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0scripts\Download-LTX2-Models.ps1" -InstallPath "%~dp0"
 goto :END
 
 :DOWNLOAD_QWEN
