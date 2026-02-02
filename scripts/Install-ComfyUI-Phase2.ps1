@@ -448,7 +448,8 @@ $modelPacks = @(
     @{Name = "WAN2.1"; ScriptName = "Download-WAN2.1-Models.ps1" },
     @{Name = "WAN2.2"; ScriptName = "Download-WAN2.2-Models.ps1" },
     @{Name = "HIDREAM"; ScriptName = "Download-HIDREAM-Models.ps1" },
-    @{Name = "LTXV"; ScriptName = "Download-LTXV-Models.ps1" },
+    @{Name = "LTX1"; ScriptName = "Download-LTX1-Models.ps1" },
+    @{Name = "LTX2"; ScriptName = "Download-LTX2-Models.ps1" },
     @{Name = "QWEN"; ScriptName = "Download-QWEN-Models.ps1" },
     @{Name = "Z-IMAGE"; ScriptName = "Download-Z-IMAGES-Models.ps1" }
 )
