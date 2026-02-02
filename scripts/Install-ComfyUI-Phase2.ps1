@@ -13,6 +13,11 @@
 param(
     [string]$InstallPath = (Split-Path -Path $PSScriptRoot -Parent)
 )
+
+# --- FIX ISSUE #34 (Support CJK/Accents) ---
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+
 $comfyPath = Join-Path $InstallPath "ComfyUI"
 $comfyUserPath = Join-Path $comfyPath "user"
 $scriptPath = Join-Path $InstallPath "scripts"

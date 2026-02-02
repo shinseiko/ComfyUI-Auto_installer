@@ -7,6 +7,10 @@ param(
     [string]$InstallPath,
     [switch]$RunAdminTasks # Flag for elevated mode
 )
+
+# --- FIX ISSUE #34 (Support CJK/Accents) ---
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding  = [System.Text.Encoding]::UTF8
 $comfyPath = Join-Path $InstallPath "ComfyUI"
 $scriptPath = Join-Path $InstallPath "scripts"
 $condaPath = Join-Path $env:LOCALAPPDATA "Miniconda3"

@@ -1,5 +1,6 @@
 @echo off
 setlocal
+chcp 65001 > nul
 set "PYTHONPATH="
 set "PYTHONNOUSERSITE=1"
 :: ============================================================================
