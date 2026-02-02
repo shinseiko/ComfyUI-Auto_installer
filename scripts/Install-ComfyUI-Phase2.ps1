@@ -23,9 +23,16 @@ param(
 )
 
 # --- Encoding Support (CJK/Accents) ---
+# Force Windows Console to use UTF-8 (Code Page 65001)
+# This prevents UnicodeDecodeError when Python subprocess reads output containing accents (e.g. byte 0xfc)
+$null = chcp 65001
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+
+# Force Python to strictly use UTF-8 for all IO operations
 $env:PYTHONUTF8 = "1"
+$env:PYTHONIOENCODING = "utf-8"
 
 # --- Paths ---
 $comfyPath = Join-Path $InstallPath "ComfyUI"
