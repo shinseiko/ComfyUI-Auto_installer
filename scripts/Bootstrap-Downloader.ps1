@@ -1,3 +1,22 @@
+<#
+.SYNOPSIS
+    Bootstraps the installation by downloading all required scripts and configuration files.
+.DESCRIPTION
+    This script is the first entry point for the auto-installer.
+    It downloads the latest version of the PowerShell scripts, batch launchers, and config files
+    from the GitHub repository to the local installation directory.
+.PARAMETER InstallPath
+    The root directory where the files should be installed.
+.PARAMETER GhUser
+    The GitHub username (default: "UmeAiRT").
+.PARAMETER GhRepoName
+    The GitHub repository name (default: "ComfyUI-Auto_installer").
+.PARAMETER GhBranch
+    The GitHub branch to use (default: "main").
+.PARAMETER SkipSelf
+    If true, skips downloading 'UmeAiRT-Update-ComfyUI.bat' to avoid file locking issues during self-updates.
+#>
+
 param(
     [string]$InstallPath,
     [string]$GhUser = "UmeAiRT",
@@ -5,6 +24,10 @@ param(
     [string]$GhBranch = "main",
     [switch]$SkipSelf = $false
 )
+
+# ============================================================================
+# SCRIPT INITIALIZATION
+# ============================================================================
 
 # Build the base URL from parameters (allows developer testing of forks)
 $baseUrl = "https://github.com/$GhUser/$GhRepoName/raw/$GhBranch/"
@@ -22,13 +45,13 @@ $filesToDownload = @(
     @{ RepoPath = "scripts/Download-LTX1-Models.ps1";    LocalPath = "scripts/Download-LTX1-Models.ps1" },
     @{ RepoPath = "scripts/Download-LTX2-Models.ps1";    LocalPath = "scripts/Download-LTX2-Models.ps1" },
     @{ RepoPath = "scripts/Download-QWEN-Models.ps1";    LocalPath = "scripts/Download-QWEN-Models.ps1" },
-    @{ RepoPath = "scripts/Download-Z-IMAGES-Models.ps1";    LocalPath = "scripts/Download-Z-IMAGES-Models.ps1" },
+    @{ RepoPath = "scripts/Download-Z-IMAGES-Models.ps1"; LocalPath = "scripts/Download-Z-IMAGES-Models.ps1" },
     @{ RepoPath = "scripts/UmeAiRTUtils.psm1";           LocalPath = "scripts/UmeAiRTUtils.psm1" },
     # Configuration Files
     @{ RepoPath = "scripts/environment.yml";             LocalPath = "scripts/environment.yml" },
     @{ RepoPath = "scripts/dependencies.json";           LocalPath = "scripts/dependencies.json" },
     @{ RepoPath = "scripts/custom_nodes.csv";            LocalPath = "scripts/custom_nodes.csv" },
-    @{ RepoPath = "scripts/snapshot.json";            	 LocalPath = "scripts/snapshot.json" },
+    @{ RepoPath = "scripts/snapshot.json";               LocalPath = "scripts/snapshot.json" },
     # Batch Launchers
     @{ RepoPath = "UmeAiRT-Start-ComfyUI.bat";           LocalPath = "UmeAiRT-Start-ComfyUI.bat" },
     @{ RepoPath = "UmeAiRT-Start-ComfyUI_LowVRAM.bat";   LocalPath = "UmeAiRT-Start-ComfyUI_LowVRAM.bat" },
@@ -44,10 +67,12 @@ Write-Host "[INFO] Downloading the latest versions of the installation scripts..
 foreach ($file in $filesToDownload) {
     $uri = $baseUrl + $file.RepoPath
     $outFile = Join-Path $InstallPath $file.LocalPath
-	if ($SkipSelf -and $file.LocalPath -eq "UmeAiRT-Update-ComfyUI.bat") {
+
+    if ($SkipSelf -and $file.LocalPath -eq "UmeAiRT-Update-ComfyUI.bat") {
         Write-Host "  - Skipping 'UmeAiRT-Update-ComfyUI.bat' (SkipSelf)"
-        continue # Passe au fichier suivant
+        continue
     }
+
     # Ensure the destination directory exists before downloading
     $outDir = Split-Path -Path $outFile -Parent
     if (-not (Test-Path $outDir)) {

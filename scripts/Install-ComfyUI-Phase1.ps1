@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+    Phase 1 of the ComfyUI Auto-Installer.
+.DESCRIPTION
+    This script handles the initial setup of the environment:
+    - Administrator privilege checks (VS Build Tools, Long Paths).
+    - Installation of system dependencies (Git, Aria2, Python 3.13 or Miniconda).
+    - Creation of the Python environment (venv or Conda).
+    - Preparation of the launcher for Phase 2.
+.PARAMETER InstallPath
+    The root directory for the installation.
+.PARAMETER RunAdminTasks
+    Internal flag used when self-elevating to run administrative tasks.
+#>
 
 #===========================================================================
 # SECTION 1: SCRIPT CONFIGURATION & HELPER FUNCTIONS
@@ -7,20 +21,40 @@ param(
     [string]$InstallPath,
     [switch]$RunAdminTasks # Flag for elevated mode
 )
+
+# --- Path Definitions ---
 $comfyPath = Join-Path $InstallPath "ComfyUI"
 $scriptPath = Join-Path $InstallPath "scripts"
 $condaPath = Join-Path $env:LOCALAPPDATA "Miniconda3"
 $condaExe = Join-Path $condaPath "Scripts\conda.exe"
 $logPath = Join-Path $InstallPath "logs"
 $logFile = Join-Path $logPath "install_log.txt"
+
+# --- Security Protocol ---
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Load dependencies EARLY
+# --- Load dependencies EARLY ---
 $dependenciesFile = Join-Path $scriptPath "dependencies.json"
-if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found at '$dependenciesFile'..." -ForegroundColor Red; Read-Host; exit 1 }
-try { $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json } catch { Write-Host "FATAL: Failed to parse dependencies.json. Error: $($_.Exception.Message)" -ForegroundColor Red; Read-Host; exit 1 }
-if (-not (Test-Path $logPath)) { try { New-Item -ItemType Directory -Force -Path $logPath | Out-Null } catch { Write-Host "WARN: Could not create log directory '$logPath'" -ForegroundColor Yellow } }
+if (-not (Test-Path $dependenciesFile)) {
+    Write-Host "FATAL: dependencies.json not found at '$dependenciesFile'..." -ForegroundColor Red
+    Read-Host
+    exit 1
+}
+try {
+    $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
+} catch {
+    Write-Host "FATAL: Failed to parse dependencies.json. Error: $($_.Exception.Message)" -ForegroundColor Red
+    Read-Host
+    exit 1
+}
 
+# --- Create Log Directory ---
+if (-not (Test-Path $logPath)) {
+    try { New-Item -ItemType Directory -Force -Path $logPath | Out-Null }
+    catch { Write-Host "WARN: Could not create log directory '$logPath'" -ForegroundColor Yellow }
+}
+
+# --- Helper Function: Check Admin Status ---
 function Test-IsAdmin {
     try {
         $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -29,6 +63,7 @@ function Test-IsAdmin {
     catch { return $false }
 }
 
+# --- Import Utilities ---
 Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
 
 #===========================================================================
@@ -38,9 +73,12 @@ $global:totalSteps = 9 # Phase 1 = Setup Admin (if needed) + Setup Env + Launch 
 $global:currentStep = 0
 
 if ($RunAdminTasks) {
+    # -------------------------------------------------------------------------
+    # SUB-SECTION: Elevated Tasks (Admin Mode)
+    # -------------------------------------------------------------------------
     Write-Host "`n=== Performing Administrator Tasks ===`n" -ForegroundColor Cyan
 
-    # Task 1: Long paths
+    # Task 1: Enable Long Paths
     Write-Host "[Admin Task 1/2] Enabling support for long paths (Registry)..." -ForegroundColor Yellow
     $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
     try {
@@ -87,14 +125,19 @@ if ($RunAdminTasks) {
 
 }
 else {
+    # -------------------------------------------------------------------------
+    # SUB-SECTION: Standard User Tasks (Pre-Checks)
+    # -------------------------------------------------------------------------
     $needsElevation = $false
     Write-Log "Checking for prerequisites that may require admin rights..." -Level 1
-    # Long paths
+
+    # Check Long Paths
     if ((Get-ItemPropertyValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -ErrorAction SilentlyContinue) -ne 1) {
         Write-Log "Long path support must be enabled (Admin required)." -Level 2 -Color Yellow; $needsElevation = $true
     }
     else { Write-Log "Long path support OK." -Level 2 -Color Green }
-    # VS Build Tools
+
+    # Check VS Build Tools
     if ($dependencies -ne $null -and $dependencies.tools -ne $null -and $dependencies.tools.vs_build_tools -ne $null -and $dependencies.tools.vs_build_tools.install_path) {
         $vsInstallCheckPath = $ExecutionContext.InvokeCommand.ExpandString($dependencies.tools.vs_build_tools.install_path)
         if (-not (Test-Path $vsInstallCheckPath)) {
@@ -104,6 +147,7 @@ else {
     }
     else { Write-Log "WARNING: Unable to verify VS Build Tools. Elevation may be required." -Level 2 -Color Yellow; $needsElevation = $true }
 
+    # Elevate if needed
     if ($needsElevation -and -not (Test-IsAdmin)) {
         Write-Host "`nAdministrator privileges are required for initial setup." -ForegroundColor Yellow
         Write-Host "Re-running part of the script with elevation..." -ForegroundColor Yellow
@@ -126,7 +170,7 @@ else {
         $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"; $regKey = "LongPathsEnabled"
         try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERROR Long paths" -Level 2 -Color Red }
     }
-	
+
     Clear-Host
     Write-Host "-------------------------------------------------------------------------------"
     $asciiBanner = @'
@@ -157,13 +201,13 @@ else {
     $phase2LauncherPath = Join-Path $scriptPath "Launch-Phase2.bat"
     $phase2ScriptPath = Join-Path $scriptPath "Install-ComfyUI-Phase2.ps1"
 
-	Write-Log "Checking/Installing aria2 (Download Accelerator)..." -Level 1
+    Write-Log "Checking/Installing aria2 (Download Accelerator)..." -Level 1
     $aria2Url = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip"
     $aria2ZipPath = Join-Path $env:TEMP "aria2.zip"
     $aria2InstallPath = Join-Path $env:LOCALAPPDATA "aria2"
     $aria2ExePath = Join-Path $aria2InstallPath "aria2c.exe"
 
-	if (-not (Test-Path $aria2ExePath)) {
+    if (-not (Test-Path $aria2ExePath)) {
         Write-Log "Downloading aria2..." -Level 2
         try {
             Save-File -Uri $aria2Url -OutFile $aria2ZipPath
@@ -189,11 +233,11 @@ else {
     else {
         Write-Log "aria2 is already installed." -Level 1 -Color Green
     }
-    # Ajouter aria2 au PATH pour la session actuelle (important pour que Save-File le trouve)
+    # Add aria2 to PATH for current session
     $env:PATH = "$aria2InstallPath;$env:PATH"
 
-	# ---------------------------------------------------------
-    # GIT DETECTION AND INSTALLATION (ADDED)
+    # ---------------------------------------------------------
+    # GIT DETECTION AND INSTALLATION
     # ---------------------------------------------------------
     Write-Log "Checking for Git..." -Level 1
     if (Get-Command "git" -ErrorAction SilentlyContinue) {
@@ -260,7 +304,7 @@ else {
         Write-Log "Selected: Light Installation (venv)" -Level 0
         Set-Content -Path $installTypeFile -Value "venv" -Force
 
-		# ---------------------------------------------------------
+        # ---------------------------------------------------------
         # AUTOMATIC DETECTION AND INSTALLATION OF PYTHON 3.13
         # ---------------------------------------------------------
         Write-Log "Checking for Python 3.13..." -Level 1
@@ -371,7 +415,7 @@ else {
             Write-Log "Virtual environment already exists." -Level 1 -Color Green
         }
 
-        # 4. Prepare Launch-Phase2.bat for venv
+        # 6. Prepare Launch-Phase2.bat for venv
         $launcherContent = @"
 @echo off
 chcp 65001 > nul

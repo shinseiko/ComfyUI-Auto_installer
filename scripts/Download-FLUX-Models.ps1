@@ -1,35 +1,34 @@
+<#
+.SYNOPSIS
+    Interactive downloader for FLUX models.
+.DESCRIPTION
+    Downloads FLUX base models, GGUF quantized models, ControlNets, LoRAs, and Upscalers.
+    Provides recommendations based on detected GPU VRAM.
+.PARAMETER InstallPath
+    The root directory of the installation.
+#>
+
 param(
-    # Accepts the installation path from the main script.
-    # Defaults to its own directory if run standalone.
     [string]$InstallPath = $PSScriptRoot
 )
 
-<#
-.SYNOPSIS
-    A fully refactored and corrected PowerShell script to interactively download FLUX models for ComfyUI.
-.DESCRIPTION
-    This version corrects logging paths when called from a parent script, fixes all download logic,
-    and provides user guidance based on GPU VRAM.
-#>
-
-#===========================================================================
-# SECTION 1: HELPER FUNCTIONS & SETUP
-#===========================================================================
+# ============================================================================
+# INITIALIZATION
+# ============================================================================
 $InstallPath = $InstallPath.Trim('"')
 Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
 
-#===========================================================================
-# SECTION 2: SCRIPT EXECUTION
-#===========================================================================
+# ============================================================================
+# MAIN EXECUTION
+# ============================================================================
 
 $modelsPath = Join-Path $InstallPath "models"
 if (-not (Test-Path $modelsPath)) {
     Write-Log "Models directory does not exist, creating it..." -Color Yellow
-    # Create the directory (and any necessary parent directories thanks to -Force).
     New-Item -Path $modelsPath -ItemType Directory -Force | Out-Null
 }
 
-# --- GPU Detection ---
+# --- GPU Detection & Recommendations ---
 Write-Log "-------------------------------------------------------------------------------"
 Write-Log "Checking for NVIDIA GPU to provide model recommendations..." -Color Yellow
 $gpuInfo = Get-GpuVramInfo
@@ -37,7 +36,6 @@ if ($gpuInfo) {
     Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
     Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
 
-    # Recommendations based on FLUX models
     if ($gpuInfo.VramGiB -ge 30) {
         Write-Log "Recommendation: fp16" -Color Cyan
     }
@@ -65,7 +63,7 @@ else {
 }
 Write-Log "-------------------------------------------------------------------------------"
 
-# --- Ask all questions first ---
+# --- User Prompts ---
 $fluxChoice = Read-UserChoice -Prompt "Do you want to download FLUX base models?" -Choices @("A) fp16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
 $ggufChoice = Read-UserChoice -Prompt "Do you want to download FLUX GGUF models?" -Choices @("A) Q8 (18GB VRAM)", "B) Q6 (14GB VRAM)", "C) Q5 (12GB VRAM)", "D) Q4 (10GB VRAM)", "E) Q3 (8GB VRAM)", "F) Q2 (6GB VRAM)", "G) All", "H) No") -ValidAnswers @("A", "B", "C", "D", "E", "F", "G", "H")
 $nunchakuChoice = Read-UserChoice -Prompt "Do you want to download FLUX NUNCHAKU models?" -Choices @("A) Base", "B) Fill", "C) KONTEXT", "D) Krea", "E) All", "F) No") -ValidAnswers @("A", "B", "C", "D", "E", "F")
@@ -76,10 +74,9 @@ $pulidChoice = Read-UserChoice -Prompt "Do you want to download FLUX PuLID and R
 $upscaleChoice = Read-UserChoice -Prompt "Do you want to download Upscaler models ?" -Choices @("A) Yes", "B) No") -ValidAnswers @("A", "B")
 $loraChoice = Read-UserChoice -Prompt "Do you want to download UmeAiRT LoRAs?" -Choices @("A) Yes", "B) No") -ValidAnswers @("A", "B")
 
-# --- Download files based on answers ---
+# --- Download Process ---
 Write-Log "Starting downloads based on your choices..." -Color Cyan
 
-# Define all paths once.
 $baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
 $fluxDir = Join-Path $modelsPath "diffusion_models\FLUX"
 $clipDir = Join-Path $modelsPath "clip"
@@ -91,7 +88,7 @@ $styleDir = Join-Path $modelsPath "style_models"
 $loraDir = Join-Path $modelsPath "loras\FLUX"
 $upscaleDir = Join-Path $modelsPath "upscale_models"
 
-# Create all necessary directories at once.
+# Create directories
 $requiredDirs = @($fluxDir, $clipDir, $vaeDir, $unetFluxDir, $controlnetDir, $pulidDir, $styleDir, $loraDir, $upscaleDir)
 foreach ($dir in $requiredDirs) {
     if (-not (Test-Path $dir)) {
@@ -99,7 +96,6 @@ foreach ($dir in $requiredDirs) {
     }
 }
 
-# Check if any downloads are needed before downloading common files.
 $doDownload = ($fluxChoice -ne 'D' -or $ggufChoice -ne 'H' -or $nunchakuChoice -ne 'F' -or $schnellChoice -eq 'A' -or $controlnetChoice -ne 'G' -or $fillChoice -ne 'I')
 
 if ($doDownload) {

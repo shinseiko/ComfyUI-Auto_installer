@@ -1,9 +1,17 @@
 <#
 .SYNOPSIS
-    An automated installer for ComfyUI and its dependencies.
+    Phase 2 of the ComfyUI Auto-Installer (Environment Setup & Dependencies).
 .DESCRIPTION
-    This script streamlines the setup of ComfyUI, including Python, Git,
-    all required Python packages, custom nodes (via ComfyUI-Manager CLI), and optional models.
+    This script runs inside the configured environment (venv or Conda).
+    It handles:
+    - Cloning ComfyUI.
+    - Setting up the external folder architecture (linking 'models', 'custom_nodes', etc.).
+    - Installing Python dependencies (pip, torch, etc.).
+    - Installing Custom Nodes via ComfyUI-Manager CLI (snapshot or CSV).
+    - Installing Triton and SageAttention via DazzleML.
+    - Downloading optional model packs.
+.PARAMETER InstallPath
+    The root directory for the installation.
 #>
 
 #===========================================================================
@@ -14,22 +22,33 @@ param(
     [string]$InstallPath = (Split-Path -Path $PSScriptRoot -Parent)
 )
 
-# --- FIX ISSUE #34 (Support CJK/Accents) ---
+# --- Encoding Support (CJK/Accents) ---
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8
 
+# --- Paths ---
 $comfyPath = Join-Path $InstallPath "ComfyUI"
 $comfyUserPath = Join-Path $comfyPath "user"
 $scriptPath = Join-Path $InstallPath "scripts"
 $logPath = Join-Path $InstallPath "logs"
 $logFile = Join-Path $logPath "install_log.txt"
+
+# --- Security Protocol ---
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+# --- Load Dependencies ---
 $dependenciesFile = Join-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) "dependencies.json"
-if (-not (Test-Path $dependenciesFile)) { Write-Host "FATAL: dependencies.json not found..." -ForegroundColor Red; Read-Host; exit 1 }
+if (-not (Test-Path $dependenciesFile)) {
+    Write-Host "FATAL: dependencies.json not found..." -ForegroundColor Red
+    Read-Host
+    exit 1
+}
 $dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
+
+# --- Create Log Directory ---
 if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Force -Path $logPath | Out-Null }
 
+# --- Import Utilities ---
 Import-Module (Join-Path $scriptPath "UmeAiRTUtils.psm1") -Force
 $global:logFile = Join-Path $logPath "install_log.txt"
 $global:hasGpu = Test-NvidiaGpu
@@ -76,6 +95,7 @@ $totalCores = [int]$env:NUMBER_OF_PROCESSORS
 $optimalParallelJobs = [int][Math]::Floor(($totalCores * 3) / 4)
 if ($optimalParallelJobs -lt 1) { $optimalParallelJobs = 1 }
 
+# --- Step 1: Git Configuration ---
 Write-Log "Configuring Git to handle long paths (system-wide)..." -Level 1
 try { Invoke-AndLog "git" "config --system core.longpaths true" -IgnoreErrors } catch { Write-Log "Warning: Failed to set git config (might need admin)." -Level 2 -Color Yellow }
 
@@ -97,7 +117,7 @@ else {
 }
 
 #===========================================================================
-# SECTION 2.5: ARCHITECTURE SETUP (SMART MOVE logic)
+# SECTION 2.5: ARCHITECTURE SETUP (External Folders)
 #===========================================================================
 Write-Log "Configuring External Folders Architecture..." -Level 0
 
@@ -254,7 +274,8 @@ else {
         Write-Log "WARNING: Neither snapshot.json nor custom_nodes.csv were found." -Level 1 -Color Red
     }
 }
-# UmeAiRT-Sync instalation
+
+# UmeAiRT-Sync installation
 $umeSyncPath = Join-Path $internalCustomNodes "ComfyUI-UmeAiRT-Sync"
 if (-not (Test-Path $umeSyncPath)) {
     Write-Log "Installing ComfyUI-UmeAiRT-Sync (for workflows auto-update)..." -Level 1 -Color Cyan
@@ -306,61 +327,7 @@ $env:PYTHONPATH = $env:PYTHONPATH -replace [regex]::Escape("$managerPath;"), ""
 $env:COMFYUI_PATH = $null
 
 
-# --- Step 6: Install GPU-specific optimisations ---
-Write-Log "Installing GPU-specific optimisations" -Level 0
-# if ($global:hasGpu) {
-#     Write-Log "GPU detected, installing GPU-specific repositories..." -Level 1
-#    
-# Detect CUDA ONLY for compilations
-#     $cudaHome = $null
-#     $cudaPaths = @(
-#         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"
-#     )
-#     foreach ($pattern in $cudaPaths) {
-#         $found = Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue | 
-#                  Sort-Object Name -Descending | Select-Object -First 1
-#         if ($found) { $cudaHome = $found.FullName; break }
-#     }
-#    
-#     if ($cudaHome) {
-#         $env:CUDA_HOME = $cudaHome
-#         $env:PATH = "$(Join-Path $cudaHome 'bin');$env:PATH"
-#         Write-Log "CUDA configured for compilation: $cudaHome" -Level 2 -Color Green
-#     } else {
-#         Write-Log "CUDA Toolkit not found (System) - optional packages ignored if they require compilation" -Level 2 -Color Yellow
-#     }
-# 
-#     foreach ($repo in $dependencies.pip_packages.git_repos) {
-#         if (-not $cudaHome -and ($repo.name -match "SageAttention|apex")) {
-#             Write-Log "Skipping $($repo.name) (CUDA Toolkit required)" -Level 2 -Color Yellow
-#             continue
-#         }
-#        
-#         Write-Log "Attempting to install $($repo.name)..." -Level 2
-#         $installUrl = "git+$($repo.url)@$($repo.commit)"
-#         $pipArgs = @("-m", "pip", "install")
-#         if ($repo.install_options) {
-#             $pipArgs += $repo.install_options.Split(' ')
-#         }
-#         $pipArgs += $installUrl
-# 
-#         try {
-#             # Use $pythonExe
-#             $output = & $pythonExe $pipArgs 2>&1
-#             if ($LASTEXITCODE -eq 0) {
-#                 Write-Log "$($repo.name) installed successfully" -Level 2 -Color Green
-# 				
-#             } else {
-#                 Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
-#             }
-#         } catch {
-#             Write-Log "$($repo.name) installation failed (optional)" -Level 2 -Color Yellow
-#         }
-#     }
-# } else {
-#     Write-Log "Skipping GPU-specific git repositories as no GPU was found." -Level 1
-# }
-
+# --- Step 6: Additional Packages from .whl ---
 Write-Log "Installing packages from .whl files..." -Level 1
 foreach ($wheel in $dependencies.pip_packages.wheels) {
     Write-Log "Installing $($wheel.name)" -Level 2
@@ -396,7 +363,7 @@ try {
 
     if (Test-Path $installerDest) {
         Write-Log "Executing DazzleML Installer..." -Level 2
-		$oldUtf8 = $env:PYTHONUTF8
+        $oldUtf8 = $env:PYTHONUTF8
         $env:PYTHONUTF8 = "1"
         Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
     }
@@ -412,8 +379,6 @@ catch {
 
 # 1. Define variables
 $JsonUrl = "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer/main/scripts/nunchaku_versions.json" 
-
-# Use $comfyPath (defined at script start) instead of $ComfyPath for consistency
 $TargetDir = "$comfyPath\custom_nodes\ComfyUI-nunchaku"
 $TargetFile = "$TargetDir\nunchaku_versions.json"
 

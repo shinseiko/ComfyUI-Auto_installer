@@ -1,62 +1,68 @@
+<#
+.SYNOPSIS
+    Interactive downloader for QWEN models.
+.DESCRIPTION
+    Downloads QWEN base and Edit models, GGUF quantized models, and Lightning LoRAs for ComfyUI.
+    Provides recommendations based on detected GPU VRAM.
+.PARAMETER InstallPath
+    The root directory of the installation.
+#>
+
 param(
     [string]$InstallPath = $PSScriptRoot
 )
 
-<#
-.SYNOPSIS
-    A PowerShell script to interactively download QWEN models for ComfyUI.
-.DESCRIPTION
-    This version corrects a major syntax error in the helper functions.
-#>
-
-#===========================================================================
-# SECTION 1: HELPER FUNCTIONS & SETUP
-#===========================================================================
+# ============================================================================
+# INITIALIZATION
+# ============================================================================
 $InstallPath = $InstallPath.Trim('"')
 Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
 
-#===========================================================================
-# SECTION 2: SCRIPT EXECUTION
-#===========================================================================
-$InstallPath = $InstallPath.Trim('"')
+# ============================================================================
+# MAIN EXECUTION
+# ============================================================================
+
 $modelsPath = Join-Path $InstallPath "models"
 if (-not (Test-Path $modelsPath)) {
-    Write-Log "Could not find ComfyUI models path at '$modelsPath'. Exiting." -Color Red
-    Read-Host "Press Enter to exit."
-    exit
+    Write-Log "Models directory does not exist, creating it..." -Color Yellow
+    New-Item -Path $modelsPath -ItemType Directory -Force | Out-Null
 }
 
-# --- GPU Detection ---
+# --- GPU Detection & Recommendations ---
 Write-Log "-------------------------------------------------------------------------------"
 Write-Log "Checking for NVIDIA GPU to provide model recommendations..." -Color Yellow
 $gpuInfo = Get-GpuVramInfo
 if ($gpuInfo) {
     Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
     Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
-    # Recommendations based on QWEN models
+
     if ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: bf16 or fp8" -Color Cyan }
     elseif ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: GGUF Q8_0" -Color Cyan }
     elseif ($gpuInfo.VramGiB -ge 12) { Write-Log "Recommendation: GGUF Q5_K_S" -Color Cyan }
     else { Write-Log "Recommendation: GGUF Q4_K_S" -Color Cyan }
 }
-else { Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray }
+else {
+    Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray
+}
 Write-Log "-------------------------------------------------------------------------------"
 
-# --- Ask all questions ---
-$baseChoice = Read-UserChoice "Do you want to download QWEN base models? " @("A) bf16", "B) fp8", "C) All", "D) No") @("A", "B", "C", "D")
-$ggufChoice = Read-UserChoice "Do you want to download QWEN GGUF models?" @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
-$editChoice = Read-UserChoice "Do you want to download QWEN EDIT models? " @("A) bf16", "B) fp8", "C) All", "D) No") @("A", "B", "C", "D")
-$editggufChoice = Read-UserChoice "Do you want to download QWEN EDIT GGUF models?" @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
-$lightChoice = Read-UserChoice "Do you want to download QWEN Lightning LoRA? " @("A) 8 Steps", "B) 4 Steps", "C) All", "D) No") @("A", "B", "C", "D")
+# --- User Prompts ---
+$baseChoice = Read-UserChoice -Prompt "Do you want to download QWEN base models? " -Choices @("A) bf16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$ggufChoice = Read-UserChoice -Prompt "Do you want to download QWEN GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$editChoice = Read-UserChoice -Prompt "Do you want to download QWEN EDIT models? " -Choices @("A) bf16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$editggufChoice = Read-UserChoice -Prompt "Do you want to download QWEN EDIT GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$lightChoice = Read-UserChoice -Prompt "Do you want to download QWEN Lightning LoRA? " -Choices @("A) 8 Steps", "B) 4 Steps", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
 
-# --- Download files based on answers ---
+# --- Download Process ---
 Write-Log "Starting QWEN model downloads..." -Color Cyan
+
 $baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
 $QWENDiffDir = Join-Path $modelsPath "diffusion_models\QWEN"
 $QWENUnetDir = Join-Path $modelsPath "unet\QWEN"
 $QWENLoRADir = Join-Path $modelsPath "loras\QWEN"
 $clipDir = Join-Path $modelsPath "clip"
 $vaeDir = Join-Path $modelsPath "vae"
+
 New-Item -Path $QWENDiffDir, $QWENUnetDir, $QWENLoRADir, $clipDir, $vaeDir -ItemType Directory -Force | Out-Null
 
 $doDownload = ($baseChoice -ne 'D' -or $ggufChoice -ne 'E' -or $editChoice -ne 'D' -or $editggufChoice -ne 'E')
@@ -66,6 +72,7 @@ if ($doDownload) {
     Save-File -Uri "$baseUrl/vae/qwen_image_vae.safetensors" -OutFile (Join-Path $vaeDir "qwen_image_vae.safetensors")
 }
 
+# Base Models
 if ($baseChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($baseChoice -in 'A', 'C') {
@@ -78,6 +85,7 @@ if ($baseChoice -ne 'D') {
     }
 }
 
+# GGUF Models
 if ($ggufChoice -ne 'E') {
     Write-Log "Downloading QWEN GGUF models..."
     if ($ggufChoice -in 'A', 'D') {
@@ -94,6 +102,7 @@ if ($ggufChoice -ne 'E') {
     }
 }
 
+# Edit Models
 if ($editChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($editChoice -in 'A', 'C') {
@@ -106,6 +115,7 @@ if ($editChoice -ne 'D') {
     }
 }
 
+# Edit GGUF
 if ($editggufChoice -ne 'E') {
     Write-Log "Downloading QWEN GGUF models..."
     if ($editggufChoice -in 'A', 'D') {
@@ -122,6 +132,7 @@ if ($editggufChoice -ne 'E') {
     }
 }
 
+# Lightning LoRAs
 if ($lightChoice -ne 'D') {
     Write-Log "Downloading QWEN Lightning LoRA..."
     if ($lightChoice -in 'A', 'C') {

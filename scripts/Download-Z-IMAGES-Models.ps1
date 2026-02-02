@@ -1,24 +1,28 @@
+<#
+.SYNOPSIS
+    Interactive downloader for Z-IMAGE Turbo models.
+.DESCRIPTION
+    Downloads Z-IMAGE Turbo BF16 (Base) and GGUF quantized models (Optimized).
+    Also downloads RealESRGAN upscalers.
+    Provides recommendations based on detected GPU VRAM.
+.PARAMETER InstallPath
+    The root directory of the installation.
+#>
+
 param(
     [string]$InstallPath = $PSScriptRoot
 )
 
-<#
-.SYNOPSIS
-    A PowerShell script to interactively download Z-IMAGE Turbo models for ComfyUI.
-.DESCRIPTION
-    Interactively selects and downloads Z-IMAGE Turbo BF16 and GGUF quantized models.
-#>
-
-#===========================================================================
-# SECTION 1: HELPER FUNCTIONS & SETUP
-#===========================================================================
+# ============================================================================
+# INITIALIZATION
+# ============================================================================
 $InstallPath = $InstallPath.Trim('"')
 Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
 
-#===========================================================================
-# SECTION 2: SCRIPT EXECUTION
-#===========================================================================
-$InstallPath = $InstallPath.Trim('"')
+# ============================================================================
+# MAIN EXECUTION
+# ============================================================================
+
 $modelsPath = Join-Path $InstallPath "models"
 if (-not (Test-Path $modelsPath)) {
     Write-Log "Could not find ComfyUI models path at '$modelsPath'. Exiting." -Color Red
@@ -62,16 +66,19 @@ if ($gpuInfo) {
         Write-Log "Recommendation: GGUF Q3_K_S (Expect system memory usage)" -Color Red
     }
 }
-else { Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray }
+else {
+    Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray
+}
 Write-Log "-------------------------------------------------------------------------------"
 
-# --- Interactive Questions ---
-$baseChoice = Read-UserChoice "Do you want to download Z-IMAGE Turbo BF16 (Base Model)? " @("A) Yes (Best Quality)", "B) No") @("A", "B")
-$ggufChoice = Read-UserChoice "Do you want to download Z-IMAGE Turbo GGUF models (Optimized)?" @("A) Q8_0 (High Quality)", "B) Q6_K", "C) Q5_K_S (Balanced)", "D) Q4_K_S (Fast)", "E) Q3_K_S (Low VRAM)", "F) All", "G) No") @("A", "B", "C", "D", "E", "F", "G")
-$upscalerChoice = Read-UserChoice "Do you want to download RealESRGAN Upscalers? " @("A) Yes", "B) No") @("A", "B")
+# --- User Prompts ---
+$baseChoice = Read-UserChoice -Prompt "Do you want to download Z-IMAGE Turbo BF16 (Base Model)? " -Choices @("A) Yes (Best Quality)", "B) No") -ValidAnswers @("A", "B")
+$ggufChoice = Read-UserChoice -Prompt "Do you want to download Z-IMAGE Turbo GGUF models (Optimized)?" -Choices @("A) Q8_0 (High Quality)", "B) Q6_K", "C) Q5_K_S (Balanced)", "D) Q4_K_S (Fast)", "E) Q3_K_S (Low VRAM)", "F) All", "G) No") -ValidAnswers @("A", "B", "C", "D", "E", "F", "G")
+$upscalerChoice = Read-UserChoice -Prompt "Do you want to download RealESRGAN Upscalers? " -Choices @("A) Yes", "B) No") -ValidAnswers @("A", "B")
 
-# --- Setup Paths ---
+# --- Download Process ---
 Write-Log "Starting Z-IMAGE Turbo model downloads..." -Color Cyan
+
 $baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
 $esrganUrl = "https://huggingface.co/spaces/Marne/Real-ESRGAN/resolve/main"
 
