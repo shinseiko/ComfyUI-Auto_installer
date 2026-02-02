@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Shared utility functions for UmeAiRT scripts.
 .DESCRIPTION
@@ -67,7 +67,7 @@ function Write-Log {
             $consoleMessage = "$prefix$Message"
         }
         Write-Host $consoleMessage -ForegroundColor $Color
-        Add-Content -Path $global:logFile -Value $logMessage -ErrorAction SilentlyContinue
+        Add-Content -Path $global:logFile -Value $logMessage -Encoding utf8 -ErrorAction SilentlyContinue
     }
     catch {
         Write-Host "Internal error in Write-Log: $($_.Exception.Message)" -ForegroundColor Red
@@ -110,17 +110,17 @@ function Invoke-AndLog {
             Write-Log "ERROR: Command failed with code $LASTEXITCODE." -Color Red
             Write-Log "Command: $File $Arguments" -Color Red
             Write-Log "Error Output:" -Color Red
-            $output | ForEach-Object { Write-Host $_ -ForegroundColor Red; Add-Content -Path $global:logFile -Value $_ -ErrorAction SilentlyContinue }
+            $output | ForEach-Object { Write-Host $_ -ForegroundColor Red; Add-Content -Path $global:logFile -Value $_ -Encoding utf8 -ErrorAction SilentlyContinue }
             throw "Command execution failed. Check logs."
         }
         else {
-            Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue
+            Add-Content -Path $global:logFile -Value $output -Encoding utf8 -ErrorAction SilentlyContinue
         }
     }
     catch {
         $errMsg = "FATAL ERROR executing: $File $Arguments. Error: $($_.Exception.Message)"
         Write-Log $errMsg -Color Red
-        Add-Content -Path $global:logFile -Value $errMsg -ErrorAction SilentlyContinue
+        Add-Content -Path $global:logFile -Value $errMsg -Encoding utf8 -ErrorAction SilentlyContinue
         Read-Host "A fatal error occurred. Press Enter to exit."
         exit 1
     }
@@ -174,7 +174,7 @@ function Save-File {
         # Use Invoke-Expression to force PowerShell to parse argument string correctly
         $CommandToRun = "& `"$aria2ExePath`" $aria2Args 2>&1"
         $output = Invoke-Expression $CommandToRun | Out-String
-        Add-Content -Path $global:logFile -Value $output -ErrorAction SilentlyContinue
+        Add-Content -Path $global:logFile -Value $output -Encoding utf8 -ErrorAction SilentlyContinue
 
         if ($LASTEXITCODE -ne 0) {
             # Catch failure and throw exception for fallback

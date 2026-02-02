@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Automated updater for ComfyUI and its components.
 .DESCRIPTION
@@ -14,6 +14,11 @@
 #===========================================================================
 # SECTION 1: SCRIPT CONFIGURATION & HELPER FUNCTIONS
 #===========================================================================
+
+# --- Encoding Support (CJK/Accents) ---
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+$env:PYTHONUTF8 = "1"
 
 # --- Paths and Configuration ---
 $InstallPath = (Split-Path -Path $PSScriptRoot -Parent)

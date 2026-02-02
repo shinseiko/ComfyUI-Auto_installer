@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Phase 2 of the ComfyUI Auto-Installer (Environment Setup & Dependencies).
 .DESCRIPTION
@@ -25,6 +25,7 @@ param(
 # --- Encoding Support (CJK/Accents) ---
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+$env:PYTHONUTF8 = "1"
 
 # --- Paths ---
 $comfyPath = Join-Path $InstallPath "ComfyUI"
@@ -363,8 +364,6 @@ try {
 
     if (Test-Path $installerDest) {
         Write-Log "Executing DazzleML Installer..." -Level 2
-        $oldUtf8 = $env:PYTHONUTF8
-        $env:PYTHONUTF8 = "1"
         Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
     }
     else {
