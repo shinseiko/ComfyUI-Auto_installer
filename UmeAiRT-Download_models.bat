@@ -1,5 +1,6 @@
 @echo off
 setlocal
+chcp 65001 > nul
 
 :: ============================================================================
 :: File: UmeAiRT-Download_models.bat
