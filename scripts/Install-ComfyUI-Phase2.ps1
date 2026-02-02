@@ -391,6 +391,8 @@ try {
 
     if (Test-Path $installerDest) {
         Write-Log "Executing DazzleML Installer..." -Level 2
+		$oldUtf8 = $env:PYTHONUTF8
+        $env:PYTHONUTF8 = "1"
         Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
     }
     else {
