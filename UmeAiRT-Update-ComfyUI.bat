@@ -2,13 +2,24 @@
 setlocal
 set "PYTHONPATH="
 set "PYTHONNOUSERSITE=1"
+
 :: ============================================================================
-:: Section 1: Bootstrap downloader for all scripts
+:: File: UmeAiRT-Update-ComfyUI.bat
+:: Description: Updater for ComfyUI and UmeAiRT scripts.
+::              - Bootstraps the downloader to update scripts
+::              - Activates environment
+::              - Launches Update-ComfyUI.ps1
+:: Author: UmeAiRT
 :: ============================================================================
+
 title UmeAiRT ComfyUI Updater
 echo.
 set "InstallPath=%~dp0"
 if "%InstallPath:~-1%"=="\" set "InstallPath=%InstallPath:~0,-1%"
+
+:: ----------------------------------------------------------------------------
+:: Section 1: Bootstrap Downloader (Self-Update)
+:: ----------------------------------------------------------------------------
 
 set "ScriptsFolder=%InstallPath%\scripts"
 set "BootstrapScript=%ScriptsFolder%\Bootstrap-Downloader.ps1"
@@ -26,14 +37,15 @@ if exist "%RepoConfigFile%" (
     for /f "usebackq delims=" %%a in (`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-Content '%RepoConfigFile%' | ConvertFrom-Json; if ($c.gh_reponame) { $c.gh_reponame }"`) do set "GhRepoName=%%a"
     for /f "usebackq delims=" %%a in (`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-Content '%RepoConfigFile%' | ConvertFrom-Json; if ($c.gh_branch) { $c.gh_branch }"`) do set "GhBranch=%%a"
 )
-:: Display the repo source (must be outside the if block for variable expansion to work)
+
+:: Display the repo source
 echo [INFO] Using: %GhUser%/%GhRepoName% @ %GhBranch%
 
 :: Build the bootstrap URL from the configured values
 set "BootstrapUrl=https://github.com/%GhUser%/%GhRepoName%/raw/%GhBranch%/scripts/Bootstrap-Downloader.ps1"
 
 echo [INFO] Forcing update of the bootstrap script itself...
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%BootstrapUrl%' -OutFile '%BootstrapScript%' -UseBasicParsing"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%BootstrapUrl%' -OutFile '%BootstrapScript%'"
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to download the bootstrap script. Check connection/URL.
     pause
@@ -47,9 +59,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -Ins
 echo [OK] All scripts are now up-to-date. 
 echo.
 
-:: ============================================================================
-:: Section 2: Running the main update script (Environment Activation)
-:: ============================================================================
+:: ----------------------------------------------------------------------------
+:: Section 2: Launch Update Script (Environment Activation)
+:: ----------------------------------------------------------------------------
 echo [INFO] Checking installation type...
 set "InstallTypeFile=%InstallPath%\scripts\install_type"
 set "InstallType=conda"
@@ -75,8 +87,6 @@ if "%InstallType%"=="venv" (
     )
 ) else (
     echo [INFO] Activating Conda environment 'UmeAiRT'...
-    REM set "CondaPath=%LOCALAPPDATA%\Miniconda3"
-    REM set "CondaActivate=%CondaPath%\Scripts\activate.bat"
     if not exist "%CondaActivate%" (
         echo [ERROR] Could not find Conda at: %CondaActivate%
         pause

@@ -3,9 +3,16 @@ setlocal
 chcp 65001 > nul
 set "PYTHONPATH="
 set "PYTHONNOUSERSITE=1"
+
 :: ============================================================================
-:: Section 1: Set Installation Path (Modified)
+:: File: UmeAiRT-Install-ComfyUI.bat
+:: Description: Main entry point for the ComfyUI installation.
+::              - Sets up installation path
+::              - Bootstraps the downloader script
+::              - Launches the Phase 1 PowerShell installer
+:: Author: UmeAiRT
 :: ============================================================================
+
 title UmeAiRT ComfyUI Installer
 echo.
 cls
@@ -13,6 +20,10 @@ echo ===========================================================================
 echo           Welcome to the UmeAiRT ComfyUI Installer
 echo ============================================================================
 echo.
+
+:: ----------------------------------------------------------------------------
+:: Section 1: Set Installation Path
+:: ----------------------------------------------------------------------------
 
 :: 1. Define the default path (the current directory)
 set "DefaultPath=%~dp0"
@@ -42,9 +53,9 @@ echo [INFO] Installing to: %InstallPath%
 echo Press any key to begin...
 pause > nul
 
-:: ============================================================================
-:: Section 2: Bootstrap downloader for all scripts (Original logic)
-:: ============================================================================
+:: ----------------------------------------------------------------------------
+:: Section 2: Bootstrap Downloader Configuration
+:: ----------------------------------------------------------------------------
 
 set "ScriptsFolder=%InstallPath%\scripts"
 set "BootstrapScript=%ScriptsFolder%\Bootstrap-Downloader.ps1"
@@ -62,7 +73,8 @@ if exist "%RepoConfigFile%" (
     for /f "usebackq delims=" %%a in (`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-Content '%RepoConfigFile%' | ConvertFrom-Json; if ($c.gh_reponame) { $c.gh_reponame }"`) do set "GhRepoName=%%a"
     for /f "usebackq delims=" %%a in (`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-Content '%RepoConfigFile%' | ConvertFrom-Json; if ($c.gh_branch) { $c.gh_branch }"`) do set "GhBranch=%%a"
 )
-:: Display the repo source (must be outside the if block for variable expansion to work)
+
+:: Display the repo source
 echo [INFO] Using: %GhUser%/%GhRepoName% @ %GhBranch%
 
 :: Build the bootstrap URL from the configured values
@@ -80,14 +92,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointMan
 
 :: Run the bootstrap script to download all other files
 echo [INFO] Running the bootstrap script to download all required files...
-:: Pass the repo config parameters to bootstrap so it uses the same source
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BootstrapScript%" -InstallPath "%InstallPath%" -GhUser "%GhUser%" -GhRepoName "%GhRepoName%" -GhBranch "%GhBranch%"
 echo [OK] Bootstrap download complete.
 echo.
 
-:: ============================================================================
-:: Section 3: Running the main installation script (Original logic)
-:: ============================================================================
+:: ----------------------------------------------------------------------------
+:: Section 3: Launch Main Installation Script
+:: ----------------------------------------------------------------------------
 echo [INFO] Launching the main installation script...
 echo.
 :: Pass the clean install path to the PowerShell script.

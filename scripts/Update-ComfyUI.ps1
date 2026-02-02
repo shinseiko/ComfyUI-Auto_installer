@@ -1,3 +1,16 @@
+<#
+.SYNOPSIS
+    Automated updater for ComfyUI and its components.
+.DESCRIPTION
+    This script updates:
+    - ComfyUI core (via Git).
+    - Custom Nodes (via ComfyUI-Manager CLI and 'update all').
+    - Python dependencies (pip requirements).
+    - Optimized components (Triton/SageAttention via DazzleML).
+.PARAMETER InstallPath
+    The root directory for the installation.
+#>
+
 #===========================================================================
 # SECTION 1: SCRIPT CONFIGURATION & HELPER FUNCTIONS
 #===========================================================================
@@ -5,7 +18,7 @@
 # --- Paths and Configuration ---
 $InstallPath = (Split-Path -Path $PSScriptRoot -Parent)
 $comfyPath = Join-Path $InstallPath "ComfyUI"
-# [FIX] Target internal folder (Junctions handle the redirection to external storage)
+# Target internal folder (Junctions handle the redirection to external storage)
 $internalCustomNodesPath = Join-Path $comfyPath "custom_nodes"
 $workflowPath = Join-Path $InstallPath "user\default\workflows\UmeAiRT-Workflow"
 $condaPath = Join-Path $env:LOCALAPPDATA "Miniconda3"
@@ -101,10 +114,8 @@ $cmCliScript = Join-Path $managerPath "cm-cli.py"
 $env:PYTHONPATH = "$comfyPath;$managerPath;$env:PYTHONPATH"
 $env:COMFYUI_PATH = $comfyPath
 
-# --- D. Snapshot vs CSV Logic ---
-$snapshotFile = Join-Path $scriptPath "snapshot.json"
-
 # --- D. Global Update Strategy ---
+$snapshotFile = Join-Path $scriptPath "snapshot.json"
 
 # 1. Restore Snapshot (if available) to ensure all nodes are present
 if (Test-Path $snapshotFile) {

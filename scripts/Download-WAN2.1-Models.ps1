@@ -1,61 +1,77 @@
+<#
+.SYNOPSIS
+    Interactive downloader for WAN 2.1 models.
+.DESCRIPTION
+    Downloads WAN 2.1 base models, GGUF quantized models (T2V, I2V 480p, I2V 720p),
+    ControlNets, and VACE models for ComfyUI.
+    Provides recommendations based on detected GPU VRAM.
+.PARAMETER InstallPath
+    The root directory of the installation.
+#>
+
 param(
-    # Accepts the installation path from the main script.
-    # Defaults to its own directory if run standalone.
     [string]$InstallPath = $PSScriptRoot
 )
 
-<#
-.SYNOPSIS
-    A PowerShell script to interactively download WAN 2.1 models for ComfyUI.
-#>
-
-#===========================================================================
-# SECTION 1: HELPER FUNCTIONS & SETUP
-#===========================================================================
+# ============================================================================
+# INITIALIZATION
+# ============================================================================
 $InstallPath = $InstallPath.Trim('"')
 Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
 
-#===========================================================================
-# SECTION 2: SCRIPT EXECUTION
-#===========================================================================
+# ============================================================================
+# MAIN EXECUTION
+# ============================================================================
 
-$InstallPath = $InstallPath.Trim('"')
 $modelsPath = Join-Path $InstallPath "models"
-if (-not (Test-Path $modelsPath)) { Write-Log "Could not find ComfyUI models path at '$modelsPath'. Exiting." -Color Red; Read-Host "Press Enter to exit."; exit }
+if (-not (Test-Path $modelsPath)) {
+    Write-Log "Models directory does not exist, creating it..." -Color Yellow
+    New-Item -Path $modelsPath -ItemType Directory -Force | Out-Null
+}
 
-# --- GPU Detection ---
+# --- GPU Detection & Recommendations ---
 Write-Log "-------------------------------------------------------------------------------"
 Write-Log "Checking for NVIDIA GPU to provide model recommendations..." -Color Yellow
 $gpuInfo = Get-GpuVramInfo
 if ($gpuInfo) {
     Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
     Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
-    # Recommendations based on WAN 2.1 models
+
     if ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: bf16/fp16 or GGUF Q8_0." -Color Cyan }
     elseif ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: fp8 or GGUF Q5_K_M." -Color Cyan }
     else { Write-Log "Recommendation: GGUF Q3_K_S." -Color Cyan }
 }
-else { Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray }
+else {
+    Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray
+}
 Write-Log "-------------------------------------------------------------------------------"
 
-# --- Ask all questions ---
-$baseChoice = Read-UserChoice "Do you want to download WAN base models?" @("A) bf16", "B) fp16", "C) fp8", "D) All", "E) No") @("A", "B", "C", "D", "E")
-$ggufT2VChoice = Read-UserChoice "Do you want to download WAN text-to-video GGUF models?" @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
-$gguf480Choice = Read-UserChoice "Do you want to download WAN image-to-video 480p GGUF models?" @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
-$gguf720Choice = Read-UserChoice "Do you want to download WAN image-to-video 720p GGUF models?" @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
-$controlChoice = Read-UserChoice "Do you want to download WAN FUN CONTROL base models?" @("A) bf16", "B) fp8", "C) All", "D) No") @("A", "B", "C", "D")
-$controlGgufChoice = Read-UserChoice "Do you want to download WAN FUN CONTROL GGUF models?" @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
-$vaceChoice = Read-UserChoice "Do you want to download WAN VACE base models?" @("A) fp16", "B) fp8", "C) All", "D) No") @("A", "B", "C", "D")
-$vaceGgufChoice = Read-UserChoice "Do you want to download WAN VACE GGUF models?" @("A) Q8_0", "B) Q5_K_M", "C) Q4_K_S", "D) All", "E) No") @("A", "B", "C", "D", "E")
+# --- User Prompts ---
+$baseChoice = Read-UserChoice -Prompt "Do you want to download WAN base models?" -Choices @("A) bf16", "B) fp16", "C) fp8", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$ggufT2VChoice = Read-UserChoice -Prompt "Do you want to download WAN text-to-video GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$gguf480Choice = Read-UserChoice -Prompt "Do you want to download WAN image-to-video 480p GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$gguf720Choice = Read-UserChoice -Prompt "Do you want to download WAN image-to-video 720p GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$controlChoice = Read-UserChoice -Prompt "Do you want to download WAN FUN CONTROL base models?" -Choices @("A) bf16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$controlGgufChoice = Read-UserChoice -Prompt "Do you want to download WAN FUN CONTROL GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_M", "C) Q3_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$vaceChoice = Read-UserChoice -Prompt "Do you want to download WAN VACE base models?" -Choices @("A) fp16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$vaceGgufChoice = Read-UserChoice -Prompt "Do you want to download WAN VACE GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_M", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
 
-# --- Download files based on answers ---
+# --- Download Process ---
 Write-Log "Starting WAN model downloads..." -Color Cyan
+
 $baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
-$wanDiffDir = Join-Path $modelsPath "diffusion_models\WAN"; $wanUnetDir = Join-Path $modelsPath "unet\WAN"; $clipDir = Join-Path $modelsPath "clip"; $vaeDir = Join-Path $modelsPath "vae" ; $visionDir = Join-Path $modelsPath "clip_vision"
-New-Item -Path $wanDiffDir, $wanUnetDir, $clipDir, $vaeDir -ItemType Directory -Force | Out-Null
+$wanDiffDir = Join-Path $modelsPath "diffusion_models\WAN"
+$wanUnetDir = Join-Path $modelsPath "unet\WAN"
+$clipDir = Join-Path $modelsPath "clip"
+$vaeDir = Join-Path $modelsPath "vae"
+$visionDir = Join-Path $modelsPath "clip_vision"
+
+New-Item -Path $wanDiffDir, $wanUnetDir, $clipDir, $vaeDir, $visionDir -ItemType Directory -Force | Out-Null
+
 $doDownload = ($baseChoice -ne 'E' -or $ggufT2VChoice -ne 'E' -or $gguf480Choice -ne 'E' -or $gguf720Choice -ne 'E' -or $controlChoice -ne 'D' -or $controlGgufChoice -ne 'E' -or $vaceChoice -ne 'D' -or $vaceGgufChoice -ne 'E')
 
 if ($doDownload) {
+    Write-Log "Downloading common support files..."
     Save-File -Uri "$baseUrl/vae/wan_2.1_vae.safetensors" -OutFile (Join-Path $vaeDir "wan_2.1_vae.safetensors")
     Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-fp8-e4m3fn-scaled.safetensors" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-fp8-e4m3fn-scaled.safetensors")
     Save-File -Uri "$baseUrl/clip_vision/clip_vision_h.safetensors" -OutFile (Join-Path $visionDir "clip_vision_h.safetensors")
