@@ -7,10 +7,6 @@ param(
     [string]$InstallPath,
     [switch]$RunAdminTasks # Flag for elevated mode
 )
-
-# --- FIX ISSUE #34 (Support CJK/Accents) ---
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::InputEncoding  = [System.Text.Encoding]::UTF8
 $comfyPath = Join-Path $InstallPath "ComfyUI"
 $scriptPath = Join-Path $InstallPath "scripts"
 $condaPath = Join-Path $env:LOCALAPPDATA "Miniconda3"
@@ -458,9 +454,9 @@ pause
 
     # Write Launcher
     try { 
-        # UTF-8 no BOM
-        $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-        [System.IO.File]::WriteAllLines($phase2LauncherPath, $launcherContent, $utf8NoBom)
+        $launcherContent = "chcp 65001 > nul`r`n" + $launcherContent
+		$utf8WithBom = New-Object System.Text.UTF8Encoding $true
+		[System.IO.File]::WriteAllText($phase2LauncherPath, $launcherContent, $utf8WithBom)
     }
     catch {
         Write-Log "ERROR: Unable to create '$phase2LauncherPath'. $($_.Exception.Message)" -Color Red
