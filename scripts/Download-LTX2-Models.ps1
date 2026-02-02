@@ -36,10 +36,9 @@ if ($gpuInfo) {
     Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
     Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
 
-    if ($gpuInfo.VramGiB -ge 30) { Write-Log "Recommendation: Base 13B" -Color Cyan }
-    elseif ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: GGUF Q8_0" -Color Cyan }
+	if ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: GGUF Q8_0" -Color Cyan }
     elseif ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: GGUF Q5_K_M" -Color Cyan }
-    elseif ($gpuInfo.VramGiB -ge 7) { Write-Log "Recommendation: Base 2B or GGUF Q3_K_S" -Color Cyan }
+    elseif ($gpuInfo.VramGiB -ge 7) { Write-Log "Recommendation: GGUF Q4_K_S" -Color Cyan }
     else { Write-Log "Recommendation: GGUF Q3_K_S (performance may vary)" -Color Cyan }
 }
 else {
