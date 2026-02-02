@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Phase 1 of the ComfyUI Auto-Installer.
 .DESCRIPTION
@@ -198,7 +198,7 @@ else {
     }
     $installType = if ($installTypeChoice -eq "1") { "Light" } else { "Full" }
     $installTypeFile = Join-Path $scriptPath "install_type"
-    $phase2LauncherPath = Join-Path $scriptPath "Launch-Phase2.bat"
+    $phase2LauncherPath = Join-Path $scriptPath "Launch-Phase2.ps1"
     $phase2ScriptPath = Join-Path $scriptPath "Install-ComfyUI-Phase2.ps1"
 
     Write-Log "Checking/Installing aria2 (Download Accelerator)..." -Level 1
@@ -415,22 +415,21 @@ else {
             Write-Log "Virtual environment already exists." -Level 1 -Color Green
         }
 
-        # 6. Prepare Launch-Phase2.bat for venv
-        $launcherContent = @"
-@echo off
-chcp 65001 > nul
-cd /d "%~dp0"
-call "venv\Scripts\activate.bat"
-if %errorlevel% neq 0 (
-    echo FAILED to activate venv.
-    pause
-    exit /b %errorlevel%
-)
-echo Phase 2 Launch (venv)...
-powershell.exe -ExecutionPolicy Bypass -NoProfile -File "Install-ComfyUI-Phase2.ps1"
-echo End of Phase 2. Press Enter to close this window.
-pause
-"@
+        # 6. Prepare Launch-Phase2.ps1 for venv
+        $launcherContent = @'
+try {
+    . "$PSScriptRoot\venv\Scripts\Activate.ps1"
+} catch {
+    Write-Host "FAILED to activate venv: $($_.Exception.Message)" -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "Phase 2 Launch (venv)..." -ForegroundColor Cyan
+$installPath = Split-Path $PSScriptRoot -Parent
+& "$PSScriptRoot\Install-ComfyUI-Phase2.ps1" -InstallPath $installPath
+Write-Host "End of Phase 2. Press Enter to close this window."
+Read-Host
+'@
 
     }
     else {
@@ -482,35 +481,38 @@ pause
 
         Write-Log "Conda environment ready." -Level 1 -Color Green
 
-        # Prepare Launch-Phase2.bat for Conda
-        $launcherContent = @"
-@echo off
-call "$($condaExe -replace 'conda.exe', 'activate.bat')" UmeAiRT
-if %errorlevel% neq 0 (
-    echo FAILED to activate the Conda 'UmeAirT' environment.
-    pause
-    exit /b %errorlevel%
-)
-echo Phase 2 Launch...
-powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$phase2ScriptPath" -InstallPath "$InstallPath"
-echo End of Phase 2. Press Enter to close this window.
-pause
-"@
+        # Prepare Launch-Phase2.ps1 for Conda
+        $launcherContent = @'
+try {
+    $condaHook = Join-Path $env:LOCALAPPDATA "Miniconda3\shell\condabin\conda-hook.ps1"
+    . $condaHook
+    conda activate UmeAiRT
+} catch {
+    Write-Host "FAILED to activate the Conda 'UmeAiRT' environment: $($_.Exception.Message)" -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "Phase 2 Launch (Conda)..." -ForegroundColor Cyan
+$installPath = Split-Path $PSScriptRoot -Parent
+& "$PSScriptRoot\Install-ComfyUI-Phase2.ps1" -InstallPath $installPath
+Write-Host "End of Phase 2. Press Enter to close this window."
+Read-Host
+'@
     }
 
     # Write Launcher
-    try { 
-        [System.IO.File]::WriteAllText($phase2LauncherPath, $launcherContent, [System.Text.Encoding]::Default)
+    try {
+        [System.IO.File]::WriteAllText($phase2LauncherPath, $launcherContent, (New-Object System.Text.UTF8Encoding $true))
     }
     catch {
         Write-Log "ERROR: Unable to create '$phase2LauncherPath'. $($_.Exception.Message)" -Color Red
         Read-Host "Press Enter."
-        exit 1 
+        exit 1
     }
 
     Write-Log "Phase 2 of the installation has been launched..." -Level 0
     Write-Log "A new window will open for Phase 2..." -Level 2
-    try { Start-Process -FilePath $phase2LauncherPath -Wait -ErrorAction Stop } catch { Write-Log "ERROR: Unable to launch Phase 2 ($($_.Exception.Message))." -Color Red; Read-Host "Press Enter."; exit 1 }
+    try { Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -File `"$phase2LauncherPath`"" -Wait -ErrorAction Stop } catch { Write-Log "ERROR: Unable to launch Phase 2 ($($_.Exception.Message))." -Color Red; Read-Host "Press Enter."; exit 1 }
 
     #===========================================================================
     # FINALIZATION 
