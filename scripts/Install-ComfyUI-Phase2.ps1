@@ -361,24 +361,64 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
     }
 }
 
-# --- Step 6b: Install Triton and SageAttention (Optimized) ---
-Write-Log "Installing Triton and SageAttention (Optimized)..." -Level 1
-$installerInfo = $dependencies.files.installer_script
-$installerDest = Join-Path $InstallPath $installerInfo.destination
+# --- Step 6b: Install Triton and SageAttention (Smart Hybrid Mode) ---
+Write-Log "Installing Triton and SageAttention..." -Level 1
 
-try {
-    Save-File -Uri $installerInfo.url -OutFile $installerDest
+# Detect Environment Type
+$isConda = [bool]($env:CONDA_PREFIX)
 
-    if (Test-Path $installerDest) {
-        Write-Log "Executing DazzleML Installer..." -Level 2
-        Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
+if (-not $isConda) {
+    # ==============================================================================
+    # OPTION A: STANDARD VENV (Use DazzleML Optimizer)
+    # This is the preferred method. It works perfectly in Venv.
+    # ==============================================================================
+    Write-Log "Venv detected. Using DazzleML Optimized Installer..." -Level 1 -Color Cyan
+    
+    $installerInfo = $dependencies.files.installer_script
+    $installerDest = Join-Path $InstallPath $installerInfo.destination
+
+    try {
+        Save-File -Uri $installerInfo.url -OutFile $installerDest
+
+        if (Test-Path $installerDest) {
+            # Execute the smart installer script
+            Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
+        }
+        else {
+            Write-Log "Failed to download installer script." -Level 2 -Color Red
+        }
     }
-    else {
-        Write-Log "Failed to download installer script." -Level 2 -Color Red
+    catch {
+        Write-Log "Error during optimized installation: $($_.Exception.Message)" -Level 2 -Color Red
     }
 }
-catch {
-    Write-Log "Error during optimized installation: $($_.Exception.Message)" -Level 2 -Color Red
+else {
+    # ==============================================================================
+    # OPTION B: CONDA MODE (Manual Safe Install)
+    # The DazzleML script crashes in Conda (NoneType error on paths).
+    # We use a manual fallback here to ensure stability.
+    # ==============================================================================
+    Write-Log "Conda detected. Using Manual Safe Mode to prevent installer crash..." -Level 1 -Color Yellow
+
+    # 1. Fix CUDA_HOME for Conda
+    if ($env:CUDA_PATH) {
+        $env:CUDA_HOME = $env:CUDA_PATH
+    }
+
+    # 2. Install Triton-Windows (Official PyPI for Py3.13)
+    Write-Log "Installing Triton-Windows..." -Level 2
+    Invoke-AndLog $pythonExe "-m pip install triton-windows --no-warn-script-location"
+
+    # 3. Install SageAttention (Direct Install)
+    Write-Log "Installing SageAttention..." -Level 2
+    try {
+        Invoke-AndLog $pythonExe "-m pip install sageattention --no-warn-script-location --no-build-isolation"
+        Write-Log "SageAttention installed successfully." -Level 2 -Color Green
+    }
+    catch {
+        Write-Log "WARNING: Standard install failed. Retrying without dependency check..." -Level 2 -Color Yellow
+        Invoke-AndLog $pythonExe "-m pip install sageattention --no-deps --no-warn-script-location --no-build-isolation"
+    }
 }
 
 # --- Nunchaku Configuration Section ---
