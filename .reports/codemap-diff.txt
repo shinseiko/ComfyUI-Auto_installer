@@ -1,0 +1,23 @@
+﻿# Codemap Generation Report
+
+**Timestamp:** 2026-02-03 20:27:20
+
+## Status
+First generation - no previous codemaps to compare.
+
+## Generated Files
+- codemaps/architecture.md (NEW)
+- codemaps/backend.md (NEW)
+- codemaps/data.md (NEW)
+- codemaps/frontend.md (NEW)
+
+## Change Percentage
+100% (initial creation)
+
+## Summary
+Complete architecture documentation generated for ComfyUI Auto-Installer.
+This is a PowerShell-based Windows installer project with two-phase installation
+and external folder architecture for persistent user data.
+
+## Next Steps
+Run this script again after significant codebase changes to track architectural evolution.
