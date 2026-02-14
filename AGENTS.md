@@ -12,11 +12,11 @@ PowerShell-based installer for ComfyUI on Windows. Downloads and configures Comf
 ## Build / Test / Run
 
 ```powershell
-# Regenerate codemaps after structural changes
-.\codemaps\Generate-Codemaps.ps1
+# Regenerate codemaps after structural changes (requires Claude Code + ECC plugin)
+# Run: /everything-claude-code:update-codemaps
 
 # Test installation from scratch
-Remove-Item -Recurse -Force C:\ComfyUI-Test
+Remove-Item -Recurse -Force C:\ComfyUI-Test -ErrorAction SilentlyContinue
 mkdir C:\ComfyUI-Test
 cd C:\ComfyUI-Test
 .\UmeAiRT-Install-ComfyUI.bat
