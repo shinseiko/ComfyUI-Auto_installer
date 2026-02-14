@@ -2,6 +2,8 @@
 
 > Instructions for AI coding agents working on this project.
 > For architecture details, see `/codemaps/`.
+>
+> This file follows the [AGENTS.md](https://agents.md) standard.
 
 ## Project Overview
 

@@ -16,3 +16,7 @@
 - **python-patterns, python-testing**: ComfyUI custom nodes ecosystem
 - **deployment-patterns**: Release process, versioning
 - **verification-loop**: Pre-commit quality checks
+
+## Tooling
+
+This project's Claude Code configuration is built on [Everything Claude Code (ECC)](https://github.com/anthropics/everything-claude-code).
