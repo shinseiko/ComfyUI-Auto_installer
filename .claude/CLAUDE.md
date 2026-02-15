@@ -5,10 +5,10 @@
 
 ## Architecture Reference
 
-- **Architecture**: `/codemaps/architecture.md`
-- **Backend Scripts**: `/codemaps/backend.md`
-- **Data Models**: `/codemaps/data.md`
-- **UI Patterns**: `/codemaps/frontend.md`
+- **Architecture**: `/docs/codemaps/architecture.md`
+- **Backend Scripts**: `/docs/codemaps/backend.md`
+- **Data Models**: `/docs/codemaps/data.md`
+- **UI Patterns**: `/docs/codemaps/frontend.md`
 
 ## Recommended Skills
 
@@ -19,4 +19,4 @@
 
 ## Tooling
 
-This project's Claude Code configuration is built on [Everything Claude Code (ECC)](https://github.com/anthropics/everything-claude-code).
+This project's Claude Code configuration is built on [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code).

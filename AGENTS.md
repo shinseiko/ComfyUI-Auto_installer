@@ -1,7 +1,7 @@
 # ComfyUI Auto-Installer - Agent Development Guide
 
 > Instructions for AI coding agents working on this project.
-> For architecture details, see `/codemaps/`.
+> For architecture details, see `/docs/codemaps/`.
 >
 > This file follows the [AGENTS.md](https://agents.md) standard.
 
@@ -12,7 +12,10 @@ PowerShell-based installer for ComfyUI on Windows. Downloads and configures Comf
 ## Build / Test / Run
 
 ```powershell
-# Regenerate codemaps after structural changes (requires Claude Code + ECC plugin)
+# Regenerate codemaps after structural changes
+# Requires: Claude Code with the ECC plugin
+#   /plugin marketplace add affaan-m/everything-claude-code
+#   /plugin install everything-claude-code@everything-claude-code
 # Run: /everything-claude-code:update-codemaps
 
 # Test installation from scratch
