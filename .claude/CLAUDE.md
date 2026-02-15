@@ -17,6 +17,17 @@
 - **deployment-patterns**: Release process, versioning
 - **verification-loop**: Pre-commit quality checks
 
+## Codemap Regeneration
+
+```
+# Requires: ECC plugin
+/plugin marketplace add affaan-m/everything-claude-code
+/plugin install everything-claude-code@everything-claude-code
+
+# Regenerate after structural changes
+/everything-claude-code:update-codemaps
+```
+
 ## Tooling
 
 This project's Claude Code configuration is built on [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code).

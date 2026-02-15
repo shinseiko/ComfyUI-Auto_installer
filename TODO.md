@@ -59,11 +59,11 @@
 - **Current admin operations:**
   1. **Long Paths registry key** (lines 82-91)
   2. **VS Build Tools installation** (lines 94-120)
-  3. **`git config --system`** (should be `--global`)
+  3. **`git config --system`** in `Install-ComfyUI-Phase2.ps1:108` (should be `--global`)
 - **Fix:**
   - **Long Paths:** Do not elevate. Provide user-facing copy-pasteable command or a small signed batch file the user runs themselves.
   - **VS Build Tools:** May be unnecessary (see section 3.2). If kept, detect existing VS installations (Pro/Enterprise/Community), not just hardcoded BuildTools path.
-  - **git config --system to --global:** `--system` is logically wrong for per-user installer config.
+  - **git config --system to --global:** `--system` is logically wrong for per-user installer config. (See Phase2 line 108)
   - **Goal:** Zero admin elevation required for standard install path.
 
 ---
@@ -182,7 +182,7 @@
 ## 7. Code Quality
 
 ### 7.1 `git config --system` to `--global`
-- **File:** `Install-ComfyUI-Phase1.ps1`
+- **File:** `Install-ComfyUI-Phase2.ps1:108`
 - **Issue:** `--system` modifies machine-wide git config, requiring admin. The installer is per-user - `--global` is correct.
 
 ### 7.2 VS Build Tools Detection - Hardcoded Path

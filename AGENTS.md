@@ -13,10 +13,7 @@ PowerShell-based installer for ComfyUI on Windows. Downloads and configures Comf
 
 ```powershell
 # Regenerate codemaps after structural changes
-# Requires: Claude Code with the ECC plugin
-#   /plugin marketplace add affaan-m/everything-claude-code
-#   /plugin install everything-claude-code@everything-claude-code
-# Run: /everything-claude-code:update-codemaps
+# See .claude/CLAUDE.md for tool-specific regeneration instructions
 
 # Test installation from scratch
 Remove-Item -Recurse -Force C:\ComfyUI-Test -ErrorAction SilentlyContinue

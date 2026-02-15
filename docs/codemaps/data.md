@@ -2,7 +2,7 @@
 
 # Data Models & Configuration
 
-## dependencies.json (70 lines)
+## dependencies.json
 
 Central configuration file loaded by Phase 1, Phase 2, and Update scripts.
 Top-level keys:
