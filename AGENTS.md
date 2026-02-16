@@ -24,7 +24,7 @@ See `TODO.md` section 9 for the aspirational test matrix.
 
 ### Junction-Based Architecture
 
-**Never modify ComfyUI core folders directly.** User data (models, outputs, custom nodes) lives in external folders, symlinked into ComfyUI via NTFS junctions. This allows `git pull` updates without data loss.
+**Never modify ComfyUI core folders directly.** User data (models, outputs, custom nodes) lives in external folders, linked into ComfyUI via NTFS junctions. This allows `git pull` updates without data loss.
 
 ```powershell
 # CORRECT - Use external folders with junctions
