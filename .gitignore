@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+*.log
+
+# Claude Code (keep CLAUDE.md and settings.json, ignore the rest)
+.claude/rules/
+.claude/plans/
+.claude/plugins/
+.claude/hooks.json
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editors
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

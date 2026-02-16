@@ -11,25 +11,14 @@ PowerShell-based installer for ComfyUI on Windows. Downloads and configures Comf
 
 ## Build / Test / Run
 
-```powershell
-# Regenerate codemaps after structural changes
-# See .claude/CLAUDE.md for tool-specific regeneration instructions
+No automated test harness exists yet. Testing is manual:
 
-# Test installation from scratch
-Remove-Item -Recurse -Force C:\ComfyUI-Test -ErrorAction SilentlyContinue
-mkdir C:\ComfyUI-Test
-cd C:\ComfyUI-Test
-.\UmeAiRT-Install-ComfyUI.bat
-
-# Check for broken junctions
-Get-ChildItem C:\ComfyUI-Install\ComfyUI -Force | Where-Object {
-    $_.Attributes -match "ReparsePoint"
-} | ForEach-Object {
-    if (-not (Test-Path $_.FullName)) {
-        Write-Host "BROKEN: $($_.FullName)" -ForegroundColor Red
-    }
-}
 ```
+# Run the installer (installs to current directory or user-chosen path)
+.\UmeAiRT-Install-ComfyUI.bat
+```
+
+See `TODO.md` section 9 for the aspirational test matrix.
 
 ## Critical Conventions
 
@@ -50,6 +39,7 @@ Copy-Item $model (Join-Path $comfyPath "models\file.safetensors")
 ### Security First
 
 This is an installer that downloads and executes code. Security is critical.
+Follow these patterns when writing new code (not all are implemented yet — see `TODO.md` section 1):
 
 ```powershell
 # ALWAYS validate downloads
@@ -104,7 +94,7 @@ try {
 Write-Log "Installing ComfyUI..." -Level 0  # Step header
 Write-Log "Cloning repository" -Level 1      # Main item
 Write-Log "Using branch: main" -Level 2      # Sub-item
-Write-Log "Git output: ..." -Level 3         # Debug
+Write-Log "Git output: ..." -Level 3         # Info
 ```
 
 ## Dependency Management
@@ -169,13 +159,12 @@ $installTypeFile = Join-Path $scriptPath "install_type"
 $installType = Get-Content $installTypeFile
 
 if ($installType -eq "conda") {
-    # Conda requires hook initialization in PowerShell.
-    # This is an approved exception to the Invoke-Expression rule —
-    # the hook output comes from the local conda binary, not external input.
-    (& "$condaExe" shell.powershell hook) | Invoke-Expression
+    # Conda requires hook initialization via dot-sourcing.
+    $condaHook = Join-Path $env:LOCALAPPDATA "Miniconda3\shell\condabin\conda-hook.ps1"
+    . $condaHook
     conda activate UmeAiRT
 } else {
-    & (Join-Path $scriptPath "venv\Scripts\Activate.ps1")
+    . (Join-Path $scriptPath "venv\Scripts\Activate.ps1")
 }
 ```
 
