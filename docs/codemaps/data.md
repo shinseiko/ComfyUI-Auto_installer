@@ -1,4 +1,4 @@
-<!-- Generated: 2026-02-15 | Source: scripts/dependencies.json, scripts/environment.yml -->
+<!-- Generated: 2026-03-03 | Source: scripts/dependencies.json, scripts/environment.yml, scripts/umeairt-user-config.json.example -->
 
 # Data Models & Configuration
 
@@ -19,7 +19,7 @@ Top-level keys:
 ```json
 {
   "vs_build_tools": {
-    "install_path": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools",
+    "install_path": "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools",
     "url": "https://aka.ms/vs/17/release/vs_BuildTools.exe",
     "arguments": "--wait --quiet --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
   }
@@ -48,6 +48,36 @@ Conda environment specification for "Full" install mode:
 - **Dependencies**: python=3.13.11, git, cuda-toolkit=13.0.2, pip, ninja, ccache, c-compiler, cxx-compiler
 - **Pip**: triton-windows
 
+## umeairt-user-config.json (37 lines, NEW)
+
+User-local configuration template. Never overwritten by bootstrap or updates.
+Supports fork testing and network configuration. All fields are optional.
+
+### Repository Source Override
+- `gh_user`: GitHub username (alphanumeric, hyphens, underscores)
+- `gh_reponame`: Repository name (alphanumeric, hyphens, underscores)
+- `gh_branch`: Branch name (alphanumeric, hyphens, underscores, dots, forward slashes)
+- Defaults: empty strings → use upstream UmeAiRT/ComfyUI-Auto_installer/main
+
+### Network Listen Configuration
+- `listen_enabled`: Boolean flag (default: false). When true, requires listen_address.
+- `listen_address`: Single IP or comma-separated list (e.g., '127.0.0.1,100.64.0.1'). Accepts IPv4 and IPv6.
+  - WARNING: '0.0.0.0' or '::' exposes ComfyUI on all interfaces.
+  - Validated for allowed characters (IPv4/IPv6 format only).
+- `listen_port`: Integer 1-65535 (default: 8188). Ports below 1024 are privileged.
+  - If 8188 (default), omitted from `--port` argument to Python launcher.
+
+Read by: `Start-ComfyUI.ps1` for network argument construction.
+
+## repo-config.json (DEPRECATED)
+
+Legacy configuration file, now deprecated. Still supported as fallback.
+Install and Update bat files check for `umeairt-user-config.json` first, then fall back to `repo-config.json`.
+Deprecation notice in example directs users to migrate to umeairt-user-config.json.
+
+Supports same keys: `gh_user`, `gh_reponame`, `gh_branch`.
+Does NOT support network configuration (listen_enabled, listen_address, listen_port).
+
 ## Global State Variables
 
 Scripts use `$global:` variables for cross-function communication:
@@ -63,9 +93,10 @@ Scripts use `$global:` variables for cross-function communication:
 
 | File | Written by | Read by | Content |
 |------|-----------|---------|---------|
-| `scripts/install_type` | Phase 1 | Phase 2, Update, all bat files | `"venv"` or `"conda"` |
+| `scripts/install_type` | Phase 1 | Phase 2, Update, Start, all bat files | `"venv"` or `"conda"` |
 | `scripts/Launch-Phase2.ps1` | Phase 1 (generated) | Phase 1 (launched) | Env activation + Phase 2 call |
-| `repo-config.json` | User (manual) | Install/Update bat files | `{ "gh_user", "gh_reponame", "gh_branch" }` |
+| `umeairt-user-config.json` | User (manual) | Install/Update/Start bat files | Repository source + network config (preferred) |
+| `repo-config.json` | User (manual) | Install/Update bat files (fallback only) | Repository source only (deprecated) |
 | `scripts/snapshot.json` | Bootstrap download | Phase 2, Update | ComfyUI-Manager snapshot for node restoration |
 | `scripts/custom_nodes.csv` | Bootstrap download | Phase 2 (fallback) | CSV with Name, RepoUrl columns |
 | `logs/install_log.txt` | Phase 1/2 | User (debugging) | Timestamped log entries |
