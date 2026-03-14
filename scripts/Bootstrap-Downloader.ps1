@@ -28,6 +28,13 @@ param(
 # Inline path helper — UmeAiRTUtils.psm1 is not yet available during bootstrap
 function ConvertTo-ForwardSlash { param([string]$Path) $Path.Replace('\', '/') }
 
+# Inline log helper — UmeAiRTUtils.psm1 not available during bootstrap
+function _AppendLog { param([string]$f, [string]$m)
+    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    Add-Content -Path $f -Value "[$ts] $m" -Encoding UTF8 -ErrorAction SilentlyContinue
+}
+$_bootstrapLog = ConvertTo-ForwardSlash (Join-Path $InstallPath "logs/bootstrap.log")
+
 # ============================================================================
 # SCRIPT INITIALIZATION
 # ============================================================================
@@ -67,6 +74,7 @@ $filesToDownload = @(
 )
 
 Write-Host "[INFO] Downloading the latest versions of the installation scripts..."
+_AppendLog $_bootstrapLog "=== Bootstrap started: $GhUser/$GhRepoName @ $GhBranch ==="
 
 # Set TLS protocol for compatibility
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -89,7 +97,9 @@ foreach ($file in $filesToDownload) {
     Write-Host "  - Downloading $($file.RepoPath)..."
     try {
         Invoke-WebRequest -Uri $uri -OutFile $outFile -ErrorAction Stop
+        _AppendLog $_bootstrapLog "Downloaded $($file.RepoPath)"
     } catch {
+        _AppendLog $_bootstrapLog "FAILED: $($file.RepoPath) — $($_.Exception.Message)"
         Write-Host "[ERROR] Failed to download '$($file.RepoPath)'. Please check your internet connection and the repository URL." -ForegroundColor Red
         # Pause to allow user to see the error, then exit.
         Read-Host "Press Enter to exit."
@@ -97,5 +107,6 @@ foreach ($file in $filesToDownload) {
     }
 }
 
+_AppendLog $_bootstrapLog "=== Bootstrap complete ==="
 Write-Host "[OK] All required files have been downloaded successfully." -ForegroundColor Green
 exit 0

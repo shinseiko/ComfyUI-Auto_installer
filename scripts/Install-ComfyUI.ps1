@@ -53,6 +53,26 @@ if (-not $InstallPath) {
 
 $InstallPath = $InstallPath.TrimEnd('\', '/').Replace('\', '/')
 
+# --- Early logging setup (psm1 not yet available) ---
+$logPath = "$InstallPath/logs"
+$logFile = "$logPath/install.log"
+
+function _RotateLog { param([string]$f, [int]$k = 3)
+    $old = "$f.$k"; if (Test-Path $old) { Remove-Item $old -Force -EA SilentlyContinue }
+    for ($i = $k - 1; $i -ge 1; $i--) { $s = "$f.$i"; $d = "$f.$($i+1)"; if (Test-Path $s) { Rename-Item $s $d -Force -EA SilentlyContinue } }
+    if (Test-Path $f) { Rename-Item $f "$f.1" -Force -EA SilentlyContinue }
+}
+function _AppendLog { param([string]$f, [string]$m)
+    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    Add-Content -Path $f -Value "[$ts] $m" -Encoding UTF8 -ErrorAction SilentlyContinue
+}
+
+if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Path $logPath -Force | Out-Null }
+_RotateLog $logFile
+_RotateLog "$logPath/bootstrap.log"
+_AppendLog $logFile "=== Install session started ==="
+_AppendLog $logFile "InstallPath: $InstallPath"
+
 Write-Host ""
 Write-Host "[INFO] Installing to: $InstallPath" -ForegroundColor Cyan
 Write-Host "Press any key to begin..."
@@ -89,6 +109,8 @@ if (Test-Path $psm1Path) {
 }
 
 Write-Host "[INFO] Using: $GhUser/$GhRepoName @ $GhBranch" -ForegroundColor Cyan
+_AppendLog $logFile "Config source: $($cfg.ConfigSource ?? 'defaults')"
+_AppendLog $logFile "Fork: $GhUser/$GhRepoName @ $GhBranch"
 
 # ---------------------------------------------------------------------------
 # Prepare scripts folder
@@ -126,6 +148,7 @@ if ($LASTEXITCODE -ne 0 -or -not $?) {
 }
 Write-Host "[OK] Bootstrap download complete." -ForegroundColor Green
 Write-Host ""
+_AppendLog $logFile "Bootstrap complete."
 
 # ---------------------------------------------------------------------------
 # Persist resolved fork config to umeairt-user-config.json

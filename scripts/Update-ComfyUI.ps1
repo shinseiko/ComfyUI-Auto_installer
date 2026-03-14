@@ -38,7 +38,7 @@ $internalCustomNodesPath = "$comfyPath/custom_nodes"
 $workflowPath = "$InstallPath/user/default/workflows/UmeAiRT-Workflow"
 $condaPath = "$($env:LOCALAPPDATA.Replace('\','/'))/Miniconda3"
 $logPath = "$InstallPath/logs"
-$logFile = "$logPath/update_log.txt"
+$logFile = "$logPath/update.log"
 $scriptPath = "$InstallPath/scripts"
 
 # --- Load Dependencies from JSON ---
@@ -54,6 +54,8 @@ if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Force -Path $logP
 
 # --- Helper Functions ---
 Import-Module "$($PSScriptRoot.Replace('\','/'))/UmeAiRTUtils.psm1" -Force
+Invoke-LogRotation "$logPath/update.log"
+Invoke-LogRotation "$logPath/bootstrap.log"
 $global:logFile = $logFile
 $global:totalSteps = 4
 $global:currentStep = 0

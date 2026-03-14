@@ -41,7 +41,7 @@ $comfyPath = "$InstallPath/ComfyUI"
 $comfyUserPath = "$comfyPath/user"
 $scriptPath = "$InstallPath/scripts"
 $logPath = "$InstallPath/logs"
-$logFile = "$logPath/install_log.txt"
+$logFile = "$logPath/install.log"
 
 # --- Security Protocol ---
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -60,7 +60,7 @@ if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Force -Path $logP
 
 # --- Import Utilities ---
 Import-Module "$scriptPath/UmeAiRTUtils.psm1" -Force
-$global:logFile = "$logPath/install_log.txt"
+$global:logFile = "$logPath/install.log"
 $global:hasGpu = Test-NvidiaGpu
 
 #===========================================================================

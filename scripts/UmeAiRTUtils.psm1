@@ -12,6 +12,33 @@
 # UTILITY FUNCTIONS
 # ============================================================================
 
+function Invoke-LogRotation {
+    <#
+    .SYNOPSIS
+        Rotates a log file, keeping N previous copies.
+    .DESCRIPTION
+        Renames existing log files to .1, .2, .3 etc., deleting the oldest when Keep is exceeded.
+        Called once per session entry point (Install-ComfyUI.ps1, Update-ComfyUI.ps1).
+    .PARAMETER LogFile
+        Full path to the log file to rotate.
+    .PARAMETER Keep
+        Number of previous copies to retain. Default: 3.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$LogFile,
+        [int]$Keep = 3
+    )
+    $oldest = "$LogFile.$Keep"
+    if (Test-Path $oldest) { Remove-Item $oldest -Force -ErrorAction SilentlyContinue }
+    for ($i = $Keep - 1; $i -ge 1; $i--) {
+        $src = "$LogFile.$i"
+        $dst = "$LogFile.$($i + 1)"
+        if (Test-Path $src) { Rename-Item $src -NewName $dst -Force -ErrorAction SilentlyContinue }
+    }
+    if (Test-Path $LogFile) { Rename-Item $LogFile -NewName "$LogFile.1" -Force -ErrorAction SilentlyContinue }
+}
+
 function Write-Log {
     <#
     .SYNOPSIS
@@ -37,11 +64,6 @@ function Write-Log {
         [string]$Color = "Default"
     )
     
-    # Ensure $logFile is defined, otherwise use fallback
-    if (-not $global:logFile) {
-        $global:logFile = Join-Path $PSScriptRoot "default_module_log.txt"
-    }
-
     $prefix = ""
     $defaultColor = "White"
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -67,7 +89,9 @@ function Write-Log {
             $consoleMessage = "$prefix$Message"
         }
         Write-Host $consoleMessage -ForegroundColor $Color
-        Add-Content -Path $global:logFile -Value $logMessage -Encoding utf8 -ErrorAction SilentlyContinue
+        if ($global:logFile) {
+            Add-Content -Path $global:logFile -Value $logMessage -Encoding utf8 -ErrorAction SilentlyContinue
+        }
     }
     catch {
         Write-Host "Internal error in Write-Log: $($_.Exception.Message)" -ForegroundColor Red
@@ -93,11 +117,6 @@ function Invoke-AndLog {
         [string]$Arguments,
         [switch]$IgnoreErrors
     )
-    
-    # Ensure $logFile is defined
-    if (-not $global:logFile) {
-        $global:logFile = Join-Path $PSScriptRoot "default_module_log.txt"
-    }
     
     $tempLogFile = Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString() + ".tmp")
     try {
@@ -529,4 +548,4 @@ function Resolve-CleanPath {
 }
 
 # --- END OF FILE ---
-Export-ModuleMember -Function Write-Log, Invoke-AndLog, Save-File, Confirm-FileHash, Confirm-Authenticode, Set-ManagerUseUv, Test-NvidiaGpu, Read-UserChoice, Get-GpuVramInfo, Test-PyVersion, Read-UserConfig, ConvertTo-ForwardSlash, Resolve-CleanPath
+Export-ModuleMember -Function Invoke-LogRotation, Write-Log, Invoke-AndLog, Save-File, Confirm-FileHash, Confirm-Authenticode, Set-ManagerUseUv, Test-NvidiaGpu, Read-UserChoice, Get-GpuVramInfo, Test-PyVersion, Read-UserConfig, ConvertTo-ForwardSlash, Resolve-CleanPath

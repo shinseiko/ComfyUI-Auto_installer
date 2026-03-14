@@ -30,7 +30,7 @@ $scriptPath = "$InstallPath/scripts"
 $condaPath = "$($env:LOCALAPPDATA.Replace('\','/'))/Miniconda3"
 $condaExe = "$condaPath/Scripts/conda.exe"
 $logPath = "$InstallPath/logs"
-$logFile = "$logPath/install_log.txt"
+$logFile = "$logPath/install.log"
 
 # --- Security Protocol ---
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -67,6 +67,7 @@ function Test-IsAdmin {
 
 # --- Import Utilities ---
 Import-Module "$scriptPath/UmeAiRTUtils.psm1" -Force
+$global:logFile = $logFile
 
 #===========================================================================
 # SECTION 2: MAIN SCRIPT EXECUTION
@@ -212,7 +213,6 @@ else {
         try { Set-ItemProperty -Path $regPath -Name $regKey -Value 1 -Type DWord -Force -ErrorAction Stop; Write-Log "[Admin] Long paths OK." -Level 2 } catch { Write-Log "[Admin] ERROR Long paths" -Level 2 -Color Red }
     }
 
-    Clear-Host
     Write-Host "-------------------------------------------------------------------------------"
     $asciiBanner = @'
                           __  __               ___    _ ____  ______
