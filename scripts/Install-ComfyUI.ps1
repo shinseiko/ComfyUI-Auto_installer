@@ -119,7 +119,7 @@ try {
 
 Write-Host "[INFO] Running bootstrap to download all required files..." -ForegroundColor Cyan
 & $bootstrapScript -InstallPath $InstallPath -GhUser $GhUser -GhRepoName $GhRepoName -GhBranch $GhBranch
-if ($LASTEXITCODE -ne 0) {
+if ($LASTEXITCODE -ne 0 -or -not $?) {
     Write-Host "[ERROR] Bootstrap script failed. See above for details." -ForegroundColor Red
     Read-Host "Press Enter to exit"
     exit 1

@@ -98,3 +98,4 @@ foreach ($file in $filesToDownload) {
 }
 
 Write-Host "[OK] All required files have been downloaded successfully." -ForegroundColor Green
+exit 0
