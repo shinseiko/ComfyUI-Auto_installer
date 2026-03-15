@@ -297,7 +297,7 @@ $installerDest = "$InstallPath/$($installerInfo.destination.Replace('\','/'))"
 try {
     # Always download fresh to get latest logic
     $installerSha256 = if ($installerInfo.PSObject.Properties["sha256"]) { [string]$installerInfo.sha256 } else { "" }
-    Save-File -Uri $installerInfo.url -OutFile $installerDest -ExpectedHash $installerSha256
+    Save-File -Uri $installerInfo.url -OutFile $installerDest -ExpectedHash $installerSha256 -Force
 
     if (Test-Path $installerDest) {
         Write-Log "Executing DazzleML Installer (Upgrade Mode)..." -Level 1

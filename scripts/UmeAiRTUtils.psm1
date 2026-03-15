@@ -243,10 +243,11 @@ function Save-File {
     param(
         [string]$Uri,
         [string]$OutFile,
-        [string]$ExpectedHash = ""
+        [string]$ExpectedHash = "",
+        [switch]$Force
     )
-    
-    if (Test-Path $OutFile) {
+
+    if ((Test-Path $OutFile) -and -not $Force) {
         $FileName = Split-Path -Path $OutFile -Leaf
         Write-Log "File '$FileName' already exists. Skipping download." -Level 2 -Color Green
         if ($ExpectedHash -and $ExpectedHash.Trim() -ne "") {
