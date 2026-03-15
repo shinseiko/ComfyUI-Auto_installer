@@ -164,7 +164,19 @@ function Confirm-FileHash {
         [Parameter(Mandatory)][string]$Expected,
         [string]$Algorithm = 'SHA256'
     )
-    $actual = (Get-FileHash -Path $Path -Algorithm $Algorithm).Hash
+    try {
+        $actual = (Get-FileHash -Path $Path -Algorithm $Algorithm -ErrorAction Stop).Hash
+    } catch {
+        # Fallback for environments where Get-FileHash is unavailable (e.g. old powershell.exe builds)
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $stream = [System.IO.File]::OpenRead($Path)
+            $actual = ([System.BitConverter]::ToString($sha256.ComputeHash($stream)) -replace '-', '')
+        } finally {
+            if ($stream) { $stream.Dispose() }
+            $sha256.Dispose()
+        }
+    }
     if ($actual -ne $Expected.ToUpper()) {
         Remove-Item $Path -Force -ErrorAction SilentlyContinue
         throw "SECURITY: Hash mismatch for '$(Split-Path $Path -Leaf)'`n  Expected: $Expected`n  Actual:   $actual`n  File deleted. Aborting."
