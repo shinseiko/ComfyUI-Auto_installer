@@ -118,7 +118,7 @@ _AppendLog $logFile "Fork: $GhUser/$GhRepoName @ $GhBranch"
 # ---------------------------------------------------------------------------
 $scriptsFolder   = "$InstallPath/scripts"
 $bootstrapScript = "$scriptsFolder/Bootstrap-Downloader.ps1"
-$bootstrapUrl    = "https://github.com/$GhUser/$GhRepoName/raw/$GhBranch/scripts/Bootstrap-Downloader.ps1"
+$bootstrapUrl    = "https://raw.githubusercontent.com/$GhUser/$GhRepoName/$GhBranch/scripts/Bootstrap-Downloader.ps1"
 
 if (-not (Test-Path $scriptsFolder)) {
     Write-Host "[INFO] Creating scripts folder: $scriptsFolder" -ForegroundColor Cyan

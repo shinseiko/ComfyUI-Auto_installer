@@ -40,7 +40,7 @@ $_bootstrapLog = ConvertTo-ForwardSlash (Join-Path $InstallPath "logs/bootstrap.
 # ============================================================================
 
 # Build the base URL from parameters (allows developer testing of forks)
-$baseUrl = "https://github.com/$GhUser/$GhRepoName/raw/$GhBranch/"
+$baseUrl = "https://raw.githubusercontent.com/$GhUser/$GhRepoName/$GhBranch/"
 
 # Define the list of files to download
 $filesToDownload = @(

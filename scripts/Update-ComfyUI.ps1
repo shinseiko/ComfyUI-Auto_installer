@@ -91,7 +91,7 @@ if (-not $GhUser) {
 }
 
 # --- Bootstrap self-update ---
-$bootstrapUrl    = "https://github.com/$GhUser/$GhRepoName/raw/$GhBranch/scripts/Bootstrap-Downloader.ps1"
+$bootstrapUrl    = "https://raw.githubusercontent.com/$GhUser/$GhRepoName/$GhBranch/scripts/Bootstrap-Downloader.ps1"
 $bootstrapScript = "$($PSScriptRoot.Replace('\','/'))/Bootstrap-Downloader.ps1"
 Write-Host "[INFO] Updating bootstrap and all scripts ($GhUser/$GhRepoName @ $GhBranch)..." -ForegroundColor Cyan
 try {
