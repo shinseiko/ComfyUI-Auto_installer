@@ -41,14 +41,7 @@ $logPath = "$InstallPath/logs"
 $logFile = "$logPath/update.log"
 $scriptPath = "$InstallPath/scripts"
 
-# --- Load Dependencies from JSON ---
 $dependenciesFile = "$scriptPath/dependencies.json"
-if (-not (Test-Path $dependenciesFile)) {
-    Write-Host "FATAL: dependencies.json not found at '$dependenciesFile'. Cannot proceed." -ForegroundColor Red
-    Read-Host "Press Enter to exit."
-    exit 1
-}
-$dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
 
 if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Force -Path $logPath | Out-Null }
 
@@ -109,6 +102,14 @@ try {
     Write-Host "[WARN] Bootstrap self-update failed: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-Host "[WARN] Continuing with existing scripts." -ForegroundColor Yellow
 }
+
+# --- Load dependencies.json after bootstrap so we always use the freshly-downloaded version ---
+if (-not (Test-Path $dependenciesFile)) {
+    Write-Log "FATAL: dependencies.json not found at '$dependenciesFile'. Cannot proceed." -Color Red
+    Read-Host "Press Enter to exit."
+    exit 1
+}
+$dependencies = Get-Content -Raw -Path $dependenciesFile | ConvertFrom-Json
 
 #===========================================================================
 # SECTION 1.5: ENVIRONMENT DETECTION
