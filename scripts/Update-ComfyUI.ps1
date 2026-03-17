@@ -343,3 +343,4 @@ $env:COMFYUI_PATH = $null
 Write-Log "===============================================================================" -Level -2
 Write-Log "Update process complete!" -Level -2 -Color Yellow
 Write-Log "===============================================================================" -Level -2
+Read-Host "Press Enter to close."
