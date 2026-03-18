@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Interactive downloader for LTX-Video (LTX1) models.
+    Interactive downloader for LTX-Video (LTXV) models.
 .DESCRIPTION
     Downloads LTX-Video base models and GGUF quantized models for ComfyUI.
     Provides recommendations based on detected GPU VRAM.
@@ -38,8 +38,8 @@ if ($gpuInfo) {
 
     if ($gpuInfo.VramGiB -ge 30) { Write-Log "Recommendation: Base 13B" -Color Cyan }
     elseif ($gpuInfo.VramGiB -ge 24) { Write-Log "Recommendation: GGUF Q8_0" -Color Cyan }
-    elseif ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: GGUF Q5_K_M" -Color Cyan }
-    elseif ($gpuInfo.VramGiB -ge 7) { Write-Log "Recommendation: Base 2B or GGUF Q3_K_S" -Color Cyan }
+    elseif ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: GGUF Q5_K_S" -Color Cyan }
+    elseif ($gpuInfo.VramGiB -ge 7)  { Write-Log "Recommendation: Base 2B or GGUF Q3_K_S" -Color Cyan }
     else { Write-Log "Recommendation: GGUF Q3_K_S (performance may vary)" -Color Cyan }
 }
 else {
@@ -48,23 +48,23 @@ else {
 Write-Log "-------------------------------------------------------------------------------"
 
 # --- User Prompts ---
-$baseChoice = Read-UserChoice -Prompt "Do you want to download LTXV base models?" -Choices @("A) 13B (30Gb)", "B) 2B (7Gb)", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
-$ggufChoice = Read-UserChoice -Prompt "Do you want to download LTXV GGUF models?" -Choices @("A) Q8_0 (24GB Vram)", "B) Q5_K_M (16GB Vram)", "C) Q3_K_S (less than 12GB Vram)", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$baseChoice = Read-UserChoice -Prompt "Do you want to download LTXV base models?" -Choices @("A) 13B (30GB)", "B) 2B (7GB)", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$ggufChoice = Read-UserChoice -Prompt "Do you want to download LTXV GGUF models?" -Choices @("A) Q8_0 (24GB VRAM)", "B) Q5_K_S (16GB VRAM)", "C) Q3_K_S (less than 12GB VRAM)", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
 
 # --- Download Process ---
 Write-Log "Starting LTX-Video model downloads..." -Color Cyan
 
-$baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
+$baseUrl      = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
 $ltxvChkptDir = "$modelsPath/checkpoints/LTXV"
-$ltxvUnetDir = "$modelsPath/unet/LTXV"
-$vaeDir = "$modelsPath/vae"
+$ltxvUnetDir  = "$modelsPath/unet/LTXV"
+$vaeDir       = "$modelsPath/vae"
 
 New-Item -Path $ltxvChkptDir, $ltxvUnetDir, $vaeDir -ItemType Directory -Force | Out-Null
 
 $doDownload = ($baseChoice -ne 'D' -or $ggufChoice -ne 'E')
 
 if ($doDownload) {
-    Write-Log "Downloading LTXV common support file (VAE)..."
+    Write-Log "Downloading LTXV VAE..."
     Save-File -Uri "$baseUrl/vae/ltxv-13b-0.9.7-vae-BF16.safetensors" -OutFile "$vaeDir/ltxv-13b-0.9.7-vae-BF16.safetensors"
 }
 
@@ -79,16 +79,10 @@ if ($baseChoice -ne 'D') {
 }
 
 if ($ggufChoice -ne 'E') {
-    Write-Log "Downloading LTXV GGUF models..."
-    if ($ggufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTXV/ltxv-13b-0.9.7-dev-Q8_0.gguf" -OutFile "$ltxvUnetDir/ltxv-13b-0.9.7-dev-Q8_0.gguf"
-    }
-    if ($ggufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTXV/ltxv-13b-0.9.7-dev-Q5_K_M.gguf" -OutFile "$ltxvUnetDir/ltxv-13b-0.9.7-dev-Q5_K_M.gguf"
-    }
-    if ($ggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTXV/ltxv-13b-0.9.7-dev-Q3_K_S.gguf" -OutFile "$ltxvUnetDir/ltxv-13b-0.9.7-dev-Q3_K_S.gguf"
-    }
+    Write-Log "Downloading LTXV GGUF models (v0.9.8)..."
+    if ($ggufChoice -in 'A', 'D') { Save-File -Uri "$baseUrl/diffusion_models/LTXV/LTXV-13B-0.9.8-Dev-Q8_0.gguf"   -OutFile "$ltxvUnetDir/LTXV-13B-0.9.8-Dev-Q8_0.gguf" }
+    if ($ggufChoice -in 'B', 'D') { Save-File -Uri "$baseUrl/diffusion_models/LTXV/LTXV-13B-0.9.8-Dev-Q5_K_S.gguf" -OutFile "$ltxvUnetDir/LTXV-13B-0.9.8-Dev-Q5_K_S.gguf" }
+    if ($ggufChoice -in 'C', 'D') { Save-File -Uri "$baseUrl/diffusion_models/LTXV/LTXV-13B-0.9.8-Dev-Q3_K_S.gguf" -OutFile "$ltxvUnetDir/LTXV-13B-0.9.8-Dev-Q3_K_S.gguf" }
 }
 
 Write-Log "LTX-Video model downloads complete." -Color Green

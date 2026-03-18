@@ -296,7 +296,7 @@ function Save-File {
         # Use Invoke-Expression to force PowerShell to parse argument string correctly
         $CommandToRun = "& `"$aria2ExePath`" $aria2Args 2>&1"
         $output = Invoke-Expression $CommandToRun | Out-String
-        Add-Content -Path $global:logFile -Value $output -Encoding utf8 -ErrorAction SilentlyContinue
+        if ($global:logFile) { Add-Content -Path $global:logFile -Value $output -Encoding utf8 -ErrorAction SilentlyContinue }
 
         if ($LASTEXITCODE -ne 0) {
             # Catch failure and throw exception for fallback

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Interactive downloader for QWEN models.
 .DESCRIPTION
@@ -47,28 +47,28 @@ else {
 Write-Log "-------------------------------------------------------------------------------"
 
 # --- User Prompts ---
-$baseChoice = Read-UserChoice -Prompt "Do you want to download QWEN base models? " -Choices @("A) bf16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
-$ggufChoice = Read-UserChoice -Prompt "Do you want to download QWEN GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
-$editChoice = Read-UserChoice -Prompt "Do you want to download QWEN EDIT models? " -Choices @("A) bf16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
-$editggufChoice = Read-UserChoice -Prompt "Do you want to download QWEN EDIT GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
-$lightChoice = Read-UserChoice -Prompt "Do you want to download QWEN Lightning LoRA? " -Choices @("A) 8 Steps", "B) 4 Steps", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$baseChoice     = Read-UserChoice -Prompt "Do you want to download QWEN base models?"        -Choices @("A) bf16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$ggufChoice     = Read-UserChoice -Prompt "Do you want to download QWEN GGUF models?"        -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$editChoice     = Read-UserChoice -Prompt "Do you want to download QWEN Edit models?"        -Choices @("A) bf16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$editggufChoice = Read-UserChoice -Prompt "Do you want to download QWEN Edit GGUF models?"   -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
+$lightChoice    = Read-UserChoice -Prompt "Do you want to download QWEN Lightning LoRAs?"    -Choices @("A) 8 Steps", "B) 4 Steps", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
 
 # --- Download Process ---
 Write-Log "Starting QWEN model downloads..." -Color Cyan
 
-$baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
-$QWENDiffDir = "$modelsPath/diffusion_models/QWEN"
-$QWENUnetDir = "$modelsPath/unet/QWEN"
-$QWENLoRADir = "$modelsPath/loras/QWEN"
-$clipDir = "$modelsPath/clip"
-$vaeDir = "$modelsPath/vae"
+$baseUrl      = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
+$QWENDiffDir  = "$modelsPath/diffusion_models/QWEN"
+$QWENUnetDir  = "$modelsPath/unet/QWEN"
+$QWENLoRADir  = "$modelsPath/loras/QWEN"
+$clipDir      = "$modelsPath/clip"
+$vaeDir       = "$modelsPath/vae"
 
 New-Item -Path $QWENDiffDir, $QWENUnetDir, $QWENLoRADir, $clipDir, $vaeDir -ItemType Directory -Force | Out-Null
 
 $doDownload = ($baseChoice -ne 'D' -or $ggufChoice -ne 'E' -or $editChoice -ne 'D' -or $editggufChoice -ne 'E')
 
 if ($doDownload) {
-    Write-Log "Downloading QWEN common support files (VAE, CLIPs)..."
+    Write-Log "Downloading QWEN VAE..."
     Save-File -Uri "$baseUrl/vae/qwen_image_vae.safetensors" -OutFile "$vaeDir/qwen_image_vae.safetensors"
 }
 
@@ -76,12 +76,12 @@ if ($doDownload) {
 if ($baseChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($baseChoice -in 'A', 'C') {
-        Save-File -Uri "$baseUrl/diffusion_models/qwen_image_bf16.safetensors" -OutFile "$QWENUnetDir/qwen_image_bf16.safetensors"
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b.safetensors" -OutFile "$clipDir/qwen_2.5_vl_7b.safetensors"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-bf16.safetensors"     -OutFile "$QWENDiffDir/qwen-image-bf16.safetensors"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b.safetensors"         -OutFile "$clipDir/qwen2.5-vl-7b.safetensors"
     }
     if ($baseChoice -in 'B', 'C') {
-        Save-File -Uri "$baseUrl/diffusion_models/qwen_image_fp8_e4m3fn.safetensors" -OutFile "$QWENUnetDir/qwen_image_fp8_e4m3fn.safetensors"
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile "$clipDir/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-fp8_e4m3fn.safetensors"     -OutFile "$QWENDiffDir/qwen-image-fp8_e4m3fn.safetensors"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b-fp8_scaled.safetensors"    -OutFile "$clipDir/qwen2.5-vl-7b-fp8_scaled.safetensors"
     }
 }
 
@@ -89,58 +89,58 @@ if ($baseChoice -ne 'D') {
 if ($ggufChoice -ne 'E') {
     Write-Log "Downloading QWEN GGUF models..."
     if ($ggufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Distill-Q8_0.gguf" -OutFile "$QWENUnetDir/Qwen_Image_Distill-Q8_0.gguf"
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Distill-Q8_0.gguf"        -OutFile "$QWENUnetDir/Qwen-Image-Distill-Q8_0.gguf"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
     }
     if ($ggufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Distill-Q5_K_S.gguf" -OutFile "$QWENUnetDir/Qwen_Image_Distill-Q5_K_S.gguf"
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Distill-Q5_K_S.gguf"      -OutFile "$QWENUnetDir/Qwen-Image-Distill-Q5_K_S.gguf"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
     }
     if ($ggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Distill-Q4_K_S.gguf" -OutFile "$QWENUnetDir/Qwen_Image_Distill-Q4_K_S.gguf"
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Distill-Q4_K_S.gguf"      -OutFile "$QWENUnetDir/Qwen-Image-Distill-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
     }
 }
 
 # Edit Models
 if ($editChoice -ne 'D') {
-    Write-Log "Downloading QWEN base model..."
+    Write-Log "Downloading QWEN Edit model..."
     if ($editChoice -in 'A', 'C') {
-        Save-File -Uri "$baseUrl/diffusion_models/qwen_image_edit_bf16.safetensors" -OutFile "$QWENUnetDir/qwen_image_edit_bf16.safetensors"
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b.safetensors" -OutFile "$clipDir/qwen_2.5_vl_7b.safetensors"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-edit-bf16.safetensors"  -OutFile "$QWENDiffDir/qwen-image-edit-bf16.safetensors"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b.safetensors"           -OutFile "$clipDir/qwen2.5-vl-7b.safetensors"
     }
     if ($editChoice -in 'B', 'C') {
-        Save-File -Uri "$baseUrl/diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors" -OutFile "$QWENUnetDir/qwen_image_edit_fp8_e4m3fn.safetensors"
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile "$clipDir/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-edit-fp8_e4m3fn.safetensors"  -OutFile "$QWENDiffDir/qwen-image-edit-fp8_e4m3fn.safetensors"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b-fp8_scaled.safetensors"      -OutFile "$clipDir/qwen2.5-vl-7b-fp8_scaled.safetensors"
     }
 }
 
 # Edit GGUF
 if ($editggufChoice -ne 'E') {
-    Write-Log "Downloading QWEN GGUF models..."
+    Write-Log "Downloading QWEN Edit GGUF models..."
     if ($editggufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q8_0.gguf" -OutFile "$QWENUnetDir/Qwen_Image_Edit-Q8_0.gguf"
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Edit-Q8_0.gguf"           -OutFile "$QWENUnetDir/Qwen-Image-Edit-Q8_0.gguf"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
     }
     if ($editggufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q5_K_S.gguf" -OutFile "$QWENUnetDir/Qwen_Image_Edit-Q5_K_S.gguf"
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Edit-Q5_K_S.gguf"         -OutFile "$QWENUnetDir/Qwen-Image-Edit-Q5_K_S.gguf"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
     }
     if ($editggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q4_K_S.gguf" -OutFile "$QWENUnetDir/Qwen_Image_Edit-Q4_K_S.gguf"
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Edit-Q4_K_S.gguf"         -OutFile "$QWENUnetDir/Qwen-Image-Edit-Q4_K_S.gguf"
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile "$clipDir/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf"
     }
 }
 
 # Lightning LoRAs
 if ($lightChoice -ne 'D') {
-    Write-Log "Downloading QWEN Lightning LoRA..."
+    Write-Log "Downloading QWEN Lightning LoRAs..."
     if ($lightChoice -in 'A', 'C') {
-        Save-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Lightning-8steps-V2.0.safetensors" -OutFile "$QWENLoRADir/Qwen-Image-Lightning-8steps-V2.0.safetensors"
+        Save-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Lightning-8steps-V2.0.safetensors"      -OutFile "$QWENLoRADir/Qwen-Image-Lightning-8steps-V2.0.safetensors"
         Save-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors" -OutFile "$QWENLoRADir/Qwen-Image-Edit-Lightning-8steps-V1.0.safetensors"
     }
     if ($lightChoice -in 'B', 'C') {
-        Save-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Lightning-4steps-V2.0.safetensors" -OutFile "$QWENLoRADir/Qwen-Image-Lightning-4steps-V2.0.safetensors"
+        Save-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Lightning-4steps-V2.0.safetensors"      -OutFile "$QWENLoRADir/Qwen-Image-Lightning-4steps-V2.0.safetensors"
         Save-File -Uri "$baseUrl/loras/QWEN/Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors" -OutFile "$QWENLoRADir/Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors"
     }
 }
