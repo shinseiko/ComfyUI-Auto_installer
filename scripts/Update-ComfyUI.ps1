@@ -294,15 +294,15 @@ if ($effectiveSnapshotFile) {
 
 # --- F. Global Update Strategy ---
 
-# 0. Repair any custom nodes that exist but are not git repos (can't be updated by cm-cli).
-#    Known case: ComfyUI-nunchaku was previously cloned from the old mit-han-lab URL which
-#    sometimes landed as a zip extraction with no .git directory.
+# 0. Repair ComfyUI-nunchaku if it was installed as a zip extract (no .git directory).
+#    This happened when the old mit-han-lab URL returned a zip instead of a git clone.
+#    IMPORTANT: do NOT generalize this to all non-git dirs — Manager installs many nodes
+#    as zips legitimately and they must not be removed here.
 $customNodesPath = "$InstallPath/ComfyUI/custom_nodes"
-foreach ($nodeDir in (Get-ChildItem $customNodesPath -Directory -ErrorAction SilentlyContinue)) {
-    if (-not (Test-Path "$($nodeDir.FullName)/.git")) {
-        Write-Log "Node '$($nodeDir.Name)' has no .git directory — removing for clean re-clone." -Level 1 -Color Yellow
-        Remove-Item $nodeDir.FullName -Recurse -Force -ErrorAction SilentlyContinue
-    }
+$nunchakuDir = "$customNodesPath/ComfyUI-nunchaku"
+if ((Test-Path $nunchakuDir) -and -not (Test-Path "$nunchakuDir/.git")) {
+    Write-Log "ComfyUI-nunchaku has no .git directory — removing corrupt zip-extract for clean re-clone." -Level 1 -Color Yellow
+    Remove-Item $nunchakuDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 # 1. Restore Snapshot to ensure all nodes are present
