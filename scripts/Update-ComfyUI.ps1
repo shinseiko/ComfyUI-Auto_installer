@@ -294,13 +294,25 @@ if ($effectiveSnapshotFile) {
 
 # --- F. Global Update Strategy ---
 
+# 0. Repair any custom nodes that exist but are not git repos (can't be updated by cm-cli).
+#    Known case: ComfyUI-nunchaku was previously cloned from the old mit-han-lab URL which
+#    sometimes landed as a zip extraction with no .git directory.
+$customNodesPath = "$InstallPath/ComfyUI/custom_nodes"
+foreach ($nodeDir in (Get-ChildItem $customNodesPath -Directory -ErrorAction SilentlyContinue)) {
+    if (-not (Test-Path "$($nodeDir.FullName)/.git")) {
+        Write-Log "Node '$($nodeDir.Name)' has no .git directory — removing for clean re-clone." -Level 1 -Color Yellow
+        Remove-Item $nodeDir.FullName -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
 # 1. Restore Snapshot to ensure all nodes are present
 if ($null -ne $effectiveSnapshotFile -and (Test-Path $effectiveSnapshotFile)) {
     Write-Log "Install missing nodes first..." -Level 1 -Color Cyan
     try {
         Invoke-AndLog $pythonExe "`"$cmCliScript`" restore-snapshot `"$effectiveSnapshotFile`""
     } catch {
-        Write-Log "WARNING: Snapshot restore encountered issues." -Level 1 -Color Yellow
+        Write-Log "WARNING: Snapshot restore encountered issues — some nodes may be missing or broken." -Level 1 -Color Yellow
+        Write-Log "  Check log for details: $($global:logFile)" -Level 1 -Color Yellow
     }
 } else {
     Write-Log "WARNING: No snapshot available, skipping restore-snapshot." -Color Yellow
@@ -313,7 +325,8 @@ try {
     Invoke-AndLog $pythonExe "`"$cmCliScript`" update all"
     Write-Log "All custom nodes updated successfully via CLI!" -Level 1 -Color Green
 } catch {
-    Write-Log "ERROR: Global update failed. Check logs." -Level 1 -Color Red
+    Write-Log "ERROR: Custom node update failed — nodes may be out of date or broken." -Level 1 -Color Red
+    Write-Log "  Check log for details: $($global:logFile)" -Level 1 -Color Red
 }
 
 # 2a. Re-pin managed wheels — cm-cli may downgrade packages like nunchaku via a node's own
