@@ -1,4 +1,4 @@
-<!-- Generated: 2026-03-03 | Source files: 18 | Token estimate: ~1100 -->
+<!-- Generated: 2026-03-18 | Source files: 18 | Token estimate: ~1100 -->
 
 # Architecture
 
