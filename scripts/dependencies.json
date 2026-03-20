@@ -55,7 +55,7 @@
   },
   "files": {
     "comfy_settings": {
-      "url": "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/others/comfy.settings.json",
+      "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/scripts/comfy.settings.json",
       "destination": "user/default/comfy.settings.json"
     },
     "custom_nodes_csv": {
