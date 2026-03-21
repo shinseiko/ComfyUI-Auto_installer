@@ -168,6 +168,7 @@ if (Test-Path $installTypeFile) {
             Write-Host "[INIT] Detected CONDA installation. Using: $pythonExe" -ForegroundColor Cyan
         }
     }
+    $isConda = ($installType -eq "conda")
 } else {
     Write-Host "[WARN] 'install_type' file not found. Assuming System Python." -ForegroundColor Yellow
 }
@@ -352,21 +353,49 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
 
 # --- 3. Update Optimized Components (Triton/SageAttention) ---
 Write-Log "Updating Optimized Components (Triton/SageAttention)..." -Level 0 -Color Green
-$installerInfo = $dependencies.files.installer_script
-$installerDest = "$InstallPath/$($installerInfo.destination.Replace('\','/'))"
 
-try {
-    # Always download fresh to get latest logic
-    $installerSha256 = if ($installerInfo.PSObject.Properties["sha256"]) { [string]$installerInfo.sha256 } else { "" }
-    Save-File -Uri $installerInfo.url -OutFile $installerDest -ExpectedHash $installerSha256 -Force
+if (-not $isConda) {
+    # ==============================================================================
+    # OPTION A: VENV — Use DazzleML Optimizer
+    # ==============================================================================
+    $installerInfo = $dependencies.files.installer_script
+    $installerDest = "$InstallPath/$($installerInfo.destination.Replace('\','/'))"
 
-    if (Test-Path $installerDest) {
-        Write-Log "Executing DazzleML Installer (Upgrade Mode)..." -Level 1
-        Invoke-AndLog $pythonExe @($installerDest, "--upgrade", "--non-interactive", "--base-path", $comfyPath, "--python", $pythonExe)
+    try {
+        # Always download fresh to get latest logic
+        $installerSha256 = if ($installerInfo.PSObject.Properties["sha256"]) { [string]$installerInfo.sha256 } else { "" }
+        Save-File -Uri $installerInfo.url -OutFile $installerDest -ExpectedHash $installerSha256 -Force
+
+        if (Test-Path $installerDest) {
+            Write-Log "Executing DazzleML Installer (Upgrade Mode)..." -Level 1
+            Invoke-AndLog $pythonExe @($installerDest, "--upgrade", "--non-interactive", "--base-path", $comfyPath, "--python", $pythonExe)
+        }
+    }
+    catch {
+        Write-Log "Error updating optimized components: $($_.Exception.Message)" -Level 1 -Color Red
     }
 }
-catch {
-    Write-Log "Error updating optimized components: $($_.Exception.Message)" -Level 1 -Color Red
+else {
+    # ==============================================================================
+    # OPTION B: CONDA — Manual upgrade (DazzleML crashes in Conda environments)
+    # ==============================================================================
+    Write-Log "Conda detected. Using Manual Safe Mode to prevent installer crash..." -Level 1 -Color Yellow
+
+    # Fix CUDA_HOME for Conda build tools
+    if ($env:CUDA_PATH) { $env:CUDA_HOME = $env:CUDA_PATH }
+
+    Write-Log "Upgrading Triton-Windows..." -Level 2
+    Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "triton-windows", "--no-warn-script-location")
+
+    Write-Log "Upgrading SageAttention..." -Level 2
+    try {
+        Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "sageattention", "--no-warn-script-location", "--no-build-isolation")
+        Write-Log "SageAttention upgraded successfully." -Level 2 -Color Green
+    }
+    catch {
+        Write-Log "WARNING: Standard upgrade failed. Retrying without dependency check..." -Level 2 -Color Yellow
+        Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "sageattention", "--no-deps", "--no-warn-script-location", "--no-build-isolation")
+    }
 }
 
 # --- Cleanup Env Vars ---
