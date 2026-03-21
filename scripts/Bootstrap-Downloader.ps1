@@ -75,7 +75,7 @@ Write-Host "[INFO] Downloading the latest versions of the installation scripts..
 _AppendLog $_bootstrapLog "=== Bootstrap started: $GhUser/$GhRepoName @ $GhBranch ==="
 
 # Set TLS protocol for compatibility
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Tls13
 
 $failed = @()
 

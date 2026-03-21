@@ -33,7 +33,7 @@ $logPath = "$InstallPath/logs"
 $logFile = "$logPath/install.log"
 
 # --- Security Protocol ---
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Tls13
 
 # --- Load dependencies EARLY ---
 $dependenciesFile = "$scriptPath/dependencies.json"
@@ -141,7 +141,7 @@ if ($RunAdminTasks) {
             Write-Host "- No compatible C++ tools found. Installing VS Build Tools..." -ForegroundColor Yellow
             $vsInstallerAdmin = "$($env:TEMP.Replace('\','/'))/vs_buildtools_admin.exe"
             try {
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Tls13
                 Invoke-WebRequest -Uri $vsToolAdmin.url -OutFile $vsInstallerAdmin -UseBasicParsing -ErrorAction Stop
                 Write-Host "- Launching the VS Build Tools installer (may take some time)..."
                 Start-Process -FilePath $vsInstallerAdmin -ArgumentList $vsToolAdmin.arguments -Wait -ErrorAction Stop
@@ -503,12 +503,11 @@ else {
         if (-not (Test-Path $venvPath)) {
             Write-Log "Creating virtual environment (venv) at '$venvPath'..." -Level 1
             if (Get-Command "uv" -ErrorAction SilentlyContinue) {
-                Invoke-AndLog "uv" "venv `"$venvPath`" --python 3.13"
+                Invoke-AndLog "uv" @("venv", $venvPath, "--python", "3.13")
             } else {
                 # Fallback to python -m venv if uv is not available
                 Write-Log "uv not found, falling back to python -m venv..." -Level 2 -Color Yellow
-                if ($pythonArgs) { $venvArgs = "$pythonArgs -m venv `"$venvPath`"" }
-                else { $venvArgs = "-m venv `"$venvPath`"" }
+                $venvArgs = if ($pythonArgs) { @($pythonArgs, "-m", "venv", $venvPath) } else { @("-m", "venv", $venvPath) }
                 Invoke-AndLog $pythonCommand $venvArgs
             }
         }
@@ -573,14 +572,14 @@ Read-Host
         if (-not (Test-Path $condaExe)) { Write-Log "FATAL ERROR: conda.exe not found after installation/verification" -Color Red; Read-Host "Press Enter."; exit 1 }
 
         Write-Log "Accepting Anaconda Terms of Service..." -Level 1
-        Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
-        Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
-        Invoke-AndLog "$condaExe" "tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2"
+        Invoke-AndLog $condaExe @("tos", "accept", "--override-channels", "--channel", "https://repo.anaconda.com/pkgs/main")
+        Invoke-AndLog $condaExe @("tos", "accept", "--override-channels", "--channel", "https://repo.anaconda.com/pkgs/r")
+        Invoke-AndLog $condaExe @("tos", "accept", "--override-channels", "--channel", "https://repo.anaconda.com/pkgs/msys2")
 
         Write-Log "Attempting to remove old 'UmeAiRT' environment for a clean install..." -Level 1
-        Invoke-AndLog "$condaExe" "env remove -n UmeAiRT -y" -IgnoreErrors
+        Invoke-AndLog $condaExe @("env", "remove", "-n", "UmeAiRT", "-y") -IgnoreErrors
         Write-Log "Creating new Conda environment 'UmeAiRT' from '$scriptPath/environment.yml'..." -Level 1
-        Invoke-AndLog "$condaExe" "env create -f `"$scriptPath/environment.yml`""
+        Invoke-AndLog $condaExe @("env", "create", "-f", "$scriptPath/environment.yml")
         Write-Log "Environment 'UmeAiRT' created successfully." -Level 2 -Color Green
 
         Write-Log "Conda environment ready." -Level 1 -Color Green

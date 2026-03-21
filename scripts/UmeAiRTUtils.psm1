@@ -108,26 +108,25 @@ function Invoke-AndLog {
     .PARAMETER File
         Path to the executable.
     .PARAMETER Arguments
-        Arguments string for the executable.
+        Arguments array for the executable.
     .PARAMETER IgnoreErrors
         If set, script execution continues even if the command returns a non-zero exit code.
     #>
     param(
         [string]$File,
-        [string]$Arguments,
+        [string[]]$Arguments = @(),
         [switch]$IgnoreErrors
     )
-    
+
     $tempLogFile = Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString() + ".tmp")
     try {
-        Write-Log "Executing: $File $Arguments" -Level 3 -Color DarkGray
-        $CommandToRun = "& `"$File`" $Arguments *>&1 | Out-File -FilePath `"$tempLogFile`" -Encoding utf8"
-        Invoke-Expression $CommandToRun
+        Write-Log "Executing: $File $($Arguments -join ' ')" -Level 3 -Color DarkGray
+        & $File @Arguments *>&1 | Out-File -FilePath $tempLogFile -Encoding utf8
         $output = if (Test-Path $tempLogFile) { Get-Content $tempLogFile } else { @() }
 
         if ($LASTEXITCODE -ne 0 -and -not $IgnoreErrors) {
             Write-Log "ERROR: Command failed with code $LASTEXITCODE." -Color Red
-            Write-Log "Command: $File $Arguments" -Color Red
+            Write-Log "Command: $File $($Arguments -join ' ')" -Color Red
             Write-Log "Error Output:" -Color Red
             $output | ForEach-Object { Write-Host $_ -ForegroundColor Red; Add-Content -Path $global:logFile -Value $_ -Encoding utf8 -ErrorAction SilentlyContinue }
             throw "Command execution failed. Check logs."
@@ -137,7 +136,7 @@ function Invoke-AndLog {
         }
     }
     catch {
-        $errMsg = "FATAL ERROR executing: $File $Arguments. Error: $($_.Exception.Message)"
+        $errMsg = "FATAL ERROR executing: $File $($Arguments -join ' '). Error: $($_.Exception.Message)"
         Write-Log $errMsg -Color Red
         Add-Content -Path $global:logFile -Value $errMsg -Encoding utf8 -ErrorAction SilentlyContinue
         Read-Host "A fatal error occurred. Press Enter to exit."
@@ -288,14 +287,11 @@ function Save-File {
         $OutDir = Split-Path -Path $OutFile -Parent
         $OutName = Split-Path -Path $OutFile -Leaf
 
-        # Recreate argument string
-        $aria2Args = "--console-log-level=warn --disable-ipv6 --quiet=true -x 16 -s 16 -k 1M --dir=`"$OutDir`" --out=`"$OutName`" `"$Uri`""
-        
-        Write-Log "Executing: $aria2ExePath $aria2Args" -Level 3 -Color DarkGray
+        # Build argument array (avoids Invoke-Expression injection risk)
+        $aria2Args = @("--console-log-level=warn", "--disable-ipv6", "--quiet=true", "-x", "16", "-s", "16", "-k", "1M", "--dir=$OutDir", "--out=$OutName", $Uri)
 
-        # Use Invoke-Expression to force PowerShell to parse argument string correctly
-        $CommandToRun = "& `"$aria2ExePath`" $aria2Args 2>&1"
-        $output = Invoke-Expression $CommandToRun | Out-String
+        Write-Log "Executing: $aria2ExePath $($aria2Args -join ' ')" -Level 3 -Color DarkGray
+        $output = & $aria2ExePath @aria2Args 2>&1 | Out-String
         if ($global:logFile) { Add-Content -Path $global:logFile -Value $output -Encoding utf8 -ErrorAction SilentlyContinue }
 
         if ($LASTEXITCODE -ne 0) {

@@ -44,7 +44,7 @@ $logPath = "$InstallPath/logs"
 $logFile = "$logPath/install.log"
 
 # --- Security Protocol ---
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Tls13
 
 # --- Load Dependencies ---
 $dependenciesFile = "$($scriptPath)/dependencies.json"
@@ -106,13 +106,13 @@ if ($optimalParallelJobs -lt 1) { $optimalParallelJobs = 1 }
 
 # --- Step 1: Git Configuration ---
 Write-Log "Configuring Git to handle long paths (system-wide)..." -Level 1
-try { Invoke-AndLog "git" "config --system core.longpaths true" -IgnoreErrors } catch { Write-Log "Warning: Failed to set git config (might need admin)." -Level 2 -Color Yellow }
+try { Invoke-AndLog "git" @("config", "--system", "core.longpaths", "true") -IgnoreErrors } catch { Write-Log "Warning: Failed to set git config (might need admin)." -Level 2 -Color Yellow }
 
 # --- Step 2: Clone ComfyUI ---
 Write-Log "Cloning ComfyUI" -Level 0
 if (-not (Test-Path $comfyPath)) {
     Write-Log "Cloning ComfyUI repository from $($dependencies.repositories.comfyui.url)..." -Level 1
-    $cloneArgs = "clone $($dependencies.repositories.comfyui.url) `"$comfyPath`""
+    $cloneArgs = @("clone", $dependencies.repositories.comfyui.url, $comfyPath)
     Invoke-AndLog "git" $cloneArgs
 
     if (-not (Test-Path $comfyPath)) {
@@ -181,26 +181,26 @@ try {
     $ninjaCheck = & $pythonExe -m pip show ninja 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Log "Installing ninja..." -Level 1
-        Invoke-AndLog "uv" "pip install --python `"$pythonExe`" ninja"
+        Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "ninja")
     }
 }
 catch {
     Write-Log "Installing ninja..." -Level 1
-    Invoke-AndLog "uv" "pip install --python `"$pythonExe`" ninja"
+    Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "ninja")
 }
 
 Write-Log "Upgrading pip and wheel" -Level 1
-Invoke-AndLog "uv" "pip install --python `"$pythonExe`" --upgrade $($dependencies.pip_packages.upgrade -join ' ')"
+Invoke-AndLog "uv" (@("pip", "install", "--python", $pythonExe, "--upgrade") + $dependencies.pip_packages.upgrade)
 Write-Log "Installing torch packages" -Level 1
-Invoke-AndLog "uv" "pip install --python `"$pythonExe`" $($dependencies.pip_packages.torch.packages) --index-url $($dependencies.pip_packages.torch.index_url)"
+Invoke-AndLog "uv" (@("pip", "install", "--python", $pythonExe) + ($dependencies.pip_packages.torch.packages -split '\s+') + @("--index-url", $dependencies.pip_packages.torch.index_url))
 
 Write-Log "Installing ComfyUI requirements" -Level 1
-Invoke-AndLog "uv" "pip install --python `"$pythonExe`" -r `"$comfyPath/$($dependencies.pip_packages.comfyui_requirements)`""
+Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "-r", "$comfyPath/$($dependencies.pip_packages.comfyui_requirements)")
 
 # --- Step 4: Install Final Python Dependencies ---
 Write-Log "Installing Python Dependencies" -Level 0
 Write-Log "Installing standard packages..." -Level 1
-Invoke-AndLog "uv" "pip install --python `"$pythonExe`" $($dependencies.pip_packages.standard -join ' ')"
+Invoke-AndLog "uv" (@("pip", "install", "--python", $pythonExe) + $dependencies.pip_packages.standard)
 
 # --- Step 5: Install Custom Nodes (via ComfyUI-Manager CLI) ---
 Write-Log "Installing Custom Nodes via Manager CLI" -Level 0
@@ -213,14 +213,14 @@ Write-Log "Installing UmeAiRT Sync Manager (Core Component)..." -Level 1
 $managerPath = "$internalCustomNodes/ComfyUI-Manager"
 if (-not (Test-Path $managerPath)) {
     Write-Log "Installing ComfyUI-Manager (Required for CLI)..." -Level 1 -Color Cyan
-    Invoke-AndLog "git" "clone https://github.com/ltdrdata/ComfyUI-Manager.git `"$managerPath`""
+    Invoke-AndLog "git" @("clone", "https://github.com/ltdrdata/ComfyUI-Manager.git", $managerPath)
 }
 
 # 2. Dependencies
 $managerReqs = "$managerPath/requirements.txt"
 if (Test-Path $managerReqs) {
     Write-Log "Installing ComfyUI-Manager dependencies (typer, etc.)..." -Level 1
-    Invoke-AndLog "uv" "pip install --python `"$pythonExe`" -r `"$managerReqs`""
+    Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "-r", $managerReqs)
 }
 
 # 2b. Enable uv in ComfyUI Manager config
@@ -241,7 +241,7 @@ if (Test-Path $snapshotFile) {
     
     try {
         # Using 'restore-snapshot' command
-        Invoke-AndLog $pythonExe "`"$cmCliScript`" restore-snapshot `"$snapshotFile`""
+        Invoke-AndLog $pythonExe @($cmCliScript, "restore-snapshot", $snapshotFile)
         Write-Log "Custom nodes installation complete!" -Level 1 -Color Green
     }
     catch {
@@ -267,7 +267,7 @@ else {
             if (-not (Test-Path $possiblePath)) {
                 Write-Log "Installing $nodeName via CLI..." -Level 1
                 try {
-                    Invoke-AndLog $pythonExe "`"$cmCliScript`" install $repoUrl"
+                    Invoke-AndLog $pythonExe @($cmCliScript, "install", $repoUrl)
                     $successCount++
                 }
                 catch {
@@ -291,9 +291,9 @@ else {
 $umeSyncPath = "$internalCustomNodes/ComfyUI-UmeAiRT-Sync"
 if (-not (Test-Path $umeSyncPath)) {
     Write-Log "Installing ComfyUI-UmeAiRT-Sync (for workflows auto-update)..." -Level 1 -Color Cyan
-    Invoke-AndLog "git" "clone https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Sync.git `"$umeSyncPath`""
+    Invoke-AndLog "git" @("clone", "https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Sync.git", $umeSyncPath)
     if (Test-Path "$umeSyncPath/requirements.txt") {
-        Invoke-AndLog "uv" "pip install --python `"$pythonExe`" -r `"$umeSyncPath/requirements.txt`""
+        Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "-r", "$umeSyncPath/requirements.txt")
     }
 }
 else {
@@ -350,7 +350,7 @@ foreach ($wheel in $dependencies.pip_packages.wheels) {
         Save-File -Uri $wheel.url -OutFile $wheelPath -ExpectedHash $wheelSha256
 
         if (Test-Path $wheelPath) {
-            Invoke-AndLog "uv" "pip install --python `"$pythonExe`" `"$wheelPath`""
+            Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, $wheelPath)
             Write-Log "$($wheel.name) installed successfully" -Level 3 -Color Green
             Remove-Item $wheelPath -ErrorAction SilentlyContinue
         }
@@ -382,7 +382,7 @@ if (-not $isConda) {
 
         if (Test-Path $installerDest) {
             # Execute the smart installer script
-            Invoke-AndLog $pythonExe "`"$installerDest`" --install --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
+            Invoke-AndLog $pythonExe @($installerDest, "--install", "--non-interactive", "--base-path", $comfyPath, "--python", $pythonExe)
         }
         else {
             Write-Log "Failed to download installer script." -Level 2 -Color Red
@@ -407,17 +407,17 @@ else {
 
     # 2. Install Triton-Windows (Official PyPI for Py3.13)
     Write-Log "Installing Triton-Windows..." -Level 2
-    Invoke-AndLog "uv" "pip install --python `"$pythonExe`" triton-windows --no-warn-script-location"
+    Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "triton-windows", "--no-warn-script-location")
 
     # 3. Install SageAttention (Direct Install)
     Write-Log "Installing SageAttention..." -Level 2
     try {
-        Invoke-AndLog "uv" "pip install --python `"$pythonExe`" sageattention --no-warn-script-location --no-build-isolation"
+        Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "sageattention", "--no-warn-script-location", "--no-build-isolation")
         Write-Log "SageAttention installed successfully." -Level 2 -Color Green
     }
     catch {
         Write-Log "WARNING: Standard install failed. Retrying without dependency check..." -Level 2 -Color Yellow
-        Invoke-AndLog "uv" "pip install --python `"$pythonExe`" sageattention --no-deps --no-warn-script-location --no-build-isolation"
+        Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "sageattention", "--no-deps", "--no-warn-script-location", "--no-build-isolation")
     }
 }
 

@@ -177,10 +177,10 @@ Write-Log "Python Executable used: $pythonExe" -Level 1
 # --- 1. Update Git Repositories (Core & Workflows) ---
 Write-Log "Updating Core Git repositories..." -Level 0 -Color Green
 Write-Log "Updating ComfyUI Core..." -Level 1
-Invoke-AndLog "git" "-C `"$comfyPath`" pull"
+Invoke-AndLog "git" @("-C", $comfyPath, "pull")
 Write-Log "Checking main ComfyUI requirements..." -Level 1
 $mainReqs = "$comfyPath/requirements.txt"
-Invoke-AndLog "uv" "pip install --python `"$pythonExe`" -r `"$mainReqs`""
+Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "-r", $mainReqs)
 
 # --- 2. Update and Install Custom Nodes (Manager CLI) ---
 Write-Log "Updating/Installing Custom Nodes..." -Level 0 -Color Green
@@ -189,17 +189,17 @@ Write-Log "Updating/Installing Custom Nodes..." -Level 0 -Color Green
 $managerPath = "$internalCustomNodesPath/ComfyUI-Manager"
 Write-Log "Updating ComfyUI-Manager..." -Level 1
 if (Test-Path $managerPath) {
-    Invoke-AndLog "git" "-C `"$managerPath`" pull"
+    Invoke-AndLog "git" @("-C", $managerPath, "pull")
 } else {
     Write-Log "ComfyUI-Manager missing. Installing..." -Level 2
-    Invoke-AndLog "git" "clone https://github.com/ltdrdata/ComfyUI-Manager.git `"$managerPath`""
+    Invoke-AndLog "git" @("clone", "https://github.com/ltdrdata/ComfyUI-Manager.git", $managerPath)
 }
 
 # --- B. Update Manager Dependencies (Critical for CLI) ---
 $managerReqs = "$managerPath/requirements.txt"
 if (Test-Path $managerReqs) {
     Write-Log "Updating ComfyUI-Manager dependencies..." -Level 1
-    Invoke-AndLog "uv" "pip install --python `"$pythonExe`" -r `"$managerReqs`""
+    Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, "-r", $managerReqs)
 }
 
 # --- C. Enable uv in ComfyUI Manager config ---
@@ -264,7 +264,7 @@ if ($null -eq $effectiveSnapshotFile) {
     $answer = (Read-Host "  Protect your custom nodes? [Y/n]").Trim()
     if ($answer -eq "" -or $answer -match "^[Yy]") {
         try {
-            Invoke-AndLog $pythonExe "`"$cmCliScript`" save-snapshot --output `"$userSnapshotFile`""
+            Invoke-AndLog $pythonExe @($cmCliScript, "save-snapshot", "--output", $userSnapshotFile)
             if (Test-Path $userSnapshotFile) {
                 $effectiveSnapshotFile = $userSnapshotFile
                 $snapshotSource = "auto-saved (this run)"
@@ -309,7 +309,7 @@ if ((Test-Path $nunchakuDir) -and -not (Test-Path "$nunchakuDir/.git")) {
 if ($null -ne $effectiveSnapshotFile -and (Test-Path $effectiveSnapshotFile)) {
     Write-Log "Install missing nodes first..." -Level 1 -Color Cyan
     try {
-        Invoke-AndLog $pythonExe "`"$cmCliScript`" restore-snapshot `"$effectiveSnapshotFile`""
+        Invoke-AndLog $pythonExe @($cmCliScript, "restore-snapshot", $effectiveSnapshotFile)
     } catch {
         Write-Log "WARNING: Snapshot restore encountered issues — some nodes may be missing or broken." -Level 1 -Color Yellow
         Write-Log "  Check log for details: $($global:logFile)" -Level 1 -Color Yellow
@@ -322,7 +322,7 @@ if ($null -ne $effectiveSnapshotFile -and (Test-Path $effectiveSnapshotFile)) {
 Write-Log "Performing GLOBAL UPDATE of all custom nodes..." -Level 1 -Color Cyan
 try {
     # 'update all' handles git pulls, requirements.txt, and install.py scripts automatically
-    Invoke-AndLog $pythonExe "`"$cmCliScript`" update all"
+    Invoke-AndLog $pythonExe @($cmCliScript, "update", "all")
     Write-Log "All custom nodes updated successfully via CLI!" -Level 1 -Color Green
 } catch {
     Write-Log "ERROR: Custom node update failed — nodes may be out of date or broken." -Level 1 -Color Red
@@ -336,7 +336,7 @@ Write-Log "Re-pinning managed wheels..." -Level 1 -Color Cyan
 foreach ($wheel in $dependencies.pip_packages.wheels) {
     Write-Log "Re-pinning $($wheel.name)..." -Level 2
     try {
-        Invoke-AndLog "uv" "pip install --python `"$pythonExe`" `"$($wheel.url)`""
+        Invoke-AndLog "uv" @("pip", "install", "--python", $pythonExe, $wheel.url)
         Write-Log "Re-pinned $($wheel.name)." -Level 2 -Color Green
     } catch {
         Write-Log "WARNING: Failed to re-pin $($wheel.name): $($_.Exception.Message)" -Level 2 -Color Yellow
@@ -355,7 +355,7 @@ try {
 
     if (Test-Path $installerDest) {
         Write-Log "Executing DazzleML Installer (Upgrade Mode)..." -Level 1
-        Invoke-AndLog $pythonExe "`"$installerDest`" --upgrade --non-interactive --base-path `"$comfyPath`" --python `"$pythonExe`""
+        Invoke-AndLog $pythonExe @($installerDest, "--upgrade", "--non-interactive", "--base-path", $comfyPath, "--python", $pythonExe)
     }
 }
 catch {
