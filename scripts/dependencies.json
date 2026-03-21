@@ -90,9 +90,9 @@
       "sha256": "AF90B884B014BB913707B5D20B252CD6ED0F956CD1899C64D2C690A29308F078"
     },
     "installer_script": {
-      "url": "https://raw.githubusercontent.com/DazzleML/comfyui-triton-and-sageattention-installer/99f4d167d821/comfyui_triton_sageattention.py",
+      "url": "https://raw.githubusercontent.com/DazzleML/comfyui-triton-and-sageattention-installer/v0.8.6/comfyui_triton_sageattention.py",
       "destination": "scripts/comfyui_triton_sageattention.py",
-      "sha256": "0BCAC445E97B20AA3A2D249195B5475C3C27267E7526DCFEF2401619744FA1A6"
+      "sha256": "F5B796F2217BB2176D30FEDB75C0C42F981721B5E78D80992C0A1928FCBDE4DE"
     },
     "nunchaku_versions": {
       "url": "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer/main/scripts/nunchaku_versions.json",
