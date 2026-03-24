@@ -1,14 +1,14 @@
 > [!IMPORTANT]
-> ## 🚀 Une nouvelle version Python est disponible !
+> ## 🚀 A new Python version is available!
 >
-> Ce projet (PowerShell) est maintenu en mode **legacy / maintenance uniquement**.
-> Une réécriture complète en Python est disponible avec :
-> - ✅ Support multi-plateforme (Windows, Linux, macOS)
-> - ✅ Interface TUI moderne
-> - ✅ CI/CD, tests automatisés, Docker
-> - ✅ Meilleure gestion des dépendances (uv)
+> This project (PowerShell) is now in **legacy / maintenance-only** mode.
+> A complete rewrite in Python is available with:
+> - ✅ Cross-platform support (Windows, Linux, macOS)
+> - ✅ Modern TUI interface
+> - ✅ CI/CD, automated tests, Docker
+> - ✅ Better dependency management (uv)
 >
-> 👉 **[Passer à la version Python](https://github.com/UmeAiRT/ComfyUI-Auto_installer-Python)**
+> 👉 **[Switch to the Python version](https://github.com/UmeAiRT/ComfyUI-Auto_installer-Python)**
 
 # UmeAiRT's ComfyUI Auto-Installer (Legacy PowerShell)
 
