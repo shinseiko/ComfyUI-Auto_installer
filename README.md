@@ -71,6 +71,15 @@ Three main `.bat` files will be available in your folder to manage the applicati
 
 - **`UmeAiRT-Update-ComfyUI.bat`**
     - Execute this script to **update your entire installation**. It will update the code for ComfyUI, all custom nodes, and your workflows, and it will install any new Python dependencies if required.
+    - **Resume from a specific step:** If an update fails partway through, you can skip the steps that already completed by passing `-ResumeFromStep <N>`:
+      ```bat
+      UmeAiRT-Update-ComfyUI.bat -ResumeFromStep 2
+      ```
+      | Value | Skips | Starts at |
+      |-------|-------|-----------|
+      | `1` | Nothing (default) | Step 1 — Update core repos |
+      | `2` | Core repo update | Step 2 — Update custom nodes |
+      | `3` | Core + custom nodes | Step 3 — Optimized components |
 
 ## File Structure
 
