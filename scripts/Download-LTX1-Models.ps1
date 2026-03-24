@@ -81,13 +81,13 @@ if ($baseChoice -ne 'D') {
 if ($ggufChoice -ne 'E') {
     Write-Log "Downloading LTXV GGUF models..."
     if ($ggufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTXV/ltxv-13b-0.9.7-dev-Q8_0.gguf" -OutFile (Join-Path $ltxvUnetDir "ltxv-13b-0.9.7-dev-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/LTXV/LTXV-13B-0.9.8-Dev-Q8_0.gguf" -OutFile (Join-Path $ltxvUnetDir "LTXV-13B-0.9.8-Dev-Q8_0.gguf")
     }
     if ($ggufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTXV/ltxv-13b-0.9.7-dev-Q5_K_M.gguf" -OutFile (Join-Path $ltxvUnetDir "ltxv-13b-0.9.7-dev-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/LTXV/LTXV-13B-0.9.8-Dev-Q5_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "LTXV-13B-0.9.8-Dev-Q5_K_S.gguf")
     }
     if ($ggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTXV/ltxv-13b-0.9.7-dev-Q3_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "ltxv-13b-0.9.7-dev-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/LTXV/LTXV-13B-0.9.8-Dev-Q3_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "LTXV-13B-0.9.8-Dev-Q3_K_S.gguf")
     }
 }
 

@@ -73,7 +73,7 @@ $doDownload = ($baseChoice -ne 'E' -or $ggufT2VChoice -ne 'E' -or $gguf480Choice
 if ($doDownload) {
     Write-Log "Downloading common support files..."
     Save-File -Uri "$baseUrl/vae/wan_2.1_vae.safetensors" -OutFile (Join-Path $vaeDir "wan_2.1_vae.safetensors")
-    Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-fp8-e4m3fn-scaled.safetensors" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-fp8-e4m3fn-scaled.safetensors")
+    Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-fp8-e4m3fn-scaled.safetensors" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-fp8-e4m3fn-scaled.safetensors")
     Save-File -Uri "$baseUrl/clip_vision/clip_vision_h.safetensors" -OutFile (Join-Path $visionDir "clip_vision_h.safetensors")
 }
 
@@ -100,48 +100,48 @@ if ($baseChoice -ne 'E') {
 if ($ggufT2VChoice -ne 'E') {
     Write-Log "Downloading T2V GGUF Models..."
     if ($ggufT2VChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-t2v-14b-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-t2v-14b-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-T2V-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-t2v-14b-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
     }
     if ($ggufT2VChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-t2v-14b-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-t2v-14b-Q5_K_M.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-T2V-14B-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-t2v-14b-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
     }
     if ($ggufT2VChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-t2v-14b-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-t2v-14b-Q3_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-T2V-14B-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-t2v-14b-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
     }
 }
 # GGUF I2V 480p
 if ($gguf480Choice -ne 'E') {
     Write-Log "Downloading I2V 480p GGUF Models..."
     if ($gguf480Choice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-i2v-14b-480p-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-480p-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-I2V-14B-480p-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-480p-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
     }
     if ($gguf480Choice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-i2v-14b-480p-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-480p-Q5_K_M.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-I2V-14B-480p-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-480p-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
     }
     if ($gguf480Choice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-i2v-14b-480p-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-480p-Q3_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-I2V-14B-480p-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-480p-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
     }
 }
 # GGUF I2V 720p
 if ($gguf720Choice -ne 'E') {
     Write-Log "Downloading I2V 720p GGUF Models..."
     if ($gguf720Choice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-i2v-14b-720p-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-720p-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-I2V-14B-720p-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-720p-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
     }
     if ($gguf720Choice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-i2v-14b-720p-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-720p-Q5_K_M.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-I2V-14B-720p-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-720p-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
     }
     if ($gguf720Choice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-i2v-14b-720p-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-720p-Q3_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-I2V-14B-720p-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-i2v-14b-720p-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
     }
 }
 # ControlNet Models
@@ -158,16 +158,16 @@ if ($controlChoice -ne 'D') {
 if ($controlGgufChoice -ne 'E') {
     Write-Log "Downloading ControlNet GGUF Models..."
     if ($controlGgufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-fun-14b-control-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-fun-14b-control-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-Fun-14B-Control-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-fun-14b-control-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
     }
     if ($controlGgufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-fun-14b-control-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-fun-14b-control-Q5_K_M.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-Fun-14B-Control-Q5_K_M.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-fun-14b-control-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
     }
     if ($controlGgufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/WAN/wan2.1-fun-14b-control-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-fun-14b-control-Q3_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-Fun-14B-Control-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "wan2.1-fun-14b-control-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
     }
 }
 # VACE Models
@@ -185,15 +185,15 @@ if ($vaceGgufChoice -ne 'E') {
     Write-Log "Downloading VACE GGUF Models..."
     if ($vaceGgufChoice -in 'A', 'D') {
         Save-File -Uri "$baseUrl/unet/WAN/Wan2.1-VACE-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
     }
     if ($vaceGgufChoice -in 'B', 'D') {
         Save-File -Uri "$baseUrl/unet/WAN/Wan2.1-VACE-14B-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q5_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
     }
     if ($vaceGgufChoice -in 'C', 'D') {
         Save-File -Uri "$baseUrl/unet/WAN/Wan2.1-VACE-14B-Q4_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q4_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
     }
 }
 

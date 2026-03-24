@@ -77,11 +77,11 @@ if ($baseChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($baseChoice -in 'A', 'C') {
         Save-File -Uri "$baseUrl/diffusion_models/qwen_image_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_bf16.safetensors")
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
     }
     if ($baseChoice -in 'B', 'C') {
         Save-File -Uri "$baseUrl/diffusion_models/qwen_image_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_fp8_e4m3fn.safetensors")
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
     }
 }
 
@@ -89,16 +89,16 @@ if ($baseChoice -ne 'D') {
 if ($ggufChoice -ne 'E') {
     Write-Log "Downloading QWEN GGUF models..."
     if ($ggufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Distill-Q8_0.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Distill-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Distill-Q8_0.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Distill-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
     }
     if ($ggufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Distill-Q5_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Distill-Q5_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Distill-Q5_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Distill-Q5_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
     }
     if ($ggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Distill-Q4_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Distill-Q4_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Distill-Q4_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Distill-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
     }
 }
 
@@ -107,11 +107,11 @@ if ($editChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($editChoice -in 'A', 'C') {
         Save-File -Uri "$baseUrl/diffusion_models/qwen_image_edit_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_bf16.safetensors")
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
     }
     if ($editChoice -in 'B', 'C') {
         Save-File -Uri "$baseUrl/diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_fp8_e4m3fn.safetensors")
-        Save-File -Uri "$baseUrl/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
     }
 }
 
@@ -119,16 +119,16 @@ if ($editChoice -ne 'D') {
 if ($editggufChoice -ne 'E') {
     Write-Log "Downloading QWEN GGUF models..."
     if ($editggufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q8_0.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q8_0.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Edit-Q8_0.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
     }
     if ($editggufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q5_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q5_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Edit-Q5_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q5_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
     }
     if ($editggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/QWEN/Qwen_Image_Edit-Q4_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q4_K_S.gguf")
-        Save-File -Uri "$baseUrl/clip/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/QWEN/Qwen-Image-Edit-Q4_K_S.gguf" -OutFile (Join-Path $QWENUnetDir "Qwen_Image_Edit-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/text_encoders/QWEN/Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf" -OutFile (Join-Path $clipDir "Qwen2.5-VL-7B-Instruct-UD-Q4_K_S.gguf")
     }
 }
 

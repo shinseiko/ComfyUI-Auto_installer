@@ -75,8 +75,8 @@ if ($doDownload) {
     Save-File -Uri "$baseUrl/vae/LTX2_audio_vae_bf16.safetensors" -OutFile (Join-Path $vaeDir "LTX2_audio_vae_bf16.safetensors")
 
     Write-Log "Downloading LTX2 text encoder..."
-    Save-File -Uri "$baseUrl/clip/ltx-2-19b-embeddings_connector_dev_bf16.safetensors" -OutFile (Join-Path $clipDir "ltx-2-19b-embeddings_connector_dev_bf16.safetensors")
-    Save-File -Uri "$baseUrl/clip/gemma-3-12b-it-IQ4_XS.gguf" -OutFile (Join-Path $clipDir "gemma-3-12b-it-IQ4_XS.gguf")
+    Save-File -Uri "$baseUrl/text_encoders/LTX-2/ltx-2-19b-embeddings_connector_dev_bf16.safetensors" -OutFile (Join-Path $clipDir "ltx-2-19b-embeddings_connector_dev_bf16.safetensors")
+    Save-File -Uri "$baseUrl/text_encoders/GEMMA-3/gemma-3-12b-it-IQ4_XS.gguf" -OutFile (Join-Path $clipDir "gemma-3-12b-it-IQ4_XS.gguf")
 
     Write-Log "Downloading MelBandRoformer..."
     Save-File -Uri "$baseUrl/diffusion_models/MelBandRoFormer/MelBandRoformer_fp32.safetensors" -OutFile (Join-Path $difftDir "MelBandRoformer_fp32.safetensors")
@@ -92,13 +92,13 @@ if ($doDownload) {
 if ($ggufChoice -ne 'E') {
     Write-Log "Downloading LTX2 GGUF models..."
     if ($ggufChoice -in 'A', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTX-2/ltx-2-19b-dev-Q8_0.gguf" -OutFile (Join-Path $ltxvUnetDir "ltx-2-19b-dev-Q8_0.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/LTX-2/LTX-2-19B-Dev-Q8_0.gguf" -OutFile (Join-Path $ltxvUnetDir "LTX-2-19B-Dev-Q8_0.gguf")
     }
     if ($ggufChoice -in 'B', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTX-2/ltx-2-19b-dev-Q5_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "ltx-2-19b-dev-Q5_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/LTX-2/LTX-2-19B-Dev-Q5_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "LTX-2-19B-Dev-Q5_K_S.gguf")
     }
     if ($ggufChoice -in 'C', 'D') {
-        Save-File -Uri "$baseUrl/unet/LTX-2/ltx-2-19b-dev-Q4_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "ltx-2-19b-dev-Q4_K_S.gguf")
+        Save-File -Uri "$baseUrl/diffusion_models/LTX-2/LTX-2-19B-Dev-Q4_K_S.gguf" -OutFile (Join-Path $ltxvUnetDir "LTX-2-19B-Dev-Q4_K_S.gguf")
     }
 }
 
