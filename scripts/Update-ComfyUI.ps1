@@ -78,7 +78,7 @@ if (-not $GhUser) {
         if (-not $GhBranch)   { $GhBranch   = _ReadCfgValue $f "gh_branch" }
     }
     if (-not $GhUser)     { $GhUser     = "UmeAiRT" }
-    if (-not $GhRepoName) { $GhRepoName = "ComfyUI-Auto_installer" }
+    if (-not $GhRepoName) { $GhRepoName = "ComfyUI-Auto_installer-PS" }
     if (-not $GhBranch)   { $GhBranch   = "main" }
 }
 

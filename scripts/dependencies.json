@@ -52,13 +52,15 @@
     "wheels": [
       {
         "name": "nunchaku-1.2.1+cu13.0torch2.10-cp313-cp313-win_amd64",
-        "url": "https://github.com/nunchaku-ai/nunchaku/releases/download/v1.2.1/nunchaku-1.2.1+cu13.0torch2.10-cp313-cp313-win_amd64.whl",
-        "sha256": "D3A922FA918FB2C3C815BF4FC5645CE663EC5354E7C026B384269813785B913D"
+        "url": "https://huggingface.co/UmeAiRT/ComfyUI-Auto-Installer-Assets/resolve/main/whl/nunchaku-1.2.1+cu13.0torch2.10-cp313-cp313-win_amd64.whl",
+        "sha256": "",
+        "_note_sha256": "TODO: verify hash after URL move from GitHub releases to HF Assets"
       },
       {
         "name": "insightface-0.7.3-cp313-cp313-win_amd64",
-        "url": "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/whl/insightface-0.7.3-cp313-cp313-win_amd64.whl",
-        "sha256": "EBE005BFC7AB874F9EC83F31CAE03EEA3A084D95CF9549DCDBAC3F23222346D1"
+        "url": "https://huggingface.co/UmeAiRT/ComfyUI-Auto-Installer-Assets/resolve/main/whl/insightface-0.7.3-cp313-cp313-win_amd64.whl",
+        "sha256": "",
+        "_note_sha256": "TODO: verify hash after URL move to ComfyUI-Auto-Installer-Assets repo"
       }
     ],
     "standard": [
@@ -81,11 +83,11 @@
   },
   "files": {
     "comfy_settings": {
-      "url": "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer/main/scripts/comfy.settings.json",
+      "url": "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer-PS/main/scripts/comfy.settings.json",
       "destination": "user/default/comfy.settings.json"
     },
     "custom_nodes_csv": {
-      "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer/raw/main/scripts/custom_nodes.csv",
+      "url": "https://github.com/UmeAiRT/ComfyUI-Auto_installer-PS/raw/main/scripts/custom_nodes.csv",
       "destination": "scripts/custom_nodes.csv",
       "sha256": "AF90B884B014BB913707B5D20B252CD6ED0F956CD1899C64D2C690A29308F078"
     },
@@ -95,7 +97,7 @@
       "sha256": "F5B796F2217BB2176D30FEDB75C0C42F981721B5E78D80992C0A1928FCBDE4DE"
     },
     "nunchaku_versions": {
-      "url": "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer/main/scripts/nunchaku_versions.json",
+      "url": "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer-PS/main/scripts/nunchaku_versions.json",
       "destination": "ComfyUI/custom_nodes/ComfyUI-nunchaku/nunchaku_versions.json",
       "sha256": "1743517751F256E4A54BC38C08E64EA185EC3914EE11C7F189C9ED7CBD0813A1"
     }

@@ -435,8 +435,8 @@ else {
 
 # --- Nunchaku Configuration Section ---
 
-# 1. Define variables
-$JsonUrl = "https://raw.githubusercontent.com/UmeAiRT/ComfyUI-Auto_installer/main/scripts/nunchaku_versions.json" 
+# 1. Define variables (URL from dependencies.json, not hardcoded)
+$JsonUrl = [string]$dependencies.files.nunchaku_versions.url
 $TargetDir = "$comfyPath/custom_nodes/ComfyUI-nunchaku"
 $TargetFile = "$TargetDir/nunchaku_versions.json"
 

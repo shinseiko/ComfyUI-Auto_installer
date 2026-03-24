@@ -10,14 +10,14 @@
 .PARAMETER GhUser
     GitHub user/org hosting the installer repo. Default: UmeAiRT.
 .PARAMETER GhRepoName
-    GitHub repository name. Default: ComfyUI-Auto_installer.
+    GitHub repository name. Default: ComfyUI-Auto_installer-PS.
 .PARAMETER GhBranch
     Git branch to pull scripts from. Default: main.
 #>
 param(
     [string]$InstallPath  = "",
     [string]$GhUser       = "UmeAiRT",
-    [string]$GhRepoName   = "ComfyUI-Auto_installer",
+    [string]$GhRepoName   = "ComfyUI-Auto_installer-PS",
     [string]$GhBranch     = "main"
 )
 

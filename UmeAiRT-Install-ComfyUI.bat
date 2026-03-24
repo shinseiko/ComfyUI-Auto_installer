@@ -18,7 +18,7 @@ title UmeAiRT ComfyUI Installer
 
 :: Default fork coordinates
 set "GH_USER=UmeAiRT"
-set "GH_REPO=ComfyUI-Auto_installer"
+set "GH_REPO=ComfyUI-Auto_installer-PS"
 set "GH_BRANCH=main"
 
 :: Convert backslashes to forward slashes — %~dp0 always ends in \

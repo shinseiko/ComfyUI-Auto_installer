@@ -1,4 +1,16 @@
-# UmeAiRT's ComfyUI Auto-Installer
+> [!IMPORTANT]
+> ## 🚀 A new Python version is available!
+>
+> This project (PowerShell) is now in **legacy / maintenance-only** mode.
+> A complete rewrite in Python is available with:
+> - ✅ Cross-platform support (Windows, Linux, macOS)
+> - ✅ Modern TUI interface
+> - ✅ CI/CD, automated tests, Docker
+> - ✅ Better dependency management (uv)
+>
+> 👉 **[Switch to the Python version](https://github.com/UmeAiRT/ComfyUI-Auto_installer-Python)**
+
+# UmeAiRT's ComfyUI Auto-Installer (Legacy PowerShell)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-lightgrey.svg)
@@ -15,9 +27,9 @@ This project provides a suite of PowerShell scripts to fully automate the instal
     - 7-Zip
     - Aria2 (for accelerated downloads)
 - **CSV-Managed Custom Nodes:** Installs a comprehensive list of custom nodes defined in an external `custom_nodes.csv` file, making it simple to add new nodes.
-- **Interactive Model Downloaders:** A PowerShell menu (`Download-Models.ps1`) lets you pick and download model packs (FLUX, WAN, HIDREAM, LTX, QWEN, Z-IMAGE) at any time.
-- **Dedicated Update Script:** `Update-ComfyUI.ps1` updates ComfyUI, all custom nodes, and workflows with a single command. Supports optional snapshot safety so you can roll back if something breaks.
-- **Pure-launcher `.bat` files:** Every `.bat` file is a thin wrapper — it detects `pwsh`/`powershell`, sets a clean Python environment, and delegates entirely to the corresponding `.ps1`. No logic lives in batch.
+- **Interactive Model Downloaders:** Dedicated scripts guide you with menus to download the model packs you want (FLUX, WAN, HIDREAM, LTXV), with recommendations based on your graphics card's VRAM.
+- **Dedicated Update Script:** A specific `UmeAiRT-Updater.ps1` script allows you to update ComfyUI, all custom nodes, and workflows with a single command.
+- **Automated Launchers:** The project generates `.bat` files to run the installation, updates, and the final application, automatically handling administrator rights and PowerShell execution policies.
 - **Supplementary modules:** The script also installs some complex modules such as: Sageattention, Triton, Visual Studio Build Tools, ...
 - **Workflow included:** A large amount of workflows are pre-installed for each model.
 
@@ -49,39 +61,31 @@ At the end of the process, your ComfyUI installation will be complete and ready 
 
 ## Post-Installation Usage
 
-Four `.bat` files are available in your folder to manage the application:
+Three main `.bat` files will be available in your folder to manage the application:
 
 - **`UmeAiRT-Start-ComfyUI.bat`**
-    - **Launches ComfyUI** in standard (performance) mode.
-
-- **`UmeAiRT-Start-ComfyUI_LowVRAM.bat`**
-    - **Launches ComfyUI** with low-VRAM / stability flags for cards with limited memory.
+    - This is the file you will use to **launch ComfyUI**. It activates the virtual environment and starts the server.
 
 - **`UmeAiRT-Download_models.bat`**
-    - Opens the **model downloader menu** so you can add more model packs at any time without reinstalling. Presents a numbered menu of available packs (FLUX, WAN2.1, WAN2.2, HIDREAM, LTX1, LTX2, QWEN, Z-IMAGE).
+    - Run this script if you want to **add more model packs** later without reinstalling everything. It will present you with the same selection menu as the initial installation.
 
 - **`UmeAiRT-Update-ComfyUI.bat`**
-    - **Updates your entire installation** — ComfyUI core, all custom nodes, and workflows — and installs any new Python dependencies. Pass `--snapshot <path>` to back up a JSON snapshot before updating.
+    - Execute this script to **update your entire installation**. It will update the code for ComfyUI, all custom nodes, and your workflows, and it will install any new Python dependencies if required.
 
 ## File Structure
 
 - **`/` (your root folder)**
-    - `UmeAiRT-Install-ComfyUI.bat` — main installer launcher
-    - `UmeAiRT-Start-ComfyUI.bat` — launch ComfyUI (standard mode)
-    - `UmeAiRT-Start-ComfyUI_LowVRAM.bat` — launch ComfyUI (low VRAM mode)
-    - `UmeAiRT-Update-ComfyUI.bat` — update launcher
-    - `UmeAiRT-Download_models.bat` — model downloader launcher
-    - **`scripts/`** — all PowerShell scripts
-        - `Install-ComfyUI.ps1` / `Install-ComfyUI-Phase1.ps1` / `Install-ComfyUI-Phase2.ps1`
-        - `Update-ComfyUI.ps1`
-        - `Start-ComfyUI.ps1`
-        - `Download-Models.ps1` — menu dispatcher for model downloads
-        - `Download-FLUX-Models.ps1` (and other per-model downloaders)
-        - `UmeAiRTUtils.psm1` — shared utility functions
-        - `custom_nodes.csv` — list of custom nodes to install
-        - `dependencies.json` — external tool definitions with SHA-256 verification
-    - **`ComfyUI/`** — created after installation, contains the application
-    - **`logs/`** — created at runtime, contains installation/update logs
+    - `UmeAiRT-Installer-Updater.bat` (Main launcher that updates and installs)
+    - `UmeAiRT-Start-ComfyUI.bat` (Created after installation to launch ComfyUI)
+    - `UmeAiRT-Update-ComfyUI.bat` (Launcher for the update script)
+    - `UmeAiRT-Download_models.bat` (Menu to download more models later)
+    - **`scripts/`** (Contains all PowerShell scripts)
+        - `Install-ComfyUI.ps1`
+        - `UmeAiRT-Updater.ps1`
+        - `Download-FLUX-Models.ps1` (and other model downloaders)
+        - `custom_nodes.csv` (The list of all custom nodes to install)
+    - **`ComfyUI/`** (Created after installation, contains the application)
+    - **`logs/`** (Created, contains installation/update logs)
 
 ## Contributing
 

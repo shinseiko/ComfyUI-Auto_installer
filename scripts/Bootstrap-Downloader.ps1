@@ -10,7 +10,7 @@
 .PARAMETER GhUser
     The GitHub username (default: "UmeAiRT").
 .PARAMETER GhRepoName
-    The GitHub repository name (default: "ComfyUI-Auto_installer").
+    The GitHub repository name (default: "ComfyUI-Auto_installer-PS").
 .PARAMETER GhBranch
     The GitHub branch to use (default: "main").
 .PARAMETER v
@@ -51,7 +51,7 @@ if (-not $GhUser -or -not $GhRepoName -or -not $GhBranch) {
         if (-not $GhBranch)   { $GhBranch   = _BsReadCfg $f "gh_branch" }
     }
     if (-not $GhUser)     { $GhUser     = "UmeAiRT" }
-    if (-not $GhRepoName) { $GhRepoName = "ComfyUI-Auto_installer" }
+    if (-not $GhRepoName) { $GhRepoName = "ComfyUI-Auto_installer-PS" }
     if (-not $GhBranch)   { $GhBranch   = "main" }
 }
 

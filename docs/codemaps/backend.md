@@ -1,8 +1,8 @@
-<!-- Generated: 2026-03-18 | Source files: 18 | Token estimate: ~1200 -->
+<!-- Generated: 2026-03-24 | Source files: 24 | Token estimate: ~1200 -->
 
 # Backend Scripts
 
-## Shared Utilities (`scripts/UmeAiRTUtils.psm1`, 564 lines)
+## Shared Utilities (`scripts/UmeAiRTUtils.psm1`, 587 lines)
 
 14 exported functions used across all scripts:
 
@@ -81,6 +81,7 @@ Resolves and normalises a path to forward slashes.
 ## Install Entry Point (`scripts/Install-ComfyUI.ps1`, 178 lines)
 
 Reads config, sets up early logging, runs bootstrap, persists fork config.
+Default `GhRepoName`: `ComfyUI-Auto_installer-PS`.
 
 ### Flow
 1. Inline `_RotateLog`/`_AppendLog` helpers (psm1 not yet loaded)
@@ -94,7 +95,7 @@ Reads config, sets up early logging, runs bootstrap, persists fork config.
 
 ---
 
-## Install Phase 1 (`scripts/Install-ComfyUI-Phase1.ps1`, 626 lines)
+## Install Phase 1 (`scripts/Install-ComfyUI-Phase1.ps1`, 634 lines)
 
 ### Flow
 1. Load dependencies.json, import UmeAiRTUtils, set `$global:logFile = "$logPath/install.log"`
@@ -117,7 +118,7 @@ Reads config, sets up early logging, runs bootstrap, persists fork config.
 
 ---
 
-## Install Phase 2 (`scripts/Install-ComfyUI-Phase2.ps1`, 511 lines)
+## Install Phase 2 (`scripts/Install-ComfyUI-Phase2.ps1`, 523 lines)
 
 ### Flow
 1. UTF-8 encoding setup; load dependencies.json; import UmeAiRTUtils; detect GPU
@@ -130,12 +131,20 @@ Reads config, sets up early logging, runs bootstrap, persists fork config.
 8. Custom nodes: ComfyUI-Manager clone → cm-cli.py restore-snapshot or CSV fallback
 9. UmeAiRT-Sync node install; MagCache hotfix (line 13 patch)
 10. Triton/SageAttention: DazzleML installer (venv) or manual pip (Conda)
-11. Nunchaku config + ComfyUI settings download
+11. Nunchaku config URL from `dependencies.files.nunchaku_versions.url`; ComfyUI settings download
 12. Optional model packs: Y/N loop for 8 packs
+
+All pip calls use `uv pip install --python "$pythonExe"` (no pip-only flags).
 
 ---
 
-## Update Script (`scripts/Update-ComfyUI.ps1`, 340+ lines)
+## Update Script (`scripts/Update-ComfyUI.ps1`, 448 lines)
+
+### Parameters
+- `$SnapshotPath`: optional path to a specific snapshot file
+- `$ResumeFromStep`: skip to step N (valid: 1-3, default 1)
+- `$BootstrapOnly`: download scripts and exit
+- `-v` / `-vv`: verbosity levels
 
 ### Flow
 1. Define `$dependenciesFile` path (not loaded yet)
@@ -145,12 +154,10 @@ Reads config, sets up early logging, runs bootstrap, persists fork config.
 5. Bootstrap self-update: download fresh `Bootstrap-Downloader.ps1` from `raw.githubusercontent.com`, run with `-SkipSelf`
 6. **Load `dependencies.json` from disk** (after bootstrap — always uses freshly downloaded version)
 7. Environment detection: read `scripts/install_type`, resolve `$pythonExe`
-8. **ComfyUI-nunchaku cleanup** (CRITICAL): if `$customNodesPath/ComfyUI-nunchaku` exists but has no `.git` dir, remove it (corrupted zip extract); do NOT generalize to all non-git dirs (Manager installs many nodes)
-9. `git pull` ComfyUI core + reinstall requirements.txt
-10. Update ComfyUI-Manager (git pull + requirements); `Set-ManagerUseUv`
-11. Snapshot resolution (5-priority chain) + `cm-cli.py restore-snapshot` + `cm-cli.py update all`
-12. DazzleML installer: `Save-File -Force` (always re-downloads) + SHA256 verification + `--upgrade`
-13. Re-pin managed wheels via `uv pip install --force-reinstall` for packages (like nunchaku) that may be downgraded by dependent nodes
+8. Validate `$ResumeFromStep` (1-3); pre-seed `$global:currentStep = $ResumeFromStep - 1`
+9. **Step 1** (if `$ResumeFromStep -le 1`): ComfyUI git pull + requirements; ComfyUI-Manager update; snapshot resolve (5-priority chain) + cm-cli restore + update all
+10. **Step 2** (if `$ResumeFromStep -le 2`): ComfyUI-nunchaku cleanup (remove corrupted non-git dirs); DazzleML installer `--upgrade`
+11. **Step 3**: Re-pin managed wheels via `uv pip install --force-reinstall`
 
 ### Snapshot Priority Chain
 1. `-SnapshotPath` CLI param
@@ -161,11 +168,14 @@ Reads config, sets up early logging, runs bootstrap, persists fork config.
 
 ---
 
-## Bootstrap Downloader (`scripts/Bootstrap-Downloader.ps1`, 112 lines)
+## Bootstrap Downloader (`scripts/Bootstrap-Downloader.ps1`, 157 lines)
 
 Downloads all scripts + configs from `raw.githubusercontent.com` via `Invoke-WebRequest`.
-Parameters: `$InstallPath`, `$GhUser`, `$GhRepoName`, `$GhBranch`, `$SkipSelf`.
-File list: 15 PS1 scripts + 4 config files + `umeairt-user-config.json.example`.
+Parameters: `$InstallPath`, `$GhUser`, `$GhRepoName`, `$GhBranch`, `-v`/`-vv`.
+Reads fork config from `umeairt-user-config.json` / `repo-config.json` if params empty.
+File list: 15 PS1 scripts + 6 bat launchers + 4 config files.
+Self-update: includes itself as last entry in download list.
+Clears read-only attributes before overwriting.
 Logs each download to `logs/bootstrap.log` via inline `_AppendLog` helper.
 
 ---
@@ -174,11 +184,9 @@ Logs each download to `logs/bootstrap.log` via inline `_AppendLog` helper.
 
 All follow the same pattern:
 1. Import UmeAiRTUtils, detect GPU via `Get-GpuVramInfo`
-2. Show VRAM-based recommendations (thresholds: 40/23/16 GB for WAN2.2)
+2. Show VRAM-based recommendations
 3. Series of `Read-UserChoice` calls with letter-based menus (A/B/C/D...)
 4. Procedural `Save-File -Uri ... -OutFile ...` calls based on choices
-5. Models hosted on HuggingFace at `https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models`
-6. **WAN2.2 redesigned**: each quantization level now downloads BOTH High Noise and Low Noise variants (e.g., 'F) All' downloads 2 fp16 files, 2 fp8 files, etc.); VRAM recommendations: >=40GB fp16, >=23GB fp8/Q8, >=16GB Q5, else Q3
+5. Models hosted on HuggingFace at `https://huggingface.co/UmeAiRT/ComfyUI-Auto-Installer-Assets/resolve/main/models/`
 
 8 model packs: FLUX, WAN2.1, WAN2.2, HIDREAM, LTX1, LTX2, QWEN, Z-IMAGE.
-**HuggingFace source URLs corrected** across all 8 scripts; paths now target unified HF repo structure.

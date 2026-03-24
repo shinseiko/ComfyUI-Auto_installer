@@ -15,14 +15,14 @@ param(
 # ============================================================================
 # INITIALIZATION
 # ============================================================================
-$InstallPath = $InstallPath.Trim('"').TrimEnd('\', '/').Replace('\', '/')
-Import-Module "$($PSScriptRoot.Replace('\','/'))/UmeAiRTUtils.psm1" -Force
+$InstallPath = $InstallPath.Trim('"')
+Import-Module (Join-Path $PSScriptRoot "UmeAiRTUtils.psm1") -Force
 
 # ============================================================================
 # MAIN EXECUTION
 # ============================================================================
 
-$modelsPath = "$InstallPath/models"
+$modelsPath = Join-Path $InstallPath "models"
 if (-not (Test-Path $modelsPath)) {
     Write-Log "Models directory does not exist, creating it..." -Color Yellow
     New-Item -Path $modelsPath -ItemType Directory -Force | Out-Null
@@ -36,9 +36,18 @@ if ($gpuInfo) {
     Write-Log "GPU: $($gpuInfo.GpuName)" -Color Green
     Write-Log "VRAM: $($gpuInfo.VramGiB) GB" -Color Green
 
-    if ($gpuInfo.VramGiB -ge 16) { Write-Log "Recommendation: fp8 or GGUF Q8" -Color Cyan }
-    elseif ($gpuInfo.VramGiB -ge 8) { Write-Log "Recommendation: GGUF Q5" -Color Cyan }
-    else { Write-Log "Recommendation: GGUF Q4 or lower" -Color Cyan }
+    if ($gpuInfo.VramGiB -ge 16) {
+        Write-Log "Recommendation: fp16" -Color Cyan
+    }
+    elseif ($gpuInfo.VramGiB -ge 12) {
+        Write-Log "Recommendation: fp8 or GGUF Q8" -Color Cyan
+    }
+    elseif ($gpuInfo.VramGiB -ge 8) {
+        Write-Log "Recommendation: GGUF Q5" -Color Cyan
+    }
+    else {
+        Write-Log "Recommendation: GGUF Q4 or Lower" -Color Cyan
+    }
 }
 else {
     Write-Log "No NVIDIA GPU detected. Please choose based on your hardware." -Color Gray
@@ -46,39 +55,39 @@ else {
 Write-Log "-------------------------------------------------------------------------------"
 
 # --- User Prompts ---
-$baseChoice = Read-UserChoice -Prompt "Do you want to download HiDream base model (fp8)?" -Choices @("A) fp8", "B) No") -ValidAnswers @("A", "B")
-$ggufChoice = Read-UserChoice -Prompt "Do you want to download HiDream GGUF models?"     -Choices @("A) Q8_0", "B) Q6_K", "C) Q5_K_S", "D) Q4_K_S", "E) Q3_K_S", "F) All", "G) No") -ValidAnswers @("A", "B", "C", "D", "E", "F", "G")
+$baseChoice = Read-UserChoice -Prompt "Do you want to download HiDream base models?" -Choices @("A) fp16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$ggufChoice = Read-UserChoice -Prompt "Do you want to download HiDream GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
 
 # --- Download Process ---
 Write-Log "Starting HiDream model downloads..." -Color Cyan
 
-$baseUrl       = "https://huggingface.co/UmeAiRT/ComfyUI-Auto_installer/resolve/main/models"
-$hidreamDiffDir = "$modelsPath/diffusion_models/HiDream"
-$hidreamUnetDir = "$modelsPath/unet/HiDream"
-$clipDir        = "$modelsPath/clip"
+$baseUrl = "https://huggingface.co/UmeAiRT/ComfyUI-Auto-Installer-Assets/resolve/main/models"
+$hidreamDiffDir = Join-Path $modelsPath "diffusion_models\HiDream"
+$hidreamUnetDir = Join-Path $modelsPath "unet\HiDream"
 
-New-Item -Path $hidreamDiffDir, $hidreamUnetDir, $clipDir -ItemType Directory -Force | Out-Null
+New-Item -Path $hidreamDiffDir, $hidreamUnetDir -ItemType Directory -Force | Out-Null
 
-$doDownload = ($baseChoice -eq 'A' -or $ggufChoice -ne 'G')
-
-if ($doDownload) {
-    Write-Log "Downloading HiDream text encoders..."
-    Save-File -Uri "$baseUrl/clip/clip_l_hidream.safetensors" -OutFile "$clipDir/clip_l_hidream.safetensors"
-    Save-File -Uri "$baseUrl/clip/clip_g_hidream.safetensors" -OutFile "$clipDir/clip_g_hidream.safetensors"
+if ($baseChoice -ne 'D') {
+    Write-Log "Downloading HiDream base models..."
+    if ($baseChoice -in 'A', 'C') {
+        Save-File -Uri "$baseUrl/diffusion_models/HiDream/hidream_i1_dev_fp16.safetensors" -OutFile (Join-Path $hidreamDiffDir "hidream_i1_dev_fp16.safetensors")
+    }
+    if ($baseChoice -in 'B', 'C') {
+        Save-File -Uri "$baseUrl/diffusion_models/HiDream/hidream_i1_dev_fp8.safetensors" -OutFile (Join-Path $hidreamDiffDir "hidream_i1_dev_fp8.safetensors")
+    }
 }
 
-if ($baseChoice -eq 'A') {
-    Write-Log "Downloading HiDream fp8 base model..."
-    Save-File -Uri "$baseUrl/diffusion_models/HiDream/hidream-i1-dev-fp8.safetensors" -OutFile "$hidreamDiffDir/hidream-i1-dev-fp8.safetensors"
-}
-
-if ($ggufChoice -ne 'G') {
+if ($ggufChoice -ne 'E') {
     Write-Log "Downloading HiDream GGUF models..."
-    if ($ggufChoice -in 'A', 'F') { Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q8_0.gguf"   -OutFile "$hidreamUnetDir/HiDream-I1-Dev-Q8_0.gguf" }
-    if ($ggufChoice -in 'B', 'F') { Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q6_K.gguf"   -OutFile "$hidreamUnetDir/HiDream-I1-Dev-Q6_K.gguf" }
-    if ($ggufChoice -in 'C', 'F') { Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q5_K_S.gguf" -OutFile "$hidreamUnetDir/HiDream-I1-Dev-Q5_K_S.gguf" }
-    if ($ggufChoice -in 'D', 'F') { Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q4_K_S.gguf" -OutFile "$hidreamUnetDir/HiDream-I1-Dev-Q4_K_S.gguf" }
-    if ($ggufChoice -in 'E', 'F') { Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q3_K_S.gguf" -OutFile "$hidreamUnetDir/HiDream-I1-Dev-Q3_K_S.gguf" }
+    if ($ggufChoice -in 'A', 'D') {
+        Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q8_0.gguf" -OutFile (Join-Path $hidreamUnetDir "hidream-i1-dev-Q8_0.gguf")
+    }
+    if ($ggufChoice -in 'B', 'D') {
+        Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q5_K_S.gguf" -OutFile (Join-Path $hidreamUnetDir "hidream-i1-dev-Q5_K_S.gguf")
+    }
+    if ($ggufChoice -in 'C', 'D') {
+        Save-File -Uri "$baseUrl/diffusion_models/HiDream/HiDream-I1-Dev-Q4_K_S.gguf" -OutFile (Join-Path $hidreamUnetDir "hidream-i1-dev-Q4_K_S.gguf")
+    }
 }
 
 Write-Log "HiDream model downloads complete." -Color Green
