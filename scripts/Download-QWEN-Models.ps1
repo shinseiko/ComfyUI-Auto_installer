@@ -76,12 +76,12 @@ if ($doDownload) {
 if ($baseChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($baseChoice -in 'A', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/qwen_image_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_bf16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen-image-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b.safetensors" -OutFile (Join-Path $clipDir "qwen2.5-vl-7b.safetensors")
     }
     if ($baseChoice -in 'B', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/qwen_image_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_fp8_e4m3fn.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen-image-fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b-fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen2.5-vl-7b-fp8_scaled.safetensors")
     }
 }
 
@@ -106,12 +106,12 @@ if ($ggufChoice -ne 'E') {
 if ($editChoice -ne 'D') {
     Write-Log "Downloading QWEN base model..."
     if ($editChoice -in 'A', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/qwen_image_edit_bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_bf16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-edit-bf16.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen-image-edit-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b.safetensors" -OutFile (Join-Path $clipDir "qwen2.5-vl-7b.safetensors")
     }
     if ($editChoice -in 'B', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen_image_edit_fp8_e4m3fn.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen_2.5_vl_7b_fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen_2.5_vl_7b_fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/QWEN/qwen-image-edit-fp8_e4m3fn.safetensors" -OutFile (Join-Path $QWENUnetDir "qwen-image-edit-fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen2.5-vl-7b-fp8_scaled.safetensors" -OutFile (Join-Path $clipDir "qwen2.5-vl-7b-fp8_scaled.safetensors")
     }
 }
 

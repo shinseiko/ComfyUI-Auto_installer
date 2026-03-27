@@ -55,7 +55,7 @@ else {
 Write-Log "-------------------------------------------------------------------------------"
 
 # --- User Prompts ---
-$baseChoice = Read-UserChoice -Prompt "Do you want to download HiDream base models?" -Choices @("A) fp16", "B) fp8", "C) All", "D) No") -ValidAnswers @("A", "B", "C", "D")
+$baseChoice = Read-UserChoice -Prompt "Do you want to download HiDream base models?" -Choices @("A) fp8", "B) No") -ValidAnswers @("A", "B")
 $ggufChoice = Read-UserChoice -Prompt "Do you want to download HiDream GGUF models?" -Choices @("A) Q8_0", "B) Q5_K_S", "C) Q4_K_S", "D) All", "E) No") -ValidAnswers @("A", "B", "C", "D", "E")
 
 # --- Download Process ---
@@ -67,14 +67,9 @@ $hidreamUnetDir = Join-Path $modelsPath "unet\HiDream"
 
 New-Item -Path $hidreamDiffDir, $hidreamUnetDir -ItemType Directory -Force | Out-Null
 
-if ($baseChoice -ne 'D') {
+if ($baseChoice -eq 'A') {
     Write-Log "Downloading HiDream base models..."
-    if ($baseChoice -in 'A', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/HiDream/hidream_i1_dev_fp16.safetensors" -OutFile (Join-Path $hidreamDiffDir "hidream_i1_dev_fp16.safetensors")
-    }
-    if ($baseChoice -in 'B', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/HiDream/hidream_i1_dev_fp8.safetensors" -OutFile (Join-Path $hidreamDiffDir "hidream_i1_dev_fp8.safetensors")
-    }
+    Save-FileCollecting -Uri "$baseUrl/diffusion_models/HiDream/hidream-i1-dev-fp8.safetensors" -OutFile (Join-Path $hidreamDiffDir "hidream-i1-dev-fp8.safetensors")
 }
 
 if ($ggufChoice -ne 'E') {

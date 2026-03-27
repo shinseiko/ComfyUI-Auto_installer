@@ -63,7 +63,7 @@ $wanDiffDir = Join-Path $modelsPath "diffusion_models\WAN"
 $wanUnetDir = Join-Path $modelsPath "unet\WAN"
 $clipDir = Join-Path $modelsPath "clip"
 $vaeDir = Join-Path $modelsPath "vae"
-$loraDir = Join-Path $modelsPath "loras\WAN"
+$loraDir = Join-Path $modelsPath "loras\WAN2.2"
 
 New-Item -Path $wanDiffDir, $wanUnetDir, $clipDir, $vaeDir, $loraDir -ItemType Directory -Force | Out-Null
 
@@ -80,19 +80,24 @@ if ($doDownload) {
 if ($T2VChoice -ne 'G') {
     Write-Log "Downloading T2V Models..."
     if ($T2VChoice -in 'A', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_t2v_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_t2v_14B_bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-t2v-high-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-t2v-high-noise-14b-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-t2v-low-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-t2v-low-noise-14b-bf16.safetensors")
     }
     if ($T2VChoice -in 'B', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_t2v_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_t2v_14B_fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-t2v-high-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-t2v-high-noise-14b-fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-t2v-low-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-t2v-low-noise-14b-fp8_scaled.safetensors")
     }
     if ($T2VChoice -in 'C', 'F') {
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-T2V-HighNoise-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-T2V-HighNoise-14B-Q8_0.gguf")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-T2V-LowNoise-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-T2V-LowNoise-14B-Q8_0.gguf")
     }
     if ($T2VChoice -in 'D', 'F') {
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-T2V-HighNoise-14B-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-T2V-HighNoise-14B-Q5_K_S.gguf")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-T2V-LowNoise-14B-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-T2V-LowNoise-14B-Q5_K_S.gguf")
     }
     if ($T2VChoice -in 'E', 'F') {
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-T2V-HighNoise-14B-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-T2V-HighNoise-14B-Q3_K_S.gguf")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-T2V-LowNoise-14B-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-T2V-LowNoise-14B-Q3_K_S.gguf")
     }
 }
 
@@ -100,36 +105,46 @@ if ($T2VChoice -ne 'G') {
 if ($I2VChoice -ne 'G') {
     Write-Log "Downloading I2V Models..."
     if ($I2VChoice -in 'A', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_i2v_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_i2v_14B_bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-i2v-high-noise-14b-fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-i2v-high-noise-14b-fp16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-i2v-low-noise-14b-fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-i2v-low-noise-14b-fp16.safetensors")
     }
     if ($I2VChoice -in 'B', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_i2v_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_i2v_14B_fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-i2v-high-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-i2v-high-noise-14b-fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-i2v-low-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-i2v-low-noise-14b-fp8_scaled.safetensors")
     }
     if ($I2VChoice -in 'C', 'F') {
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-I2V-HighNoise-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-I2V-HighNoise-14B-Q8_0.gguf")
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-I2V-LowNoise-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-I2V-LowNoise-14B-Q8_0.gguf")
     }
     if ($I2VChoice -in 'D', 'F') {
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-I2V-HighNoise-14B-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-I2V-HighNoise-14B-Q5_K_S.gguf")
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-I2V-LowNoise-14B-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-I2V-LowNoise-14B-Q5_K_S.gguf")
     }
     if ($I2VChoice -in 'E', 'F') {
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-I2V-HighNoise-14B-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-I2V-HighNoise-14B-Q3_K_S.gguf")
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-I2V-LowNoise-14B-Q3_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-I2V-LowNoise-14B-Q3_K_S.gguf")
     }
 }
 
 # LoRA
 if ($LoRAChoice -eq 'A') {
-    Write-Log "Downloading LoRA..."
-    Save-FileCollecting -Uri "$baseUrl/loras/WAN/Wan2.2-14B-Lightning.safetensors" -OutFile (Join-Path $loraDir "Wan2.2-14B-Lightning.safetensors")
+    Write-Log "Downloading Lightning LoRAs..."
+    Save-FileCollecting -Uri "$baseUrl/loras/WAN2.2/Wan2.2-Lightning_T2V-A14B-4steps-lora_HIGH_fp16.safetensors" -OutFile (Join-Path $loraDir "Wan2.2-Lightning_T2V-A14B-4steps-lora_HIGH_fp16.safetensors")
+    Save-FileCollecting -Uri "$baseUrl/loras/WAN2.2/Wan2.2-Lightning_T2V-A14B-4steps-lora_LOW_fp16.safetensors" -OutFile (Join-Path $loraDir "Wan2.2-Lightning_T2V-A14B-4steps-lora_LOW_fp16.safetensors")
+    Save-FileCollecting -Uri "$baseUrl/loras/WAN2.2/Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH_fp16.safetensors" -OutFile (Join-Path $loraDir "Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH_fp16.safetensors")
+    Save-FileCollecting -Uri "$baseUrl/loras/WAN2.2/Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors" -OutFile (Join-Path $loraDir "Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors")
 }
 
 # Fun Control
 if ($funcontrolChoice -ne 'G') {
     Write-Log "Downloading FUN CONTROL Models..."
     if ($funcontrolChoice -in 'A', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_control_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_control_14B_bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-control-high-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-control-high-noise-14b-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-control-low-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-control-low-noise-14b-bf16.safetensors")
     }
     if ($funcontrolChoice -in 'B', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_control_14B_fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_control_14B_fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-control-high-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-control-high-noise-14b-fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-control-low-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-control-low-noise-14b-fp8_scaled.safetensors")
     }
     if ($funcontrolChoice -in 'C', 'F') {
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-Fun-Control-LowNoise-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-Fun-Control-LowNoise-14B-Q8_0.gguf")
@@ -149,12 +164,12 @@ if ($funcontrolChoice -ne 'G') {
 if ($funinpaintChoice -ne 'G') {
     Write-Log "Downloading FUN INPAINT Models..."
     if ($funinpaintChoice -in 'A', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_inpainting_low_noise_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_inpainting_low_noise_14B_bf16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_inpainting_high_noise_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_inpainting_high_noise_14B_bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-inpaint-low-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-inpaint-low-noise-14b-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-inpaint-high-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-inpaint-high-noise-14b-bf16.safetensors")
     }
     if ($funinpaintChoice -in 'B', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_inpainting_low_noise_14B_fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_inpainting_low_noise_14B_fp8_scaled.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_inpainting_high_noise_14B_fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_inpainting_high_noise_14B_fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-inpaint-low-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-inpaint-low-noise-14b-fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-inpaint-high-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-inpaint-high-noise-14b-fp8_scaled.safetensors")
     }
     if ($funinpaintChoice -in 'C', 'F') {
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-Fun-InP-LowNoise-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-Fun-InP-LowNoise-14B-Q8_0.gguf")
@@ -174,12 +189,12 @@ if ($funinpaintChoice -ne 'G') {
 if ($funcameraChoice -ne 'G') {
     Write-Log "Downloading FUN CAMERA CONTROL Models..."
     if ($funcameraChoice -in 'A', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_camera_high_noise_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_camera_high_noise_14B_bf16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_camera_low_noise_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_camera_low_noise_14B_bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-camera-high-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-camera-high-noise-14b-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-camera-low-noise-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-camera-low-noise-14b-bf16.safetensors")
     }
     if ($funcameraChoice -in 'B', 'F') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_camera_high_noise_14B_fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_camera_high_noise_14B_fp8_scaled.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2_fun_camera_low_noise_14B_fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2_fun_camera_low_noise_14B_fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-camera-high-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-camera-high-noise-14b-fp8_scaled.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.2-fun-camera-low-noise-14b-fp8_scaled.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.2-fun-camera-low-noise-14b-fp8_scaled.safetensors")
     }
     if ($funcameraChoice -in 'C', 'F') {
         Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.2-Fun-Camera-LowNoise-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.2-Fun-Camera-LowNoise-14B-Q8_0.gguf")

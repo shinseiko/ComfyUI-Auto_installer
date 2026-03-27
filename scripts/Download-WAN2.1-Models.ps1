@@ -81,19 +81,19 @@ if ($doDownload) {
 if ($baseChoice -ne 'E') {
     Write-Log "Downloading Base Models..."
     if ($baseChoice -in 'A', 'D') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_t2v_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_t2v_14B_bf16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_i2v_720p_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_i2v_720p_14B_bf16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_i2v_480p_14B_bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_i2v_480p_14B_bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-t2v-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-t2v-14b-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-i2v-720p-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-i2v-720p-14b-bf16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-i2v-480p-14b-bf16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-i2v-480p-14b-bf16.safetensors")
     }
     if ($baseChoice -in 'B', 'D') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_t2v_14B_fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_t2v_14B_fp16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_i2v_720p_14B_fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_i2v_720p_14B_fp16.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_i2v_480p_14B_fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_i2v_480p_14B_fp16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-t2v-14b-fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-t2v-14b-fp16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-i2v-720p-14b-fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-i2v-720p-14b-fp16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-i2v-480p-14b-fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-i2v-480p-14b-fp16.safetensors")
     }
     if ($baseChoice -in 'C', 'D') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_t2v_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_t2v_14B_fp8_e4m3fn.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_i2v_720p_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_i2v_720p_14B_fp8_e4m3fn.safetensors")
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_i2v_480p_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_i2v_480p_14B_fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-t2v-14b-fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-t2v-14b-fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-i2v-720p-14b-fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-i2v-720p-14b-fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-i2v-480p-14b-fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-i2v-480p-14b-fp8_e4m3fn.safetensors")
     }
 }
 # GGUF T2V
@@ -148,10 +148,10 @@ if ($gguf720Choice -ne 'E') {
 if ($controlChoice -ne 'D') {
     Write-Log "Downloading ControlNet Models..."
     if ($controlChoice -in 'A', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-fun-14B-control.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-fun-14B-control.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-fun-14b-control.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-fun-14b-control.safetensors")
     }
     if ($controlChoice -in 'B', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-Fun-V1_1-InP-14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "Wan2.1-Fun-V1_1-InP-14B_fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-fun-v1.1-inp-14b-fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-fun-v1.1-inp-14b-fp8_e4m3fn.safetensors")
     }
 }
 # ControlNet GGUF
@@ -174,25 +174,25 @@ if ($controlGgufChoice -ne 'E') {
 if ($vaceChoice -ne 'D') {
     Write-Log "Downloading VACE Models..."
     if ($vaceChoice -in 'A', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_vace_14B_fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_vace_14B_fp16.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-vace-14b-fp16.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-vace-14b-fp16.safetensors")
     }
     if ($vaceChoice -in 'B', 'C') {
-        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1_vace_14B_fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1_vace_14B_fp8_e4m3fn.safetensors")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/wan2.1-vace-14b-fp8_e4m3fn.safetensors" -OutFile (Join-Path $wanDiffDir "wan2.1-vace-14b-fp8_e4m3fn.safetensors")
     }
 }
 # VACE GGUF
 if ($vaceGgufChoice -ne 'E') {
     Write-Log "Downloading VACE GGUF Models..."
     if ($vaceGgufChoice -in 'A', 'D') {
-        Save-FileCollecting -Uri "$baseUrl/unet/WAN/Wan2.1-VACE-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q8_0.gguf")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-VACE-14B-Q8_0.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q8_0.gguf")
         Save-FileCollecting -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q8_0.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q8_0.gguf")
     }
     if ($vaceGgufChoice -in 'B', 'D') {
-        Save-FileCollecting -Uri "$baseUrl/unet/WAN/Wan2.1-VACE-14B-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q5_K_S.gguf")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-VACE-14B-Q5_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q5_K_S.gguf")
         Save-FileCollecting -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q5_K_M.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q5_K_M.gguf")
     }
     if ($vaceGgufChoice -in 'C', 'D') {
-        Save-FileCollecting -Uri "$baseUrl/unet/WAN/Wan2.1-VACE-14B-Q4_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q4_K_S.gguf")
+        Save-FileCollecting -Uri "$baseUrl/diffusion_models/WAN/Wan2.1-VACE-14B-Q4_K_S.gguf" -OutFile (Join-Path $wanUnetDir "Wan2.1-VACE-14B-Q4_K_S.gguf")
         Save-FileCollecting -Uri "$baseUrl/text_encoders/T5/umt5-xxl-encoder-Q3_K_S.gguf" -OutFile (Join-Path $clipDir "umt5-xxl-encoder-Q3_K_S.gguf")
     }
 }

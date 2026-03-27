@@ -101,7 +101,7 @@ if ($doDownload) {
 # --- Download BF16 Base Model ---
 if ($baseChoice -eq 'A') {
     Write-Log "Downloading Z-IMAGE Turbo BF16 Base Model..."
-    Save-FileCollecting -Uri "$baseUrl/diffusion_models/Z-IMG/z_image_turbo_bf16.safetensors" -OutFile (Join-Path $ZImgDiffDir "z_image_turbo_bf16.safetensors")
+    Save-FileCollecting -Uri "$baseUrl/diffusion_models/Z-IMG/z-image-turbo-bf16.safetensors" -OutFile (Join-Path $ZImgDiffDir "z-image-turbo-bf16.safetensors")
     Save-FileCollecting -Uri "$baseUrl/text_encoders/QWEN/qwen3-4b.safetensors" -OutFile (Join-Path $clipDir "qwen3-4b.safetensors")
 }
 
