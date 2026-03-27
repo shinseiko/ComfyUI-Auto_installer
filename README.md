@@ -91,7 +91,7 @@ Three main `.bat` files will be available in your folder to manage the applicati
     - Run this script if you want to **add more model packs** later without reinstalling everything. It will present you with the same selection menu as the initial installation.
     - **Download everything at once:** Pass `-DownloadAll` to skip all interactive prompts and download every model pack in full (useful for testing or building a complete library):
       > [!WARNING]
-      > `-DownloadAll` downloads **all 8 model packs in full**, which requires **2+ TB of free disk space**. Make sure your target drive has enough room before running this.
+      > `-DownloadAll` downloads **all 8 model packs in full**, which requires **4+ TB of free disk space**. Make sure your target drive has enough room before running this.
       ```bat
       UmeAiRT-Download_models.bat -DownloadAll
       ```
