@@ -112,7 +112,7 @@ if (Test-Path $psm1Path) {
 }
 
 Write-Host "[INFO] Using: $GhUser/$GhRepoName @ $GhBranch" -ForegroundColor Cyan
-_AppendLog $logFile "Config source: $($cfg.ConfigSource ?? 'defaults')"
+_AppendLog $logFile "Config source: $(if ($null -ne $cfg.ConfigSource) { $cfg.ConfigSource } else { 'defaults' })"
 _AppendLog $logFile "Fork: $GhUser/$GhRepoName @ $GhBranch"
 
 # ---------------------------------------------------------------------------
