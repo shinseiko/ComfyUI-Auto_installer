@@ -1,4 +1,4 @@
-<#
+ï»¿<#
 .SYNOPSIS
     Shared utility functions for UmeAiRT scripts.
 .DESCRIPTION
@@ -227,7 +227,7 @@ function Confirm-Authenticode {
         Remove-Item $Path -Force -ErrorAction SilentlyContinue
         throw "SECURITY: Unexpected signer on '$(Split-Path $Path -Leaf)'`n  Expected subject: $ExpectedSubject`n  Got: $($sig.SignerCertificate.Subject)`n  File deleted."
     }
-    Write-Log "  [authenticated] $(Split-Path $Path -Leaf) ¡ª $($sig.SignerCertificate.Subject)" -Color Green
+    Write-Log "  [authenticated] $(Split-Path $Path -Leaf) â€” $($sig.SignerCertificate.Subject)" -Color Green
 }
 
 function Set-ManagerUseUv {
@@ -364,7 +364,7 @@ function Save-FileCollecting {
     catch {
         $fname = Split-Path $OutFile -Leaf
         $script:_dlErrors.Add($fname)
-        Write-Log "WARNING: '$fname' failed to download ¡ª continuing." -Color Yellow
+        Write-Log "WARNING: '$fname' failed to download â€” continuing." -Color Yellow
     }
 }
 
