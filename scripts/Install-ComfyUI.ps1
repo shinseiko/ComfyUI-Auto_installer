@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Entry point for the UmeAiRT ComfyUI installation.
 .DESCRIPTION
